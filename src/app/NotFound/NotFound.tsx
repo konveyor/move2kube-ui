@@ -14,18 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import * as React from 'react';
-import '@patternfly/react-core/dist/styles/base.css';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { AppLayout } from '@app/AppLayout/AppLayout';
-import { AppRoutes } from '@app/routes';
-import '@app/app.css';
+import { NavLink } from 'react-router-dom';
+import { Alert, PageSection } from '@patternfly/react-core';
 
-const App: React.FunctionComponent = () => (
-  <Router>
-    <AppLayout>
-      <AppRoutes />
-    </AppLayout>
-  </Router>
-);
+const NotFound: React.FunctionComponent = () => (
+    <PageSection>
+      <Alert variant="danger" title="404! This view hasn't been created yet." /><br />
+      <NavLink to="/" className="pf-c-nav__link">Take me home</NavLink>
+    </PageSection>
+  )
 
-export { App };
+export { NotFound };

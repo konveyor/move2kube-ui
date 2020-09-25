@@ -13,19 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import * as React from 'react';
-import '@patternfly/react-core/dist/styles/base.css';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { AppLayout } from '@app/AppLayout/AppLayout';
-import { AppRoutes } from '@app/routes';
-import '@app/app.css';
+import React from 'react';
 
-const App: React.FunctionComponent = () => (
-  <Router>
-    <AppLayout>
-      <AppRoutes />
-    </AppLayout>
-  </Router>
-);
-
-export { App };
+export const ApplicationContext = React.createContext({
+    aName: "App1",
+    aStatus: ["New"],
+    aPlan: {},
+    updateApp: ()=>{},
+    changeApp: (appName) => {},
+  });

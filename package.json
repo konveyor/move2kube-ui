@@ -14,6 +14,7 @@
   "dependencies": {
     "@patternfly/react-core": "^4.50.2",
     "@patternfly/react-icons": "^4.7.6",
+    "@patternfly/react-table": "^4.16.20",
     "express": "^4.17.1",
     "http-proxy-middleware": "^1.0.4",
     "react": "^16.13.1",
@@ -33,6 +34,7 @@
     "ts-loader": "^8.0.4",
     "tsconfig-paths-webpack-plugin": "^3.3.0",
     "typescript": "^4.0.3",
+    "url-loader": "^4.1.0",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",

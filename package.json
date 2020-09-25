@@ -1,0 +1,41 @@
+{
+  "name": "move2kube",
+  "version": "0.1.0",
+  "description": "An UI for Move2Kube.",
+  "license": "Apache-2.0",
+  "main": "server.js",
+  "repository": "https://github.com/konveyor/move2kube-ui.git",
+  "scripts": {
+    "start": "node server.js",
+    "start:dev": "webpack-dev-server --hot --color --progress --info=true --config webpack.dev.js",
+    "dr:surge": "node dr-surge.js",
+    "build": "webpack --config webpack.prod.js && npm run dr:surge"
+  },
+  "dependencies": {
+    "@patternfly/react-core": "^4.50.2",
+    "@patternfly/react-icons": "^4.7.6",
+    "express": "^4.17.1",
+    "http-proxy-middleware": "^1.0.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
+    "react-router-last-location": "^2.0.1"
+  },
+  "devDependencies": {
+    "css-loader": "^4.3.0",
+    "dotenv-webpack": "^3.0.0",
+    "file-loader": "^6.1.0",
+    "html-webpack-plugin": "^4.5.0",
+    "mini-css-extract-plugin": "^0.11.2",
+    "optimize-css-assets-webpack-plugin": "^5.0.4",
+    "react-axe": "^3.5.3",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^8.0.4",
+    "tsconfig-paths-webpack-plugin": "^3.3.0",
+    "typescript": "^4.0.3",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^4.1.4"
+  }
+}

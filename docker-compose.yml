@@ -4,7 +4,7 @@ services:
     image: quay.io/konveyor/move2kube-api:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - "./:/wksps"
+      - "./wksps:/wksps"
   move2kubeui:
     image: quay.io/konveyor/move2kube-ui:latest
     environment:

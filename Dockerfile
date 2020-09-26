@@ -14,7 +14,7 @@
 
 FROM registry.access.redhat.com/ubi8/nodejs-12:latest
 
-ENV MOVE2KUBEAPI 'http://move2kubeapi:9000'
+ENV MOVE2KUBEAPI 'http://move2kubeapi:8080'
 
 USER 0
 COPY package.json .

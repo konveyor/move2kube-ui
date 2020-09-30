@@ -1,27 +1,19 @@
 language: node_js
-
 node_js:
-  - 14
-
+- 14
 services:
-  - docker
-
+- docker
 before_script:
-  - make install
-
+- make install
 script:
-  - make build
-
+- make build
 after_success:
-  - echo "$QUAY_BOT_PASSWORD" | docker login --username "$QUAY_BOT_USERNAME" --password-stdin quay.io
-  - make cbuild
-  - make cpush
-  - docker tag quay.io/konveyor/move2kube-ui:latest quay.io/konveyor/move2kube-ui:$TRAVIS_BRANCH
-  - docker push quay.io/konveyor/move2kube-ui:$TRAVIS_BRANCH
-
+- echo "$QUAY_BOT_PASSWORD" | docker login --username "$QUAY_BOT_USERNAME" --password-stdin
+  quay.io
+- make cbuild
+- make cpush
+- docker tag quay.io/konveyor/move2kube-ui:latest quay.io/konveyor/move2kube-ui:$TRAVIS_BRANCH
+- docker push quay.io/konveyor/move2kube-ui:$TRAVIS_BRANCH
 notifications:
-    email:
-      recipients:
-        - ashokponkumar@in.ibm.com
-      on_success: never 
-      on_failure: always
+  slack:
+    secure: Nx8cQoUZXB90H6VFiEdK5OcQrRSuunx4t/AjEJ7EiysvF0sfTjsYRVZ83WF7owUMC/77aabax6zkzc+UgiDvbwiFfPG61sLs8dzdz4E2XbbuLQNW5XDTUApBPa6k/uEVAFUGikVN5yHCNXe01xx7i8eAAk37ouPsUCpAtQRmmJcY2azyY54D452OcBrr7tPT5BHDMeMP8jHYM6ESpgog1JYrZqCXZDandoVLro4Hy/DrA133BLm7wWW7kpsO3Z/RVww4nSZqbH09cpJPiSz6zZbny7v0zvUplWV3yDr+VWg99Yb92jRupWlugsabterfi9aqiFSS+0lrlHz2cctSlyaZnEX7tt+iaa89Ffra3lbTfA+1jWudvV8jn53K5KjBKqJsNsg8M3FEWYlLXBABVLmmc9c5f4Y6+vTET3aYY6jSASiVIMPVDtr4cn3/hadgIRKTbuxp//ut9kBfrm69Qke6Kdt+kCWvXZe5RL9g/sn/eiXHCFmi3pQ2B6Ns+IHp7gKDGjOEWWvzIAD8tDxIRp3egYgPT8hr7VvTK2lKGBZr8OIflQStGkSIoy8rc+NohfDn3q7+j2/aiokQ9U5PhPXGm2edxlHuffE1U9FPdQ6ypy+D584Ys12nAdTBDdD+Lfe4vtTX3ZrzQiPSWxQwhRFXwMbBOACphaenosCVQRg=

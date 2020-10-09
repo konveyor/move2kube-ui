@@ -12,27 +12,27 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-FROM registry.access.redhat.com/ubi8/nodejs-12:latest
+FROM node:12.19.0-alpine3.10
 
 ENV MOVE2KUBEAPI 'http://move2kubeapi:8080'
 
-USER 0
-COPY package.json .
-RUN npm install
-COPY . .
-RUN npm run build 
-USER 1001
+USER root
+
+# Create workdir 
+RUN mkdir /app
+
+# Workdir app
+WORKDIR /app
+
+# Copy File on Container
+COPY . /app/
+
+# Install & build app nodejs
+RUN npm install && \
+npm run build 
+
+USER node
+
 EXPOSE 8080
+
 CMD ["npm","run","start"]
-
-
-#FROM nginx
-#COPY --from=builder /app/dist /usr/share/nginx/html
-#EXPOSE 9000
-
-
-#FROM node:alpine
-#WORKDIR '/app'
-#COPY --from=builder /app/dist /app/dist
-#COPY --from=builder /app/package.json /app/package.json
-#COPY --from=builder /app/server.js /app/server.js

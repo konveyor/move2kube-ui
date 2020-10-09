@@ -6,6 +6,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - "./wksps:/wksps"
   move2kubeui:
+    build:
+      context: ./
+      dockerfile: Dockerfile
     image: quay.io/konveyor/move2kube-ui:latest
     environment:
       - MOVE2KUBEAPI=http://move2kubeapi:8080

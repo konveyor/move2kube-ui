@@ -12,36 +12,25 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-FROM node:12.19.0-alpine3.10 AS builder
+FROM registry.access.redhat.com/ubi8-minimal as builder
 
-USER root
-
-# Create workdir 
-RUN mkdir /app
-
-# Workdir app
+# allows microdnf to install yarn
+RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
+RUN microdnf -y install yarn nodejs
+COPY . /app
 WORKDIR /app
+RUN yarn
+RUN yarn build
 
-# Copy File on Container
-COPY . /app/
+FROM registry.access.redhat.com/ubi8-minimal
 
-# Install & build app nodejs
-RUN npm install && \
-npm run build 
+# reads from environment variable first, otherwise fall back to move2kubeapi value
+ARG MOVE2KUBEAPI
+ENV MOVE2KUBEAPI=${MOVE2KUBEAPI}:-http://move2kubeapi:8080}
 
-
-FROM node:12.19.0-alpine3.10
-
-ENV MOVE2KUBEAPI 'http://move2kubeapi:8080'
-
-USER node
-
-# Workdir app
+RUN microdnf -y install nodejs && microdnf clean all
 WORKDIR /app
-
-# Copy File from AS builder 
 COPY --from=builder /app /app
 
+CMD ["npm","start"]
 EXPOSE 8080
-
-CMD ["npm","run","start"]

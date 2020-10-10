@@ -12,9 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-FROM node:12.19.0-alpine3.10
-
-ENV MOVE2KUBEAPI 'http://move2kubeapi:8080'
+FROM node:12.19.0-alpine3.10 AS builder
 
 USER root
 
@@ -31,7 +29,18 @@ COPY . /app/
 RUN npm install && \
 npm run build 
 
+
+FROM node:12.19.0-alpine3.10
+
+ENV MOVE2KUBEAPI 'http://move2kubeapi:8080'
+
 USER node
+
+# Workdir app
+WORKDIR /app
+
+# Copy File from AS builder 
+COPY --from=builder /app /app
 
 EXPOSE 8080
 

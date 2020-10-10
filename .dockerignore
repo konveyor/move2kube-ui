@@ -18,3 +18,9 @@ build
 Dockerfile
 Dockerfile.prod
 docker-compose.yml
+contributing.md
+code-of-conduct.md
+README.md
+Makefile
+LICENSE
+wksps

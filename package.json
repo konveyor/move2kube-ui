@@ -9,7 +9,7 @@
     "start": "node server.js",
     "start:dev": "webpack-dev-server --hot --color --progress --info=true --config webpack.dev.js",
     "dr:surge": "node dr-surge.js",
-    "build": "webpack --config webpack.prod.js && npm run dr:surge"
+    "build": "webpack --config webpack.prod.js && yarn run dr:surge"
   },
   "dependencies": {
     "@patternfly/react-core": "^4.50.2",

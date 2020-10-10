@@ -33,19 +33,19 @@ help: ## This help.
 
 .PHONY: install
 install: ## Install dependencies
-	@npm install
+	@yarn install
 
 .PHONY: build
 build: ## Build application
-	@npm run build
+	@yarn run build
 
 .PHONY: startdev
 startdev: install ## Start Dev server
-	@npm run start:dev 
+	@yarn run start:dev
 
 .PHONY: start
 start: install build ## Start server
-	@npm run start 
+	@yarn start
 
 # -- Docker --
 

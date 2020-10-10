@@ -8,7 +8,7 @@
 
 An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube-api).
 
-## Usage 
+## Usage
 
 ### Production
 
@@ -19,7 +19,7 @@ An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube
 ### Development
 
 1. Run `make install`
-1. Run `make start:dev`
+1. Run `make startdev`
 
 ## Discussion
 

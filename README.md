@@ -8,7 +8,13 @@
 
 An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube-api).
 
-## Usage
+## Bringing up Move2Kube UI and API
+
+`docker-compose up`
+
+For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
+
+## Starting UI
 
 ### Production
 

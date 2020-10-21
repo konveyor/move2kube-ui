@@ -10,7 +10,7 @@ An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube
 
 ## Bringing up Move2Kube UI and API
 
-`docker-compose up`
+Run `docker-compose up` and access the UI in `http://localhost:8080/`.
 
 For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
 

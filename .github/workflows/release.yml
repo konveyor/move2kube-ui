@@ -69,7 +69,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
-    - uses: actions/checkout@v2
     - uses: release-drafter/release-drafter@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Get Latest Release Info
+      id: latest_release_info
+      uses: jossef/action-latest-release-info@v1.1.0
+    - name: Success Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_ICON: https://github.com/actions.png?size=48
+        SLACK_MESSAGE: 'Release draft for ${{ steps.latest_release_info.outputs.tag_name }} created in ${{ steps.latest_release_info.outputs.html_url }}'
+        SLACK_TITLE: Success
+        SLACK_USERNAME: GitHubActions

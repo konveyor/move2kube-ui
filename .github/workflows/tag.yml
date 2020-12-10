@@ -5,13 +5,17 @@ on:
     types: [cli_tagged]
 
 jobs:
-
   tag:
     name: Tag
     runs-on: ubuntu-latest
     steps:
-    - name: Tag commit
-      uses: tvdias/github-tagger@v0.0.1
-      with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
-        tag: ${{ github.event.client_payload.message.tag }}
+      - uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.MOVE2KUBE_PATOKEN }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{ github.event.client_payload.tag }}",
+              sha: context.sha
+            })

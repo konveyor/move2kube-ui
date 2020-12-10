@@ -1,85 +1,91 @@
 name: Release
 
-on:  
-  push:
-    tags:
-      - 'v*'
+on: create
 
 jobs:
-
   build:
-    name: Build
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Build and test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2-beta
-      with:
-        node-version: '14'
-    - name: Yarn Install
-      run: make install
-    - name: Build
-      run: make build
-    - uses: rtCamp/action-slack-notify@v2
-      if: failure()
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_COLOR: '#BD3232'
-        SLACK_ICON: https://github.com/actions.png?size=48
-        SLACK_MESSAGE: 'Build failed in ${GITHUB_REF/refs\/tags\//}'
-        SLACK_TITLE: Failed
-        SLACK_USERNAME: GitHubActions
+      - id: only_tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: "14"
+      - run: make install
+      - run: make build
+      - if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: "#BD3232"
+          SLACK_ICON: https://github.com/actions.png?size=48
+          SLACK_MESSAGE: "Build and test failed for move2kube-ui on tag ${{ steps.only_tag.outputs.tag }}"
+          SLACK_TITLE: Failed
+          SLACK_USERNAME: GitHubActions
 
-  image-build:
-    name: Image Build
-    runs-on: ubuntu-latest
+  create_release_draft:
     needs: [build]
+    name: Create release draft
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Pull latest image to reuse layers
-      run: |
-        docker pull quay.io/konveyor/move2kube-ui:latest || true
-        docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
-    - name: Build and Push image to quay
-      run: |
-        echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
-        make cbuild
-        docker tag quay.io/konveyor/move2kube-ui:latest quay.io/konveyor/move2kube-ui:${GITHUB_REF/refs\/tags\//}
-        docker push quay.io/konveyor/move2kube-ui:${GITHUB_REF/refs\/tags\//}
-    - name: Success Slack Notification
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_ICON: https://github.com/actions.png?size=48
-        SLACK_MESSAGE: 'Built and Pushed quay.io/konveyor/move2kube-ui:${GITHUB_REF/refs\/tags\//}'
-        SLACK_TITLE: Success
-        SLACK_USERNAME: GitHubActions
-    - name: Failure Slack Notification
-      uses: rtCamp/action-slack-notify@v2
-      if: failure()
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_COLOR: '#BD3232'
-        SLACK_ICON: https://github.com/actions.png?size=48
-        SLACK_MESSAGE: 'Failed to build and push image quay.io/konveyor/move2kube-ui:${GITHUB_REF/refs\/tags\//}'
-        SLACK_TITLE: Failed
-        SLACK_USERNAME: GitHubActions
+      - id: only_tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12"
+      - name: create release draft
+        run: |
+          npm install github-release-notes@v0.17.3 -g
+          gren release --draft --prerelease --tags ${{ steps.only_tag.outputs.tag }} --username=${{ github.repository_owner }} --repo=${{ github.event.repository.name }} --token=${{ secrets.GITHUB_TOKEN }}
+      - name: slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_ICON: https://github.com/actions.png?size=48
+          SLACK_MESSAGE: "Release draft for move2kube-ui ${{ steps.only_tag.outputs.tag }} created: https://github.com/konveyor/move2kube-ui/releases"
+          SLACK_TITLE: Success
+          SLACK_USERNAME: GitHubActions
 
-  create-release-draft:
-    name: Create Release Draft
-    runs-on: ubuntu-latest
+  image_build:
     needs: [build]
+    name: Image build
+    runs-on: ubuntu-latest
     steps:
-    - uses: release-drafter/release-drafter@v5
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Get Latest Release Info
-      id: latest_release_info
-      uses: jossef/action-latest-release-info@v1.1.0
-    - name: Success Slack Notification
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_ICON: https://github.com/actions.png?size=48
-        SLACK_MESSAGE: 'Release draft for ${{ steps.latest_release_info.outputs.tag_name }} created in ${{ steps.latest_release_info.outputs.html_url }}'
-        SLACK_TITLE: Success
-        SLACK_USERNAME: GitHubActions
+      - id: only_tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+      - uses: actions/checkout@v2
+      - name: pull latest image to reuse layers
+        run: |
+          docker pull quay.io/konveyor/move2kube-ui:latest || true
+          docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
+      - run: echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
+      - name: build container image
+        run: make cbuild
+      - name: push image to quay
+        run: |
+          docker tag quay.io/konveyor/move2kube-ui:latest quay.io/konveyor/move2kube-ui:${{ steps.only_tag.outputs.tag }}
+          docker push quay.io/konveyor/move2kube-ui:${{ steps.only_tag.outputs.tag }}
+      - name: success slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_ICON: https://github.com/actions.png?size=48
+          SLACK_MESSAGE: "Built and pushed quay.io/konveyor/move2kube-ui:${{ steps.only_tag.outputs.tag }}"
+          SLACK_TITLE: Success
+          SLACK_USERNAME: GitHubActions
+      - if: failure()
+        name: failure slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: "#BD3232"
+          SLACK_ICON: https://github.com/actions.png?size=48
+          SLACK_MESSAGE: "Failed to build and push image quay.io/konveyor/move2kube-ui:${{ steps.only_tag.outputs.tag }}"
+          SLACK_TITLE: Failed
+          SLACK_USERNAME: GitHubActions

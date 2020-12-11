@@ -2,62 +2,59 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2-beta
-      with:
-        node-version: '14'
-    - name: Yarn Install
-      run: make install
-    - name: Build
-      run: make build
-    - uses: rtCamp/action-slack-notify@v2
-      if: failure()
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_COLOR: '#BD3232'
-        SLACK_ICON: https://github.com/actions.png?size=48
-        SLACK_MESSAGE: 'Build failed in master'
-        SLACK_TITLE: Failed
-        SLACK_USERNAME: GitHubActions
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: "14"
+      - run: make install
+      - run: make build
+      - if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: "#BD3232"
+          SLACK_ICON: https://github.com/actions.png?size=48
+          SLACK_MESSAGE: "Build failed in move2kube-ui master"
+          SLACK_TITLE: Failed
+          SLACK_USERNAME: GitHubActions
 
-  image-build:
-    name: Image Build
-    runs-on: ubuntu-latest
+  image_build:
     needs: [build]
+    name: Image build
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Pull latest image to reuse layers
-      run: |
-        docker pull quay.io/konveyor/move2kube-ui:latest || true
-        docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
-    - name: Build and Push image to quay
-      run: |
-        echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
-        make cbuild
-        make cpush
-    - name: Success Slack Notification
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_ICON: https://github.com/actions.png?size=48
-        SLACK_MESSAGE: 'Built and Pushed quay.io/konveyor/move2kube-ui:latest'
-        SLACK_TITLE: Success
-        SLACK_USERNAME: GitHubActions
-    - name: Failure Slack Notification
-      uses: rtCamp/action-slack-notify@v2
-      if: failure()
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_COLOR: '#BD3232'
-        SLACK_ICON: https://github.com/actions.png?size=48
-        SLACK_MESSAGE: 'Failed to build and push image quay.io/konveyor/move2kube-ui:latest'
-        SLACK_TITLE: Failed
-        SLACK_USERNAME: GitHubActions
+      - uses: actions/checkout@v2
+      - name: pull latest image to reuse layers
+        run: |
+          docker pull quay.io/konveyor/move2kube-ui:latest || true
+          docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
+      - name: build and push image to quay
+        run: |
+          echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
+          make cbuild
+          make cpush
+      - name: success slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_ICON: https://github.com/actions.png?size=48
+          SLACK_MESSAGE: "Built and pushed quay.io/konveyor/move2kube-ui:latest"
+          SLACK_TITLE: Success
+          SLACK_USERNAME: GitHubActions
+      - if: failure()
+        name: failure slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: "#BD3232"
+          SLACK_ICON: https://github.com/actions.png?size=48
+          SLACK_MESSAGE: "Failed to build and push image quay.io/konveyor/move2kube-ui:latest"
+          SLACK_TITLE: Failed
+          SLACK_USERNAME: GitHubActions

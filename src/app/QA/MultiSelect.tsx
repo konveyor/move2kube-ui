@@ -54,7 +54,7 @@ class MultiSelect extends React.Component {
     return (
       <div>
         <span id={problem.id}>
-          {problem.description}
+          {problem.description} [Hint: {problem.context}]
         </span>
         <React.Fragment>
           {problem.solution.options.map((option, optionid) => (

@@ -36,7 +36,7 @@ class Password extends React.Component {
     return (
       <div>
       <span id={problem.id}>
-        {problem.description}
+        {problem.description} [Hint: {problem.context}]
       </span>
       <TextInput value={problem.solution.answer} type="password" onChange={this.handleTextInputChange} aria-label="text input example" />
       </div>

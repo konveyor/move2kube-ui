@@ -36,7 +36,7 @@ class Confirm extends React.Component {
     return (
       <div>
       <span id={problem.id}>
-        {problem.description}
+        {problem.description} [Hint: {problem.context}]
       </span>
       <React.Fragment>
         <Radio

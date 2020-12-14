@@ -36,7 +36,7 @@ class Multiline extends React.Component {
     return (
       <div>
       <span id={problem.id}>
-        {problem.description}
+        {problem.description} [Hint: {problem.context}] (Default: {problem.solution.default})
       </span>
       <TextArea value={problem.solution.answer} onChange={this.handleTextAreaChange} aria-label="textarea" />
       </div>

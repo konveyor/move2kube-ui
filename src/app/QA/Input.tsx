@@ -39,6 +39,7 @@ class Input extends React.Component {
         {problem.description}
       </span>
       <TextInput value={problem.solution.answer} type="text" onChange={this.handleTextInputChange} aria-label="text input example" />
+      <text>[Hint: {problem.context}] (Default: {problem.solution.default})</text>
       </div>
     );
   }

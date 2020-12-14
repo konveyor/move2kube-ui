@@ -56,6 +56,7 @@ class Confirm extends React.Component {
           value="false"
         />
       </React.Fragment>
+      <text>[Hint: {problem.context}]</text>
       </div>
     );
   }

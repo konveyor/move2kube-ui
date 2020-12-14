@@ -36,7 +36,7 @@ class Confirm extends React.Component {
     return (
       <div>
       <span id={problem.id}>
-        {problem.description} [Hint: {problem.context}]
+        {problem.description}
       </span>
       <React.Fragment>
         <Radio
@@ -56,6 +56,7 @@ class Confirm extends React.Component {
           value="false"
         />
       </React.Fragment>
+      <text>[Hint: {problem.context}]</text>
       </div>
     );
   }

@@ -54,13 +54,14 @@ class MultiSelect extends React.Component {
     return (
       <div>
         <span id={problem.id}>
-          {problem.description} [Hint: {problem.context}]
+          {problem.description}
         </span>
         <React.Fragment>
           {problem.solution.options.map((option, optionid) => (
             <Checkbox label={option} aria-label={option} name={option} key={problem.id+option+optionid} id={option} onChange={this.handleChange} isChecked={problem.solution.answer.indexOf(option) != -1} />
           ))}
         </React.Fragment>
+        <text>[Hint: {problem.context}]</text>
       </div>
     );
   }

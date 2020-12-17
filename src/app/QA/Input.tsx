@@ -28,6 +28,7 @@ class Input extends React.Component {
       this.props.changeSolution(problem.solution.answer);
       this.setState({problem:problem})
     };
+    this.handleTextInputChange(props.problem.solution.default[0]);
   }
 
   render() {
@@ -38,7 +39,7 @@ class Input extends React.Component {
       <span id={problem.id}>
         {problem.description}
       </span>
-      <TextInput value={problem.solution.answer} type="text" onChange={this.handleTextInputChange} aria-label="text input example" />
+      <TextInput defaultValue={problem.solution.default} value={problem.solution.answer} type="text" onChange={this.handleTextInputChange} aria-label="text input example" />
       <text>[Hint: {problem.context}] (Default: {problem.solution.default})</text>
       </div>
     );

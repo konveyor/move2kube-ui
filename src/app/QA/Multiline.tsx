@@ -28,6 +28,7 @@ class Multiline extends React.Component {
       this.props.changeSolution(problem.solution.answer);
       this.setState({problem:problem})
     };
+    this.handleTextInputChange(props.problem.solution.default[0]);
   }
 
   render() {
@@ -38,7 +39,7 @@ class Multiline extends React.Component {
       <span id={problem.id}>
         {problem.description}
       </span>
-      <TextArea value={problem.solution.answer} onChange={this.handleTextAreaChange} aria-label="textarea" />
+      <TextArea defaultValue={problem.solution.default} value={problem.solution.answer} onChange={this.handleTextAreaChange} aria-label="textarea" />
       <text>[Hint: {problem.context}] (Default: {problem.solution.default})</text>
       </div>
       );

@@ -28,6 +28,7 @@ class Password extends React.Component {
       this.props.changeSolution(problem.solution.answer);
       this.setState({problem:problem})
     };
+    this.handleTextInputChange("");
   }
 
   render() {
@@ -38,7 +39,7 @@ class Password extends React.Component {
       <span id={problem.id}>
         {problem.description}
       </span>
-      <TextInput value={problem.solution.answer} type="password" onChange={this.handleTextInputChange} aria-label="text input example" />
+      <TextInput defaultValue="" value={problem.solution.answer} type="password" onChange={this.handleTextInputChange} aria-label="text input example" />
       <text>[Hint: {problem.context}]</text>
       </div>
     );

@@ -14,3 +14,6 @@ services:
       - MOVE2KUBEAPI=http://move2kubeapi:8080
     ports:
       - "8080:8080"
+    depends_on:
+      - move2kubeapi
+

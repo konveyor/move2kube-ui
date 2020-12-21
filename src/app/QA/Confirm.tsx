@@ -19,6 +19,11 @@ import { Radio } from '@patternfly/react-core';
 class Confirm extends React.Component {
   constructor(props) {
     super(props);
+
+    var problem = props.problem;
+    problem.solution.answer = problem.solution.default;
+    props.changeSolution(problem.solution.answer);
+
     this.state = {
       problem: props.problem
     };
@@ -40,18 +45,19 @@ class Confirm extends React.Component {
       </span>
       <React.Fragment>
         <Radio
-          isChecked={this.state.check1}
+          isChecked={this.state.problem.solution.answer[0]==="true"}
           name="true"
           onChange={this.handleChange}
-          label="yes"
+          label="Yes"
           id="yes"
           value="true"
         />
+
           <Radio
-          isChecked={this.state.check1}
+          isChecked={this.state.problem.solution.answer[0]!=="true"}
           name="false"
           onChange={this.handleChange}
-          label="no"
+          label="No"
           id="no"
           value="false"
         />

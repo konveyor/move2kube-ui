@@ -24,7 +24,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_COLOR: "#BD3232"
           SLACK_ICON: https://github.com/actions.png?size=48
-          SLACK_MESSAGE: "Build failed in move2kube-ui main"
+          SLACK_MESSAGE: "Build failed in move2kube-ui ${{ github.ref }}"
           SLACK_TITLE: Failed
           SLACK_USERNAME: GitHubActions
 
@@ -34,22 +34,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - id: image_tag
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          if [ "$BRANCH" == 'main' ] ; then
+            echo "::set-output name=tag::latest"
+          else
+            echo "::set-output name=tag::$BRANCH"
+          fi
       - name: pull latest image to reuse layers
         run: |
           docker pull quay.io/konveyor/move2kube-ui:latest || true
           docker pull quay.io/konveyor/move2kube-aio:latest || true
           docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
-      - name: build and push image to quay
-        run: |
-          echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
-          make cbuild
-          make cpush
+      - run: echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
+      - name: build image
+        run: VERSION='${{ steps.image_tag.outputs.tag }}' make cbuild
+      - name: push image to quay
+        run: VERSION='${{ steps.image_tag.outputs.tag }}' make cpush
       - name: success slack notification
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_ICON: https://github.com/actions.png?size=48
-          SLACK_MESSAGE: "Built and pushed quay.io/konveyor/move2kube-ui:latest"
+          SLACK_MESSAGE: "Built and pushed quay.io/konveyor/move2kube-ui:${{ steps.image_tag.outputs.tag }}"
           SLACK_TITLE: Success
           SLACK_USERNAME: GitHubActions
       - if: failure()
@@ -59,6 +67,6 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_COLOR: "#BD3232"
           SLACK_ICON: https://github.com/actions.png?size=48
-          SLACK_MESSAGE: "Failed to build and push image quay.io/konveyor/move2kube-ui:latest"
+          SLACK_MESSAGE: "Failed to build and push image quay.io/konveyor/move2kube-ui:${{ steps.image_tag.outputs.tag }}"
           SLACK_TITLE: Failed
           SLACK_USERNAME: GitHubActions

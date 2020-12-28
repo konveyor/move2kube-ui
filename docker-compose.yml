@@ -4,7 +4,7 @@ services:
     image: quay.io/konveyor/move2kube-api:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - "./wksps:/wksps"
+      - "./workspace:/workspace"
   move2kubeui:
     build:
       context: ./
@@ -16,4 +16,3 @@ services:
       - "8080:8080"
     depends_on:
       - move2kubeapi
-

@@ -14,11 +14,13 @@ function printPreambleAndGroupName({ heading }) {
 
 module.exports = {
     "dataSource": "prs",
-    "prefix": "Move2Kube UI ",
+    "prefix": "[WIP] Move2Kube UI ",
+    // valid PR types: ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert']
     "groupBy":
     {
-        "🚀 Features": ["enhancement"],
-        "🐛 Bug Fixes": ["bug"]
+        "🚀 Features": ["enhancement", "feat", "perf"],
+        "🐛 Bug Fixes": ["bug", "fix", "revert"],
+        "🧹 Maintenance": ["docs", "style", "refactor", "test", "build", "ci", "chore"]
     },
     "template": {
         "group": printPreambleAndGroupName,

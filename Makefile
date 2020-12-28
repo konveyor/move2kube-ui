@@ -63,11 +63,13 @@ start: install build ## Start server
 cbuild: ## Build docker image
 	docker build --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --target build_base -t ${REGISTRYNS}/${BINNAME}-builder:latest --build-arg VERSION=${VERSION} .
 	docker build --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/${BINNAME}:latest -t ${REGISTRYNS}/${BINNAME}:${VERSION} -t ${REGISTRYNS}/${BINNAME}:latest --build-arg VERSION=${VERSION} .
+	docker build --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/move2kube-aio:latest -t ${REGISTRYNS}/move2kube-aio:${VERSION} -t ${REGISTRYNS}/move2kube-aio:latest --build-arg VERSION=${VERSION} -f Dockerfile.aio .
 
 .PHONY: cpush
 cpush: ## Push docker image
 	docker push ${REGISTRYNS}/${BINNAME}:latest
 	docker push ${REGISTRYNS}/${BINNAME}:${VERSION}
+	docker push ${REGISTRYNS}/move2kube-aio:${VERSION}
 	# To help with reusing layers and hence speeding up build
 	docker push ${REGISTRYNS}/${BINNAME}-builder:latest 
 

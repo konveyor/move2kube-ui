@@ -63,6 +63,7 @@ jobs:
       - name: pull latest image to reuse layers
         run: |
           docker pull quay.io/konveyor/move2kube-ui:latest || true
+          docker pull quay.io/konveyor/move2kube-aio:latest || true
           docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
       - run: echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
       - name: build container image
@@ -71,6 +72,8 @@ jobs:
         run: |
           docker tag quay.io/konveyor/move2kube-ui:latest quay.io/konveyor/move2kube-ui:${{ steps.only_tag.outputs.tag }}
           docker push quay.io/konveyor/move2kube-ui:${{ steps.only_tag.outputs.tag }}
+          docker tag quay.io/konveyor/move2kube-aio:latest quay.io/konveyor/move2kube-aio:${{ steps.only_tag.outputs.tag }}
+          docker push quay.io/konveyor/move2kube-aio:${{ steps.only_tag.outputs.tag }}
       - name: success slack notification
         uses: rtCamp/action-slack-notify@v2
         env:

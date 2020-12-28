@@ -12,6 +12,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+ARG VERSION=latest
+
 FROM registry.access.redhat.com/ubi8-minimal as build_base
 
 # allows microdnf to install yarn
@@ -24,15 +26,12 @@ RUN yarn
 COPY . /app
 RUN yarn build
 
-FROM registry.access.redhat.com/ubi8-minimal
+FROM quay.io/konveyor/move2kube-api:${VERSION}
+ENV MOVE2KUBEAPI=http://localhost:9000
 
-# reads from environment variable first, otherwise fall back to move2kubeapi value
-ARG MOVE2KUBEAPI
-ENV MOVE2KUBEAPI=${MOVE2KUBEAPI:-http://move2kubeapi:8080}
-
-RUN microdnf -y install nodejs && microdnf clean all
+RUN yum -y install nodejs
 WORKDIR /app
 COPY --from=build_base /app /app
 
-CMD ["npm","start"]
+CMD cd /workspace && move2kube-api -p 9000 & cd /app && npm start && fg
 EXPOSE 8080

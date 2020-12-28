@@ -8,9 +8,16 @@
 
 An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube-api).
 
-## Bringing up Move2Kube UI and API
+## Bringing up Move2Kube all-in-one container
 
-Run `docker-compose up` and access the UI in `http://localhost:8080/`.
+1. Change directory to an empty directory using say, `mkdir -p workspace && cd workspace`
+1. Run `docker run -p 8080:8080 -v $PWD:/workspace -v /var/run/docker.sock:/var/run/docker.sock -it quay.io/konveyor/move2kube-aio:latest`
+1. Access the UI in `http://localhost:8080/`.
+
+## Bringing up Move2Kube UI and API as separate containers
+
+1. Run `docker-compose up`
+1. Access the UI in `http://localhost:8080/`.
 
 For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
 

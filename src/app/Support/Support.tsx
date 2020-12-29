@@ -33,10 +33,10 @@ const Support: React.FunctionComponent<ISupportProps> = () => (
       <EmptyState variant={EmptyStateVariant.full}>
         <EmptyStateIcon icon={CubesIcon} />
         <Title headingLevel="h1" size="lg">
-          Contacts
+          Website
         </Title>
         <EmptyStateBody>
-          Reach out to us in <a href="https://kubernetes.slack.com/archives/CR85S82A2">slack</a> 
+          For more details checkout <a href="https://konveyor.io/move2kube/">Konveyor Move2Kube Website</a> 
         </EmptyStateBody>
       </EmptyState>
     </PageSection>

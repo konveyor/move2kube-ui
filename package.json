@@ -17,6 +17,7 @@
     "@patternfly/react-table": "^4.16.20",
     "express": "^4.17.1",
     "http-proxy-middleware": "^1.0.4",
+    "query-string": "^6.13.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",

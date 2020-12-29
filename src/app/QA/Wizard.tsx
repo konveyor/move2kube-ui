@@ -22,6 +22,7 @@ import { Input } from './Input'
 import { Multiline } from './Multiline'
 import { Password } from './Password'
 import Yaml from 'js-yaml'
+import queryString from 'query-string'
 
 class QAWizard extends React.Component {
   constructor(props) {
@@ -147,7 +148,15 @@ class QAWizard extends React.Component {
         }
         var formdata = new FormData();
         formdata.append("plan",Yaml.dump(this.state.aPlan));
-        fetch('/api/v1/applications/'+this.state.aName+"/targetartifacts", 
+        var url = '/api/v1/applications/'+this.state.aName+"/targetartifacts";
+        const value=queryString.parse(location.search);
+        const flag=value.debug;
+        if(typeof flag !== "undefined") {
+          if(flag === "true"){
+            url += "?debug=true";
+          }
+        }
+        fetch(url,
           {
             method: "POST",
             body: formdata

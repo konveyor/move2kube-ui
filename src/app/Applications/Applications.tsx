@@ -45,6 +45,7 @@ import {
 import { SearchIcon, FilterIcon } from '@patternfly/react-icons';
 import { Table, TableHeader, TableBody } from '@patternfly/react-table';
 import { NewApplication } from '@app/Application/NewApplication';
+import queryString from 'query-string'
 
 class Applications extends React.Component {
 
@@ -327,8 +328,15 @@ class Applications extends React.Component {
     return [
       {
         title: 'Details',
-        onClick: (event, rowId, rowData, extra) =>
-          window.location.href="/application/"+rowData.cells[0]
+        onClick: (event, rowId, rowData, extra) => {
+          var url = "/application/"+rowData.cells[0]
+          const value=queryString.parse(location.search);
+          const flag=value.debug;
+          if(typeof flag !== "undefined") {
+              url += "?debug="+flag;
+          }
+          window.location.href=url
+        }
       },{
         title: 'Delete',
         onClick: (event, rowId, rowData, extra) => {

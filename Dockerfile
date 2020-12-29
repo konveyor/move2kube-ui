@@ -12,27 +12,35 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-FROM registry.access.redhat.com/ubi8-minimal as build_base
-
+### Builder image ###
+FROM registry.fedoraproject.org/fedora-minimal:latest as build_base
 # allows microdnf to install yarn
 RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-RUN microdnf -y install yarn nodejs
+RUN microdnf -y install yarn nodejs \
+    && microdnf clean all
 COPY package.json /app/
 COPY yarn.lock /app/
 WORKDIR /app
 RUN yarn
 COPY . /app
 RUN yarn build
+RUN npm prune --production
 
-FROM registry.access.redhat.com/ubi8-minimal
+
+### Run Image ###
+FROM registry.fedoraproject.org/fedora-minimal:latest
 
 # reads from environment variable first, otherwise fall back to move2kubeapi value
 ARG MOVE2KUBEAPI
 ENV MOVE2KUBEAPI=${MOVE2KUBEAPI:-http://move2kubeapi:8080}
 
-RUN microdnf -y install nodejs && microdnf clean all
+RUN microdnf -y install nodejs \
+    && microdnf clean all
 WORKDIR /app
-COPY --from=build_base /app /app
+COPY --from=build_base /app/dist /app/dist
+COPY --from=build_base /app/server.js /app/server.js
+COPY --from=build_base /app/package.json /app/package.json
+COPY --from=build_base /app/node_modules /app/node_modules
 
-CMD ["npm","start"]
+CMD npm start
 EXPOSE 8080

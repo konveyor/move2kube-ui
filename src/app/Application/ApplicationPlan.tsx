@@ -39,6 +39,7 @@ import {
 } from '@patternfly/react-core';
 import { ApplicationContext } from "./ApplicationContext"
 import Yaml from 'js-yaml'
+import queryString from 'query-string'
 
 class PlanTab extends React.Component {
     constructor(props) {
@@ -54,6 +55,13 @@ class PlanTab extends React.Component {
       this.generatePlan = (aName,aStatus) => {
         if (aStatus.includes("assets")) {
           var url = '/api/v1/applications/'+aName+"/plan";
+          const value=queryString.parse(location.search);
+          const flag=value.debug;
+          if(typeof flag !== "undefined") {
+            if(flag === "true"){
+              url += "?debug=true";
+            }
+          }
           fetch(url, {
             method: 'POST',
             }).then(res => {

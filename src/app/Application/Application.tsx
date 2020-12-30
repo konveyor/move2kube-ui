@@ -31,6 +31,7 @@ import { PlanTab } from "./ApplicationPlan"
 import { AssetsTab } from "./ApplicationAssets"
 import { ArtifactsTab } from "./ApplicationArtifacts"
 import Yaml from 'js-yaml'
+import queryString from 'query-string'
 
 class ApplicationContextSelector extends React.Component {
 
@@ -243,7 +244,11 @@ class Application extends React.Component {
   render() {
     const { aName, aStatus, aPlan, redirect } = this.state;
     var url = '/application/'+aName;
-
+    const value=queryString.parse(location.search);
+    const flag=value.debug;
+    if(typeof flag !== "undefined") {
+        url += "?debug="+flag;
+    }
     if (redirect) {
       return <Redirect to={url}/>
     }

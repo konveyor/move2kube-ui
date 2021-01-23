@@ -25,7 +25,7 @@ class Multiline extends React.Component {
     this.handleTextAreaChange = value => {
       var problem = this.state.problem
       problem.solution.answer = [value];
-      this.props.changeSolution(problem.solution.answer);
+      this.props.changeSolution(problem);
       this.setState({problem:problem})
     };
     this.handleTextInputChange(props.problem.solution.default[0]);

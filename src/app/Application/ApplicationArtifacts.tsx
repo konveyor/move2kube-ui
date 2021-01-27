@@ -148,7 +148,7 @@ class ArtifactsTab extends React.Component {
                         aria-describedby="QADialog"
                         aria-labelledby="QADialog"
                     >
-                        <QAWizard aName={aName} aArtifactsName={qaartifacts} aPlan={aPlan} close={this.close} update={this.update}/>
+                        <QAWizard aName={aName} aArtifactsName={qaartifacts} aPlan={aPlan} close={this.close} update={this.update} disabled={false}/>
                     </Modal>
                     <Gallery hasGutter>
                         {artifacts.map((artifact, artifactid) => (

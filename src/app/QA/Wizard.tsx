@@ -72,7 +72,8 @@ class QAWizard extends React.Component {
         aName: props.aName,
         aPlan: props.aPlan,
         aArtifactsName: props.aArtifactsName,
-        steps: [ localsteps[0] ]
+        steps: [ localsteps[0] ],
+        disabled : props.disabled
     };
 
     this.closeWizard = () => {
@@ -110,7 +111,7 @@ class QAWizard extends React.Component {
               step.canJumpTo = false;
             });
             steps.push(step)
-            this.setState( { currentQuestion: data, steps: steps }, () => {
+            this.setState( { currentQuestion: data, steps: steps, disabled: false }, () => {
               callback();
             });
         })
@@ -134,6 +135,10 @@ class QAWizard extends React.Component {
     }
 
     this.getNextStep = (activeStep, callback) => {
+      if (this.state.disabled) {
+        return;
+      }
+      this.setState({ disabled: true });
       var lastlocalstepName = localsteps[localsteps.length-1].name;
       if (this.state.aArtifactsName != "new") {
         if (activeStep.local) {
@@ -164,7 +169,7 @@ class QAWizard extends React.Component {
         )
         .then(res => res.text())
         .then((artifacts) => {
-            this.setState({ aArtifactsName: artifacts }, ()=> {this.getNextProblem(activeStep, callback);})
+            this.setState({ aArtifactsName: artifacts, disabled: false }, ()=> {this.getNextProblem(activeStep, callback);})
         })
         .catch(console.log)
       } else {
@@ -180,7 +185,7 @@ class QAWizard extends React.Component {
           step.canJumpTo = false;
         });
         steps.push(newlocalstep)
-        this.setState( { currentQuestion: newlocalstep.problem, steps: steps }, () => {
+        this.setState( { currentQuestion: newlocalstep.problem, steps: steps, disabled: false }, () => {
           callback();
         });
       }
@@ -196,7 +201,7 @@ class QAWizard extends React.Component {
           {({ activeStep, goToStepByName, goToStepById, onNext, onBack, onClose }) => {
             return (
               <>
-                <Button variant="primary" type="submit" onClick={() => this.getNextStep(activeStep, onNext)}>Next</Button>
+                <Button variant="primary" type="submit" onClick={() => this.getNextStep(activeStep, onNext)} disabled={this.state.disabled}>{this.state.disabled ? 'Processing...' : 'Next'}</Button>
                 <Button variant="link" onClick={onClose}>
                   Cancel
                 </Button>

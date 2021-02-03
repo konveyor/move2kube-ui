@@ -28,7 +28,7 @@ class QAWizard extends React.Component {
   constructor(props) {
     super(props);
 
-    this.currSolution = [];
+    this.currSolution = {};
     this.changeSolution = (solution) => {
       this.currSolution = solution;
     }
@@ -102,7 +102,7 @@ class QAWizard extends React.Component {
             if (data.solution) {
                 step = {
                     local: false,
-                    name: 'Dynamic '+data.id,
+                    name: data.id,
                     component: this.getComp(data)
                 };
             } 
@@ -119,6 +119,7 @@ class QAWizard extends React.Component {
     }
 
     this.postSolution = (activeStep, callback) => {
+        console.log(JSON.stringify(this.currSolution));
         fetch('/api/v1/applications/'+this.state.aName+"/targetartifacts/"+this.state.aArtifactsName+"/problems/current/solution", 
         {
           method: 'POST',

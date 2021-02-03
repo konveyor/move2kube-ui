@@ -24,7 +24,7 @@ class MultiSelect extends React.Component {
 
     var problem = props.problem
     problem.solution.answer = problem.solution.default
-    props.changeSolution(problem.solution.answer);
+    props.changeSolution(problem);
 
     this.state = {
       problem: props.problem
@@ -43,7 +43,7 @@ class MultiSelect extends React.Component {
           problem.solution.answer.splice(index, 1);
         } 
       }
-      this.props.changeSolution(problem.solution.answer);
+      this.props.changeSolution(problem);
       this.setState({problem:problem})
     }
   }

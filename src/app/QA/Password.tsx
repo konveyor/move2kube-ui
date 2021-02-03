@@ -25,7 +25,7 @@ class Password extends React.Component {
     this.handleTextInputChange = value => {
       var problem = this.state.problem
       problem.solution.answer = [value];
-      this.props.changeSolution(problem.solution.answer);
+      this.props.changeSolution(problem);
       this.setState({problem:problem})
     };
     this.handleTextInputChange("");

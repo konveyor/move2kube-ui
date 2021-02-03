@@ -22,7 +22,7 @@ class Confirm extends React.Component {
 
     var problem = props.problem;
     problem.solution.answer = problem.solution.default;
-    props.changeSolution(problem.solution.answer);
+    props.changeSolution(problem);
 
     this.state = {
       problem: props.problem
@@ -30,7 +30,7 @@ class Confirm extends React.Component {
     this.handleChange = (_, event) => {
       const { value } = event.currentTarget;
       problem.solution.answer = [value];
-      this.props.changeSolution(problem.solution.answer);
+      this.props.changeSolution(problem);
       this.setState({problem:problem})
     };
   }

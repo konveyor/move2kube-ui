@@ -9,7 +9,8 @@ on:
         default: v0.1.0-rc.2
       prev_tag:
         description: "previous tag: Tag from which to start calculating the changelog"
-        required: false
+        required: true
+        default: v0.1.0-beta.0
       commit_ref:
         description: "commit ref: The branch, tag or SHA of the commit to use for the release."
         required: false

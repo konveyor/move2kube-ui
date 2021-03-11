@@ -36,7 +36,7 @@ const Support: React.FunctionComponent<ISupportProps> = () => (
           Website
         </Title>
         <EmptyStateBody>
-          For more details checkout <a href="https://konveyor.io/move2kube/">Konveyor Move2Kube Website</a> 
+          For more details checkout <a href="https://move2kube.konveyor.io/">Konveyor Move2Kube Website</a> 
         </EmptyStateBody>
       </EmptyState>
     </PageSection>

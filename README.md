@@ -36,4 +36,4 @@ For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/kon
 
 ## Discussion
 
-* For any questions reach out to us on any of the communication channels given on our website https://konveyor.io/move2kube/.
+* For any questions reach out to us on any of the communication channels given on our website https://move2kube.konveyor.io/.

@@ -66,13 +66,13 @@ class ApplicationAssetUpload extends React.Component {
                     alert("Unable to upload/process file. Try using simpler compression systems.");
                     console.log(res);
                 } else {
-                    alert("If the file size is huge, try removing large files, which are not needed.\n If network is the problem, you can use the command line tool to accomplish the translation. Check out https://konveyor.io/move2kube/installation/cli/");
+                    alert("If the file size is huge, try removing large files, which are not needed.\n If network is the problem, you can use the command line tool to accomplish the translation. Check out https://move2kube.konveyor.io/installation/cli/");
                     console.log(res);
                 }
             })
             .catch(error => {
                 if (error) {
-                    alert("Unable to upload/process file. Try using simpler compression systems.\n If the file size is huge, try removing large files, which are not needed.\n If network is the problem, you can use the command line tool to accomplish the translation. Check out https://konveyor.io/move2kube/installation/cli/");
+                    alert("Unable to upload/process file. Try using simpler compression systems.\n If the file size is huge, try removing large files, which are not needed.\n If network is the problem, you can use the command line tool to accomplish the translation. Check out https://move2kube.konveyor.io/installation/cli/");
                     console.log(error);
                 }
             });
@@ -212,7 +212,7 @@ class AssetsTab extends React.Component {
                                 aria-labelledby="wiz-modal-example-title"
                                 >
                                     <TextContent>
-                                        <Text component={TextVariants.h1} style={{textAlign: "center"}}>For collecting data, download the <a href="https://konveyor.io/move2kube/installation/cli/" target="_blank">move2kube command line tool</a> and run 'move2kube collect', and zip the results and upload here.</Text>
+                                        <Text component={TextVariants.h1} style={{textAlign: "center"}}>For collecting data, download the <a href="https://move2kube.konveyor.io/installation/cli/" target="_blank">move2kube command line tool</a> and run 'move2kube collect', and zip the results and upload here.</Text>
                                     </TextContent>
                                 </Modal>
                             </ToolbarItem>

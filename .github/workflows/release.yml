@@ -109,7 +109,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.event.inputs.tag }}
           prev_tag: ${{ github.event.inputs.prev_tag }}
-          config: .grenrc.js
+          config: releasenotes-config.js
       - name: slack notification
         uses: rtCamp/action-slack-notify@v2
         env:

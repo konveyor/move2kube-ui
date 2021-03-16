@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+  http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,45 +17,42 @@ limitations under the License.
 import * as React from 'react';
 import { accessibleRouteChangeHandler } from '@app/utils/utils';
 
-interface IDynamicImport {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  load: () => Promise<any>;
-  children: any;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-  focusContentAfterMount: boolean;
+interface IDynamicImportProps {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    load: () => Promise<any>;
+    children: (component: any) => JSX.Element;
+    focusContentAfterMount: boolean;
 }
 
-class DynamicImport extends React.Component<IDynamicImport> {
-  public state = {
-    component: null,
-  };
-  private routeFocusTimer: number;
-  constructor(props: IDynamicImport) {
-    super(props);
-    this.routeFocusTimer = 0;
-  }
-  public componentWillUnmount(): void {
-    window.clearTimeout(this.routeFocusTimer);
-  }
-  public componentDidMount(): void {
-    this.props
-      .load()
-      .then((component) => {
+interface IDynamicImportState {
+    component: any;
+}
+
+class DynamicImport extends React.Component<IDynamicImportProps, IDynamicImportState> {
+    routeFocusTimer = 0;
+
+    constructor(props: IDynamicImportProps) {
+        super(props);
+        this.state = { component: null };
+    }
+
+    async componentDidMount(): Promise<void> {
+        const component = await this.props.load();
         if (component) {
-          this.setState({
-            component: component.default ? component.default : component,
-          });
+            this.setState({ component: component.default ? component.default : component });
         }
-      })
-      .then(() => {
         if (this.props.focusContentAfterMount) {
-          this.routeFocusTimer = accessibleRouteChangeHandler();
+            this.routeFocusTimer = accessibleRouteChangeHandler();
         }
-      });
-  }
-  public render(): React.ReactNode {
-    return this.props.children(this.state.component);
-  }
+    }
+
+    componentWillUnmount(): void {
+        window.clearTimeout(this.routeFocusTimer);
+    }
+
+    render(): JSX.Element {
+        return this.props.children(this.state.component);
+    }
 }
 
 export { DynamicImport };

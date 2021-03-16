@@ -49,9 +49,9 @@ install: ## Install dependencies
 build: ## Build application
 	@yarn run build
 
-.PHONY: startdev
-startdev: install ## Start Dev server
-	@yarn run start:dev
+.PHONY: dev
+dev: install ## Start Dev server
+	@yarn run dev
 
 .PHONY: start
 start: install build ## Start server

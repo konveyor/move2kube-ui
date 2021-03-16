@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+  http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,394 +13,442 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import "@patternfly/react-core/dist/styles/base.css";
-import './fonts.css';
 
+import '@patternfly/react-core/dist/styles/base.css';
+import './fonts.css';
 import React from 'react';
 import {
-  Button,
-  ButtonVariant,
-  Bullseye,
-  TextInput,
-  Toolbar,
-  ToolbarItem,
-  ToolbarContent,
-  ToolbarFilter,
-  ToolbarToggleGroup,
-  ToolbarGroup,
-  Dropdown,
-  DropdownItem,
-  DropdownPosition,
-  DropdownToggle,
-  InputGroup,
-  Title,
-  Select,
-  SelectOption,
-  SelectVariant,
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateBody,
-  EmptyStateSecondaryActions
+    Button,
+    ButtonVariant,
+    Bullseye,
+    TextInput,
+    Toolbar,
+    ToolbarItem,
+    ToolbarContent,
+    ToolbarFilter,
+    ToolbarFilterProps,
+    ToolbarToggleGroup,
+    ToolbarGroup,
+    Dropdown,
+    DropdownItem,
+    DropdownPosition,
+    DropdownToggle,
+    InputGroup,
+    Title,
+    Select,
+    SelectOption,
+    SelectVariant,
+    SelectOptionObject,
+    EmptyState,
+    EmptyStateIcon,
+    EmptyStateBody,
+    ToolbarChip,
+    ToolbarChipGroup,
+    EmptyStateSecondaryActions,
 } from '@patternfly/react-core';
 import { SearchIcon, FilterIcon } from '@patternfly/react-icons';
-import { Table, TableHeader, TableBody } from '@patternfly/react-table';
+import { Table, IActionsResolver, IAction, OnSelect, IRowData, TableHeader, TableBody } from '@patternfly/react-table';
 import { NewApplication } from '@app/Application/NewApplication';
-import queryString from 'query-string'
+import { History, LocationState } from 'history';
+import { copy } from '@app/utils/utils';
 
-class Applications extends React.Component {
+type RowT = {
+    cells: Array<string>;
+    selected?: boolean;
+};
 
-  componentDidMount() {
-    this.update();
-  }
+interface IApplicationsProps {
+    history: History<LocationState>;
+}
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      filters: {
-        name: [],
-        status: []
-      },
-      currentCategory: 'Status',
-      isFilterDropdownOpen: false,
-      isCategoryDropdownOpen: false,
-      nameInput: '',
-      columns: [
-        { title: 'Name' },
-        { title: 'Status' }
-      ],
-      rows: [
-        { cells: ['CacheApp1', 'New'] },
-        { cells: ['CacheApp2', 'Plan'] },
-        { cells: ['CacheApp3', 'Done'] }
-      ],
-      inputValue: ''
-    };
+interface IApplicationsState {
+    loading?: boolean;
+    filters: { [key: string]: Array<string> };
+    currentCategory: string;
+    isFilterDropdownOpen: boolean;
+    isCategoryDropdownOpen: boolean;
+    nameInput: string;
+    columns: Array<{ title: string }>;
+    rows: Array<RowT>;
+    inputValue: string;
+}
 
-    this.update = () => {
-        fetch('/api/v1/applications', 
-        {
-          headers: {
-          'Content-Type': 'application/json'
-          }
-        }
-      )
-      .then(res => res.json())
-      .then((data) => {
-        var applications = data.applications
-        var rows = new Array(applications.length)
-        for (var index = 0; index < applications.length; index++) { 
-          var row = new Array(4);
-          row[0] = applications[index]["name"]
-          row[1] = JSON.stringify(applications[index]["status"])
-          rows[index] = { "cells" : row }
-        } 
-        this.setState({ rows: rows })
-      })
-      .catch(console.log)
+interface IApplications {
+    onDelete: ToolbarFilterProps['deleteChip'];
+    actionResolver: IActionsResolver;
+    onRowSelect: OnSelect;
+}
+
+class Applications extends React.Component<IApplicationsProps, IApplicationsState> implements IApplications {
+    constructor(props: IApplicationsProps) {
+        super(props);
+        this.update = this.update.bind(this);
+        this.deleteApp = this.deleteApp.bind(this);
+        this.onDelete = this.onDelete.bind(this);
+        this.onCategoryToggle = this.onCategoryToggle.bind(this);
+        this.onCategorySelect = this.onCategorySelect.bind(this);
+        this.onFilterToggle = this.onFilterToggle.bind(this);
+        this.onFilterSelect = this.onFilterSelect.bind(this);
+        this.onInputChange = this.onInputChange.bind(this);
+        this.onRowSelect = this.onRowSelect.bind(this);
+        this.onStatusSelect = this.onStatusSelect.bind(this);
+        this.onNameInput = this.onNameInput.bind(this);
+        this.buildCategoryDropdown = this.buildCategoryDropdown.bind(this);
+        this.buildFilterDropdown = this.buildFilterDropdown.bind(this);
+        this.renderToolbar = this.renderToolbar.bind(this);
+        this.actionResolver = this.actionResolver.bind(this);
+
+        this.state = {
+            filters: {
+                name: [],
+                status: [],
+            },
+            currentCategory: 'Status',
+            isFilterDropdownOpen: false,
+            isCategoryDropdownOpen: false,
+            nameInput: '',
+            columns: [{ title: 'Name' }, { title: 'Status' }],
+            rows: [{ cells: ['CacheApp1', 'New'] }, { cells: ['CacheApp2', 'Plan'] }, { cells: ['CacheApp3', 'Done'] }],
+            inputValue: '',
+        };
     }
-    this.update.bind(this);
 
-    this.onNewApp = () => {
-
+    componentDidMount(): void {
+        this.update();
     }
 
-    this.deleteApp = (aName) => {
-        fetch('/api/v1/applications/'+aName, 
-        {
-            method: "DELETE",
-            headers: {
-            'Content-Type': 'application/json'
+    async update(): Promise<void> {
+        try {
+            const res = await fetch('/api/v1/applications', { headers: { 'Content-Type': 'application/json' } });
+            if (!res.ok) throw new Error(`Failed to get the applications. Status: ${res.status}`);
+            const data = await res.json();
+            const applications = data.applications;
+            const rows = new Array(applications.length);
+            for (let index = 0; index < applications.length; index++) {
+                const row = new Array(4);
+                row[0] = applications[index]['name'];
+                row[1] = JSON.stringify(applications[index]['status']);
+                rows[index] = { cells: row };
             }
+            this.setState({ rows });
+        } catch (e) {
+            console.error(e);
         }
-        )
-        .then((res) => {
-            if(res.status > 300) {
-                alert("Error while trying to deleting application.");
-              } else {
-                this.update();
-              }
-        })
-        .catch(console.log);
     }
 
-    this.onDelete = (type = '', id = '') => {
-      if (type) {
-        this.setState(prevState => {
-          prevState.filters[type.toLowerCase()] = prevState.filters[type.toLowerCase()].filter(s => s !== id);
-          return {
-            filters: prevState.filters
-          };
-        });
-      } else {
+    async deleteApp(aName: string): Promise<void> {
+        try {
+            const res = await fetch('/api/v1/applications/' + encodeURIComponent(aName), {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (res.status > 300) {
+                alert('Error while trying to deleting application.');
+                throw new Error(`Failed to delete the app${aName}. Status: ${res.status}`);
+            }
+            this.update();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    onDelete(category: string | ToolbarChipGroup, chip: string | ToolbarChip): void {
+        const type = category as string;
+        const id = chip as string;
+        if (type) {
+            this.setState((prevState) => {
+                const filters = copy(prevState.filters);
+                filters[type.toLowerCase()] = filters[type.toLowerCase()].filter((s) => s !== id);
+                return { filters };
+            });
+        } else {
+            this.setState({ filters: { name: [], status: [] } });
+        }
+    }
+
+    onCategoryToggle(isOpen: boolean): void {
+        this.setState({ isCategoryDropdownOpen: isOpen });
+    }
+
+    onCategorySelect(event?: React.SyntheticEvent<HTMLDivElement>): void {
+        if (!event) return;
         this.setState({
-          filters: {
-            name: [],
-            status: []
-          }
+            currentCategory: (event.target as HTMLDivElement).innerText,
+            isCategoryDropdownOpen: !this.state.isCategoryDropdownOpen,
         });
-      }
-    };
+    }
 
-    this.onCategoryToggle = isOpen => {
-      this.setState({
-        isCategoryDropdownOpen: isOpen
-      });
-    };
+    onFilterToggle(isOpen: boolean): void {
+        this.setState({ isFilterDropdownOpen: isOpen });
+    }
 
-    this.onCategorySelect = event => {
-      this.setState({
-        currentCategory: event.target.innerText,
-        isCategoryDropdownOpen: !this.state.isCategoryDropdownOpen
-      });
-    };
+    // TODO: This is never used. This or onStatusSelect needs to be removed.
+    onFilterSelect(): void {
+        this.setState({ isFilterDropdownOpen: !this.state.isFilterDropdownOpen });
+    }
 
-    this.onFilterToggle = isOpen => {
-      this.setState({
-        isFilterDropdownOpen: isOpen
-      });
-    };
+    onInputChange(inputValue: string): void {
+        this.setState({ inputValue });
+    }
 
-    this.onFilterSelect = event => {
-      this.setState({
-        isFilterDropdownOpen: !this.state.isFilterDropdownOpen
-      });
-    };
-
-    this.onInputChange = newValue => {
-      this.setState({ inputValue: newValue });
-    };
-
-    this.onRowSelect = (event, isSelected, rowId) => {
-      let rows;
-      if (rowId === -1) {
-        rows = this.state.rows.map(oneRow => {
-          oneRow.selected = isSelected;
-          return oneRow;
+    onRowSelect(_: React.FormEvent<HTMLInputElement>, isSelected: boolean, rowId: number): void {
+        let rows;
+        if (rowId === -1) {
+            rows = this.state.rows.map((oneRow) => {
+                oneRow.selected = isSelected;
+                return oneRow;
+            });
+        } else {
+            rows = [...this.state.rows];
+            rows[rowId].selected = isSelected;
+        }
+        this.setState({
+            rows,
         });
-      } else {
-        rows = [...this.state.rows];
-        rows[rowId].selected = isSelected;
-      }
-      this.setState({
-        rows
-      });
-    };
+    }
 
-    this.onStatusSelect = (event, selection) => {
-      const checked = event.target.checked;
-      this.setState(prevState => {
-        const prevSelections = prevState.filters['status'];
-        return {
-          filters: {
-            ...prevState.filters,
-            status: checked ? [...prevSelections, selection] : prevSelections.filter(value => value !== selection)
-          }
-        };
-      });
-    };
+    onStatusSelect(event: React.MouseEvent | React.ChangeEvent, value: string | SelectOptionObject): void {
+        const selection = value as string;
+        const checked = (event.target as HTMLInputElement).checked;
+        this.setState((prevState) => {
+            const prevSelections = prevState.filters['status'];
+            return {
+                filters: {
+                    ...prevState.filters,
+                    status: checked
+                        ? [...prevSelections, selection]
+                        : prevSelections.filter((value) => value !== selection),
+                },
+            };
+        });
+    }
 
-    this.onNameInput = event => {
-      if (event.key && event.key !== 'Enter') {
-        return;
-      }
+    onNameInput(): void {
+        const { inputValue } = this.state;
+        this.setState((prevState) => {
+            const prevFilters = prevState.filters['name'];
+            return {
+                filters: {
+                    ...prevState.filters,
+                    ['name']: prevFilters.includes(inputValue) ? prevFilters : [...prevFilters, inputValue],
+                },
+                inputValue: '',
+            };
+        });
+    }
 
-      const { inputValue } = this.state;
-      this.setState(prevState => {
-        const prevFilters = prevState.filters['name'];
-        return {
-          filters: {
-            ...prevState.filters,
-            ['name']: prevFilters.includes(inputValue) ? prevFilters : [...prevFilters, inputValue]
-          },
-          inputValue: ''
-        };
-      });
-    };
-  }
+    buildCategoryDropdown(): JSX.Element {
+        const { isCategoryDropdownOpen, currentCategory } = this.state;
 
-  buildCategoryDropdown() {
-    const { isCategoryDropdownOpen, currentCategory } = this.state;
+        return (
+            <ToolbarItem>
+                <Dropdown
+                    onSelect={this.onCategorySelect}
+                    position={DropdownPosition.left}
+                    toggle={
+                        <DropdownToggle onToggle={this.onCategoryToggle} style={{ width: '100%' }}>
+                            <FilterIcon /> {currentCategory}
+                        </DropdownToggle>
+                    }
+                    isOpen={isCategoryDropdownOpen}
+                    dropdownItems={[
+                        <DropdownItem key="cat1">Name</DropdownItem>,
+                        <DropdownItem key="cat3">Status</DropdownItem>,
+                    ]}
+                    style={{ width: '100%' }}
+                ></Dropdown>
+            </ToolbarItem>
+        );
+    }
 
-    return (
-      <ToolbarItem>
-        <Dropdown
-          onSelect={this.onCategorySelect}
-          position={DropdownPosition.left}
-          toggle={
-            <DropdownToggle onToggle={this.onCategoryToggle} style={{ width: '100%' }}>
-              <FilterIcon /> {currentCategory}
-            </DropdownToggle>
-          }
-          isOpen={isCategoryDropdownOpen}
-          dropdownItems={[
-            <DropdownItem key="cat1">Name</DropdownItem>,
-            <DropdownItem key="cat3">Status</DropdownItem>
-          ]}
-          style={{ width: '100%' }}
-        ></Dropdown>
-      </ToolbarItem>
-    );
-  }
+    buildFilterDropdown(): JSX.Element {
+        const { currentCategory, isFilterDropdownOpen, inputValue, filters } = this.state;
 
-  buildFilterDropdown() {
-    const { currentCategory, isFilterDropdownOpen, inputValue, filters } = this.state;
+        const statusMenuItems = [
+            <SelectOption key="statusAssets" value="Assets" />,
+            <SelectOption key="statusPlan" value="Plan" />,
+            <SelectOption key="statusPlanning" value="Planning" />,
+            <SelectOption key="statusArtifacts" value="Artifacts" />,
+        ];
 
-    const statusMenuItems = [
-      <SelectOption key="statusAssets" value="Assets" />,
-      <SelectOption key="statusPlan" value="Plan" />,
-      <SelectOption key="statusPlanning" value="Planning" />,
-      <SelectOption key="statusArtifacts" value="Artifacts" />
-    ];
+        return (
+            <>
+                <ToolbarFilter
+                    chips={filters.name}
+                    deleteChip={this.onDelete}
+                    categoryName="Name"
+                    showToolbarItem={currentCategory === 'Name'}
+                >
+                    <InputGroup>
+                        <TextInput
+                            name="nameInput"
+                            id="nameInput1"
+                            type="search"
+                            aria-label="name filter"
+                            onChange={this.onInputChange}
+                            value={inputValue}
+                            placeholder="Filter by name..."
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') this.onNameInput();
+                            }}
+                        />
+                        <Button
+                            variant={ButtonVariant.control}
+                            aria-label="search button for search input"
+                            onClick={this.onNameInput}
+                        >
+                            <SearchIcon />
+                        </Button>
+                    </InputGroup>
+                </ToolbarFilter>
+                <ToolbarFilter
+                    chips={filters.status}
+                    deleteChip={this.onDelete}
+                    categoryName="Status"
+                    showToolbarItem={currentCategory === 'Status'}
+                >
+                    <Select
+                        variant={SelectVariant.checkbox}
+                        aria-label="Status"
+                        onToggle={this.onFilterToggle}
+                        onSelect={this.onStatusSelect}
+                        selections={filters.status}
+                        isOpen={isFilterDropdownOpen}
+                        placeholderText="Filter by status"
+                    >
+                        {statusMenuItems}
+                    </Select>
+                </ToolbarFilter>
+            </>
+        );
+    }
 
-    return (
-      <React.Fragment>
-        <ToolbarFilter
-          chips={filters.name}
-          deleteChip={this.onDelete}
-          categoryName="Name"
-          showToolbarItem={currentCategory === 'Name'}
-        >
-          <InputGroup>
-            <TextInput
-              name="nameInput"
-              id="nameInput1"
-              type="search"
-              aria-label="name filter"
-              onChange={this.onInputChange}
-              value={inputValue}
-              placeholder="Filter by name..."
-              onKeyDown={this.onNameInput}
-            />
-            <Button
-              variant={ButtonVariant.control}
-              aria-label="search button for search input"
-              onClick={this.onNameInput}
+    renderToolbar(): JSX.Element {
+        return (
+            <Toolbar
+                id="toolbar-with-chip-groups"
+                clearAllFilters={() => this.onDelete('', '')}
+                collapseListedFiltersBreakpoint="xl"
             >
-              <SearchIcon />
-            </Button>
-          </InputGroup>
-        </ToolbarFilter>
-        <ToolbarFilter
-          chips={filters.status}
-          deleteChip={this.onDelete}
-          categoryName="Status"
-          showToolbarItem={currentCategory === 'Status'}
-        >
-          <Select
-            variant={SelectVariant.checkbox}
-            aria-label="Status"
-            onToggle={this.onFilterToggle}
-            onSelect={this.onStatusSelect}
-            selections={filters.status}
-            isOpen={isFilterDropdownOpen}
-            placeholderText="Filter by status"
-          >
-            {statusMenuItems}
-          </Select>
-        </ToolbarFilter>
-      </React.Fragment>
-    );
-  }
+                <ToolbarContent>
+                    <ToolbarToggleGroup toggleIcon={<FilterIcon />} breakpoint="xl">
+                        <ToolbarGroup variant="filter-group">
+                            {this.buildCategoryDropdown()}
+                            {this.buildFilterDropdown()}
+                        </ToolbarGroup>
+                    </ToolbarToggleGroup>
+                    <ToolbarItem variant="separator" />
+                    <ToolbarItem>
+                        <NewApplication update={this.update} />
+                    </ToolbarItem>
+                </ToolbarContent>
+            </Toolbar>
+        );
+    }
 
-  renderToolbar(update) {
-    const { filters } = this.state;
-    return (
-      <Toolbar
-        id="toolbar-with-chip-groups"
-        clearAllFilters={this.onDelete}
-        collapseListedFiltersBreakpoint="xl"
-      >
-        <ToolbarContent>
-          <ToolbarToggleGroup toggleIcon={<FilterIcon />} breakpoint="xl">
-            <ToolbarGroup variant="filter-group">
-              {this.buildCategoryDropdown()}
-              {this.buildFilterDropdown()}
-            </ToolbarGroup>
-          </ToolbarToggleGroup>
-          <ToolbarItem variant="separator" />
-          <ToolbarItem><NewApplication update={update}/></ToolbarItem>
-        </ToolbarContent>
-      </Toolbar>
-    );
-  }
+    actionResolver(): IAction[] {
+        return [
+            {
+                title: 'Details',
+                /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
+                onClick: (_: React.MouseEvent, __: number, rowData: IRowData) => {
+                    if (!rowData.cells || rowData.cells.length === 0) return;
+                    const value = new URLSearchParams(window.location.search);
+                    const debugSuffix = value.get('debug') ? `?debug=${value.get('debug')}` : '';
+                    const url = '/application/' + encodeURIComponent(rowData.cells[0] as string) + debugSuffix;
+                    this.props.history.push(url);
+                },
+            },
+            {
+                title: 'Delete',
+                /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
+                onClick: (_: React.MouseEvent, __: number, rowData: IRowData) => {
+                    if (!rowData.cells || rowData.cells.length === 0) return;
+                    this.deleteApp(rowData.cells[0] as string);
+                },
+            },
+        ];
+    }
 
-  actionResolver(rowData, { rowIndex }, deleteApp) {
-    return [
-      {
-        title: 'Details',
-        onClick: (event, rowId, rowData, extra) => {
-          var url = "/application/"+rowData.cells[0]
-          const value=queryString.parse(location.search);
-          const flag=value.debug;
-          if(typeof flag !== "undefined") {
-              url += "?debug="+flag;
-          }
-          window.location.href=url
+    render(): JSX.Element {
+        const { loading, rows, columns, filters } = this.state;
+
+        function filterFunc(row: RowT): boolean {
+            let matchedName = true;
+            if (filters.name.length > 0) {
+                matchedName = filters.name.some((name) => row.cells[0].toLowerCase().includes(name.toLowerCase()));
+            }
+            let matchedStatus = true;
+            if (filters.status.length > 0) {
+                const cellStatuses: Array<string> = JSON.parse(row.cells[1]).map((cellStatus: string) =>
+                    cellStatus.toLowerCase(),
+                );
+                matchedStatus = filters.status.some((status) => cellStatuses.includes(status.toLowerCase()));
+            }
+            return matchedName && matchedStatus;
         }
-      },{
-        title: 'Delete',
-        onClick: (event, rowId, rowData, extra) => {
-          deleteApp(rowData.cells[0])
+
+        function applyFilter(rows: Array<RowT>): Array<RowT> {
+            if (filters.name.length === 0 && filters.status.length === 0) return rows;
+            return rows.filter(filterFunc);
         }
-      }
-    ];
-  }
+        const filteredRows = applyFilter(rows);
 
-  render() {
-    const { loading, rows, columns, filters } = this.state;
-
-    const filteredRows =
-      filters.name.length > 0 || filters.status.length > 0
-        ? rows.filter(row => {
-            return (
-              (filters.name.length === 0 ||
-                filters.name.some(name => row.cells[0].toLowerCase().includes(name.toLowerCase()))) &&
-              (filters.status.length === 0 || (row.cells[2] && filters.status.some(status => row.cells[2].toLowerCase().includes(status.toLowerCase()))))
-            );
-          })
-        : rows;
-
-    return (
-      <React.Fragment>
-        {this.renderToolbar(this.update)}
-        {!loading && filteredRows.length > 0 && (
-          <Table cells={columns} rows={filteredRows} onSelect={this.onRowSelect} actionResolver={(rowData, { rowIndex }) => { return this.actionResolver(rowData, {rowIndex}, this.deleteApp) }} aria-label="Applications">
-            <TableHeader />
-            <TableBody />
-          </Table>
-        )}
-        {!loading && filteredRows.length === 0 && (
-          <React.Fragment>
-            <Table cells={columns} rows={filteredRows} onSelect={this.onRowSelect} aria-label="Applications">
-              <TableHeader />
-              <TableBody />
-            </Table>
-            <Bullseye>
-              <EmptyState>
-                <EmptyStateIcon icon={SearchIcon} />
-                <Title headingLevel="h5" size="lg">
-                  No results found
-                </Title>
-                <EmptyStateBody>
-                  No results match this filter criteria. Remove all filters or clear all filters to show results.
-                </EmptyStateBody>
-                <EmptyStateSecondaryActions>
-                  <Button variant="link" onClick={() => this.onDelete(null)}>
-                    Clear all filters
-                  </Button>
-                </EmptyStateSecondaryActions>
-              </EmptyState>
-            </Bullseye>
-          </React.Fragment>
-        )}
-        {loading && (
-          <center>
-            <Title headingLevel="h2" size="3xl">Please wait while loading data</Title>
-          </center>
-        )}
-      </React.Fragment>
-    );
-  }
+        return (
+            <>
+                {this.renderToolbar()}
+                {!loading && filteredRows.length > 0 && (
+                    <Table
+                        cells={columns}
+                        rows={filteredRows}
+                        onSelect={this.onRowSelect}
+                        actionResolver={this.actionResolver}
+                        aria-label="Applications"
+                    >
+                        <TableHeader />
+                        <TableBody />
+                    </Table>
+                )}
+                {!loading && filteredRows.length === 0 && (
+                    <>
+                        <Table
+                            cells={columns}
+                            rows={filteredRows}
+                            onSelect={this.onRowSelect}
+                            aria-label="Applications"
+                        >
+                            <TableHeader />
+                            <TableBody />
+                        </Table>
+                        <Bullseye>
+                            <EmptyState>
+                                <EmptyStateIcon icon={SearchIcon} />
+                                <Title headingLevel="h5" size="lg">
+                                    No results found
+                                </Title>
+                                <EmptyStateBody>
+                                    No results match this filter criteria. Remove all filters or clear all filters to
+                                    show results.
+                                </EmptyStateBody>
+                                <EmptyStateSecondaryActions>
+                                    <Button variant="link" onClick={() => this.onDelete('', '')}>
+                                        Clear all filters
+                                    </Button>
+                                </EmptyStateSecondaryActions>
+                            </EmptyState>
+                        </Bullseye>
+                    </>
+                )}
+                {loading && (
+                    <div style={{ textAlign: 'center' }}>
+                        <Title headingLevel="h2" size="3xl">
+                            Please wait while loading data
+                        </Title>
+                    </div>
+                )}
+            </>
+        );
+    }
 }
 
 export { Applications };

@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+  http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,60 +13,67 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 import React from 'react';
-import { 
-  Checkbox
-} from '@patternfly/react-core';
+import { Checkbox } from '@patternfly/react-core';
+import { ProblemT } from './Types';
+import { copy } from '@app/utils/utils';
 
-class MultiSelect extends React.Component {
-  constructor(props) {
-    super(props);
-
-    var problem = props.problem
-    problem.solution.answer = problem.solution.default
-    props.changeSolution(problem);
-
-    this.state = {
-      problem: props.problem
-    };
-
-    this.handleChange = (checked, event) => {
-      const target = event.target;
-      var problem = this.state.problem
-      if (target.checked) {
-        if(problem.solution.answer.indexOf(target.id) === -1) {
-          problem.solution.answer.push(target.id);
-        } 
-      } else {
-        const index = problem.solution.answer.indexOf(target.id);
-        if (index > -1) {
-          problem.solution.answer.splice(index, 1);
-        } 
-      }
-      this.props.changeSolution(problem);
-      this.setState({problem:problem})
-    }
-  }
-
-  render() {
-    const { problem } = this.state;
-
-    return (
-      <div>
-        <span id={problem.id}>
-          {problem.description}
-        </span>
-        <React.Fragment>
-          {problem.solution.options.map((option, optionid) => (
-            <Checkbox label={option} aria-label={option} name={option} key={problem.id+option+optionid} id={option} onChange={this.handleChange} isChecked={problem.solution.answer.indexOf(option) != -1} />
-          ))}
-        </React.Fragment>
-        <text>[Hint: {problem.context}]</text>
-      </div>
-    );
-  }
+interface IMultiSelectProps {
+    problem: ProblemT;
+    setResolvedProblem: (x: ProblemT) => void;
 }
 
+interface IMultiSelectState {
+    problem: ProblemT;
+}
 
-export { MultiSelect }
-  
+class MultiSelect extends React.Component<IMultiSelectProps, IMultiSelectState> {
+    constructor(props: IMultiSelectProps) {
+        super(props);
+        this.handleChange = this.handleChange.bind(this);
+        const problem = copy(props.problem);
+        problem.solution.answer = problem.solution.default;
+        props.setResolvedProblem(problem);
+        this.state = { problem };
+    }
+
+    handleChange(checked: boolean, event: React.FormEvent<HTMLInputElement>): void {
+        const target = event.target as HTMLInputElement;
+        const problem = copy(this.state.problem);
+        const option = target.name;
+        if (checked) {
+            if (!problem.solution.answer.includes(option)) {
+                problem.solution.answer.push(option);
+            }
+        } else {
+            problem.solution.answer = problem.solution.answer.filter((x) => x !== option);
+        }
+        this.props.setResolvedProblem(problem);
+        this.setState({ problem });
+    }
+
+    render(): JSX.Element {
+        const { problem } = this.state;
+
+        return (
+            <div>
+                <span id={problem.id}>{problem.description}</span>
+                {problem.solution.options.map((option: string, idx: number) => (
+                    <Checkbox
+                        aria-label={option}
+                        id={`${problem.id}-${option}-${idx}`}
+                        key={`${problem.id}-${option}-${idx}`}
+                        name={option}
+                        label={option}
+                        onChange={this.handleChange}
+                        isChecked={problem.solution.answer.includes(option)}
+                    />
+                ))}
+                <i>[Hint: {problem.context}]</i>
+            </div>
+        );
+    }
+}
+
+export { MultiSelect };

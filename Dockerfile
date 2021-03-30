@@ -16,13 +16,11 @@
 FROM registry.fedoraproject.org/fedora-minimal:latest as build_base
 # allows microdnf to install yarn
 RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-RUN microdnf -y install yarn nodejs \
-    && microdnf clean all
-COPY package.json /app/
-COPY yarn.lock /app/
+RUN microdnf -y install yarn nodejs && microdnf clean all
 WORKDIR /app
+COPY package.json yarn.lock ./
 RUN yarn
-COPY . /app
+COPY . .
 RUN yarn build
 RUN npm prune --production
 
@@ -34,8 +32,7 @@ FROM registry.fedoraproject.org/fedora-minimal:latest
 ARG MOVE2KUBEAPI
 ENV MOVE2KUBEAPI=${MOVE2KUBEAPI:-http://move2kubeapi:8080}
 
-RUN microdnf -y install nodejs \
-    && microdnf clean all
+RUN microdnf -y install nodejs && microdnf clean all
 WORKDIR /app
 COPY --from=build_base /app/dist /app/dist
 COPY --from=build_base /app/server.js /app/server.js

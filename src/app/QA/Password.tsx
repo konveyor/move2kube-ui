@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+  http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,37 +13,54 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 import React from 'react';
 import { TextInput } from '@patternfly/react-core';
+import { ProblemT } from './Types';
+import { copy } from '@app/utils/utils';
 
-class Password extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      problem: props.problem
-    };
-    this.handleTextInputChange = value => {
-      var problem = this.state.problem
-      problem.solution.answer = [value];
-      this.props.changeSolution(problem);
-      this.setState({problem:problem})
-    };
-    this.handleTextInputChange("");
-  }
-
-  render() {
-    const { problem } = this.state;
-
-    return (
-      <div>
-      <span id={problem.id}>
-        {problem.description}
-      </span>
-      <TextInput defaultValue="" value={problem.solution.answer} type="password" onChange={this.handleTextInputChange} aria-label="text input example" />
-      <text>[Hint: {problem.context}]</text>
-      </div>
-    );
-  }
+interface IPasswordProps {
+    problem: ProblemT;
+    setResolvedProblem: (x: ProblemT) => void;
 }
 
-export { Password }
+interface IPasswordState {
+    problem: ProblemT;
+}
+
+class Password extends React.Component<IPasswordProps, IPasswordState> {
+    constructor(props: IPasswordProps) {
+        super(props);
+        this.handleTextInputChange = this.handleTextInputChange.bind(this);
+        const problem = copy(props.problem);
+        problem.solution.answer = [''];
+        props.setResolvedProblem(problem);
+        this.state = { problem };
+    }
+
+    handleTextInputChange(value: string): void {
+        const problem = copy(this.state.problem);
+        problem.solution.answer = [value];
+        this.props.setResolvedProblem(problem);
+        this.setState({ problem });
+    }
+
+    render(): JSX.Element {
+        const { problem } = this.state;
+
+        return (
+            <div>
+                <span id={problem.id}>{problem.description}</span>
+                <TextInput
+                    value={problem.solution.answer[0]}
+                    type="password"
+                    onChange={this.handleTextInputChange}
+                    aria-label="text input example"
+                />
+                <i>[Hint: {problem.context}]</i>
+            </div>
+        );
+    }
+}
+
+export { Password };

@@ -1,0 +1,20 @@
+version: "3"
+services:
+  move2kubeapi:
+    image: quay.io/konveyor/move2kube-api:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "./workspace:/workspace"
+  move2kubeui:
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    volumes:
+      - "./src:/app/src"
+    image: quay.io/konveyor/move2kube-ui:latest
+    environment:
+      - MOVE2KUBEAPI=http://move2kubeapi:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - move2kubeapi

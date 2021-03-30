@@ -1,5 +1,5 @@
-[![Build](https://github.com/konveyor/move2kube-ui/workflows/Build/badge.svg "Github Actions")](https://github.com/konveyor/move2kube-ui/actions?query=workflow%3ABuild)
-[![Docker Repository on Quay](https://quay.io/repository/konveyor/move2kube-ui/status "Docker Repository on Quay")](https://quay.io/repository/konveyor/move2kube-ui)
+[![Build](https://github.com/konveyor/move2kube-ui/workflows/Build/badge.svg 'Github Actions')](https://github.com/konveyor/move2kube-ui/actions?query=workflow%3ABuild)
+[![Docker Repository on Quay](https://quay.io/repository/konveyor/move2kube-ui/status 'Docker Repository on Quay')](https://quay.io/repository/konveyor/move2kube-ui)
 [![License](https://img.shields.io/:license-apache-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/konveyor/move2kube-ui/pulls)
 [<img src="https://img.shields.io/badge/slack-konveyor/move2kube-green.svg?logo=slack">](https://kubernetes.slack.com/archives/CR85S82A2)
@@ -31,9 +31,11 @@ For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/kon
 
 ### Development
 
-1. Run `make install`
-1. Run `make startdev`
+1. Run `make dev`
+
+When editing the code inside the `src/` folder, the UI will update live.  
+**IMPORTANT:** Don't forget to `docker-compose down` after stopping the dev server to remove the stopped containers and network.
 
 ## Discussion
 
-* For any questions reach out to us on any of the communication channels given on our website https://move2kube.konveyor.io/.
+-   For any questions reach out to us on any of the communication channels given on our website https://move2kube.konveyor.io/.

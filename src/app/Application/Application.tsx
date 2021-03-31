@@ -33,6 +33,7 @@ import { AssetsTab } from './ApplicationAssets';
 import { ArtifactsTab } from './ApplicationArtifacts';
 import Yaml from 'js-yaml';
 import { IPlan, newPlan } from '@app/Application/Types';
+import { copy } from '@app/utils/utils';
 
 interface IApplicationContextSelectorProps {
     selected: string;
@@ -49,6 +50,8 @@ class ApplicationContextSelector extends React.Component<
     IApplicationContextSelectorProps,
     IApplicationContextSelectorState
 > {
+    declare context: React.ContextType<typeof ApplicationContext>;
+    static contextType = ApplicationContext;
     items: Array<string>;
 
     constructor(props: IApplicationContextSelectorProps) {
@@ -76,16 +79,13 @@ class ApplicationContextSelector extends React.Component<
         this.setState({ selected: value, isOpen: !this.state.isOpen });
     }
 
-    onSearchInputChange(value: string): void {
-        this.setState({ searchValue: value });
+    onSearchInputChange(searchValue: string): void {
+        this.setState({ searchValue }, this.onSearchButtonClick);
     }
 
     onSearchButtonClick(): void {
-        const filtered =
-            this.state.searchValue === ''
-                ? this.items
-                : this.items.filter((str) => str.toLowerCase().indexOf(this.state.searchValue.toLowerCase()) !== -1);
-
+        const search = this.state.searchValue.toLowerCase();
+        const filtered = search === '' ? this.items : this.items.filter((app) => app.toLowerCase().includes(search));
         this.setState({ filteredItems: filtered || [] });
     }
 
@@ -94,12 +94,9 @@ class ApplicationContextSelector extends React.Component<
             const res = await fetch('/api/v1/applications', { headers: { 'Content-Type': 'application/json' } });
             if (!res.ok) throw new Error(`Failed to get the applications. Status: ${res.status}`);
             const data = await res.json();
-            const applications = data.applications;
-            const apps = new Array(applications.length);
-            for (let index = 0; index < applications.length; index++) {
-                apps[index] = applications[index]['name'];
-            }
+            const apps: Array<string> = data.applications.map((app: { name: string }) => app.name);
             this.items = apps;
+            this.setState({ filteredItems: apps });
         } catch (e) {
             console.error(e);
         }
@@ -107,25 +104,22 @@ class ApplicationContextSelector extends React.Component<
 
     render(): JSX.Element {
         const { isOpen, searchValue, filteredItems } = this.state;
+        const { aName, changeApp } = this.context;
         return (
-            <ApplicationContext.Consumer>
-                {({ aName, changeApp }) => (
-                    <ContextSelector
-                        toggleText={aName}
-                        onSearchInputChange={this.onSearchInputChange}
-                        isOpen={isOpen}
-                        searchInputValue={searchValue}
-                        onToggle={(_: unknown, value: boolean) => this.onToggle(value)}
-                        onSelect={(event, value) => this.onSelect(value, changeApp)}
-                        onSearchButtonClick={this.onSearchButtonClick}
-                        screenReaderLabel="Selected Application:"
-                    >
-                        {filteredItems.map((item, index) => (
-                            <ContextSelectorItem key={index}>{item}</ContextSelectorItem>
-                        ))}
-                    </ContextSelector>
-                )}
-            </ApplicationContext.Consumer>
+            <ContextSelector
+                toggleText={aName}
+                onSearchInputChange={this.onSearchInputChange}
+                isOpen={isOpen}
+                searchInputValue={searchValue}
+                onToggle={(_: unknown, value: boolean) => this.onToggle(value)}
+                onSelect={(_, value) => this.onSelect(value, changeApp)}
+                onSearchButtonClick={this.onSearchButtonClick}
+                screenReaderLabel="Selected Application:"
+            >
+                {filteredItems.map((item, index) => (
+                    <ContextSelectorItem key={index}>{item}</ContextSelectorItem>
+                ))}
+            </ContextSelector>
         );
     }
 }
@@ -182,6 +176,9 @@ interface IApplicationState {
     redirect: boolean;
     changeApp: (x: string) => void;
     updateApp: () => void;
+    setNewPlan: (plan: string) => void;
+    selectServiceOption: (serviceName: string, optionIdx: number) => void;
+    deleteServiceOption: (serviceName: string) => void;
 }
 
 class Application extends React.Component<IApplicationProps, IApplicationState> {
@@ -191,6 +188,11 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
         super(props);
         this.updateApp = this.updateApp.bind(this);
         this.changeApp = this.changeApp.bind(this);
+        this.setNewPlan = this.setNewPlan.bind(this);
+        this.uploadPlan = this.uploadPlan.bind(this);
+        this.validatePlan = this.validatePlan.bind(this);
+        this.selectServiceOption = this.selectServiceOption.bind(this);
+        this.deleteServiceOption = this.deleteServiceOption.bind(this);
 
         // State also contains the updater function so it will
         // be passed down into the context provider
@@ -201,6 +203,9 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
             redirect: false,
             changeApp: this.changeApp,
             updateApp: this.updateApp,
+            setNewPlan: this.setNewPlan,
+            selectServiceOption: this.selectServiceOption,
+            deleteServiceOption: this.deleteServiceOption,
         };
     }
 
@@ -254,6 +259,46 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
             return this.setState(() => ({ aName: appName, redirect: true }), this.updateApp);
         }
         this.updateApp();
+    }
+
+    async uploadPlan(): Promise<void> {
+        const url = '/api/v1/applications/' + encodeURIComponent(this.state.aName) + '/plan';
+        const formdata = new FormData();
+        formdata.append('plan', Yaml.dump(this.state.aPlan));
+        try {
+            const res = await fetch(url, { method: 'PUT', body: formdata });
+            if (!res.ok)
+                throw new Error(`Failed to update the plan for the app ${this.state.aName}. Status: ${res.status}`);
+            console.log('Uploaded the new plan');
+            this.updateApp();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    validatePlan(plan: IPlan): void {
+        // TODO: better plan validation
+        if (!('metadata' in plan)) throw new Error('The plan is missing metadata');
+    }
+
+    setNewPlan(plan: string): void {
+        const aPlan = Yaml.load(plan) as IPlan;
+        this.validatePlan(aPlan);
+        this.setState({ aPlan }, this.uploadPlan);
+    }
+
+    selectServiceOption(serviceName: string, optionIdx: number): void {
+        const aPlan = copy(this.state.aPlan);
+        const oldoption = aPlan.spec.inputs.services[serviceName][0];
+        aPlan.spec.inputs.services[serviceName][0] = aPlan.spec.inputs.services[serviceName][optionIdx];
+        aPlan.spec.inputs.services[serviceName][optionIdx] = oldoption;
+        this.setState({ aPlan }, this.uploadPlan);
+    }
+
+    deleteServiceOption(serviceName: string): void {
+        const aPlan = copy(this.state.aPlan);
+        delete aPlan.spec.inputs.services[serviceName];
+        this.setState({ aPlan }, this.uploadPlan);
     }
 
     componentDidMount(): void {

@@ -51,7 +51,10 @@ interface IApplicationAssetUploadState {
 }
 
 class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProps, IApplicationAssetUploadState> {
+    declare context: React.ContextType<typeof ApplicationContext>;
+    static contextType = ApplicationContext;
     updateTimerID = 0;
+
     constructor(props: IApplicationAssetUploadProps) {
         super(props);
         this.handleFileChange = this.handleFileChange.bind(this);
@@ -127,35 +130,33 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
 
     render(): JSX.Element {
         const { value, filename, isLoading, isRejected } = this.state;
+        const { aName } = this.context;
+
         return (
-            <ApplicationContext.Consumer>
-                {({ aName }) => (
-                    <Form onSubmit={(e) => this.uploadFile(e, aName)}>
-                        <FormGroup
-                            fieldId="zip-file-upload"
-                            helperText="Upload a zip file"
-                            helperTextInvalid="Must be a ZIP file"
-                            validated={isRejected ? 'error' : 'default'}
-                        >
-                            <FileUpload
-                                id="zip-file-upload"
-                                value={value || undefined}
-                                filename={filename}
-                                onChange={this.handleFileChange}
-                                isLoading={isLoading}
-                                dropzoneProps={{
-                                    accept: '.zip,.tar,.tar.gz,.tgz',
-                                    onDropRejected: this.handleFileRejected,
-                                }}
-                                validated={isRejected ? 'error' : 'default'}
-                            />
-                        </FormGroup>
-                        <Button variant="secondary" type="submit">
-                            Upload Asset
-                        </Button>
-                    </Form>
-                )}
-            </ApplicationContext.Consumer>
+            <Form onSubmit={(e) => this.uploadFile(e, aName)}>
+                <FormGroup
+                    fieldId="zip-file-upload"
+                    helperText="Upload a zip file"
+                    helperTextInvalid="Must be a ZIP file"
+                    validated={isRejected ? 'error' : 'default'}
+                >
+                    <FileUpload
+                        id="zip-file-upload"
+                        value={value || undefined}
+                        filename={filename}
+                        onChange={this.handleFileChange}
+                        isLoading={isLoading}
+                        dropzoneProps={{
+                            accept: '.zip,.tar,.tar.gz,.tgz',
+                            onDropRejected: this.handleFileRejected,
+                        }}
+                        validated={isRejected ? 'error' : 'default'}
+                    />
+                </FormGroup>
+                <Button variant="secondary" type="submit">
+                    Upload Asset
+                </Button>
+            </Form>
         );
     }
 }

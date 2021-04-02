@@ -23,6 +23,9 @@ interface IApplicationContext {
     aPlan: IPlan;
     updateApp: () => void;
     changeApp: (appName: string) => void;
+    setNewPlan: (plan: string) => void;
+    selectServiceOption: (serviceName: string, optionIdx: number) => void;
+    deleteServiceOption: (serviceName: string) => void;
 }
 
 const ApplicationContext: React.Context<IApplicationContext> = React.createContext<IApplicationContext>({
@@ -33,6 +36,18 @@ const ApplicationContext: React.Context<IApplicationContext> = React.createConte
         /*By default does nothing*/
     },
     changeApp: () => {
+        /*By default does nothing*/
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setNewPlan: (plan: string) => {
+        /*By default does nothing*/
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    selectServiceOption: (serviceName: string, optionIdx: number) => {
+        /*By default does nothing*/
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    deleteServiceOption: (serviceName: string) => {
         /*By default does nothing*/
     },
 });

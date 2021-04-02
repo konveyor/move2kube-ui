@@ -26,6 +26,30 @@ import { LastLocationProvider, useLastLocation } from 'react-router-last-locatio
 
 let routeFocusTimer: number;
 
+const getGuidedFlowModuleAsync = () => import(/* webpackChunkName: 'guidedflow' */ '@app/Application/GuidedFlow');
+
+const GuidedFlow = (routeProps: RouteComponentProps): React.ReactElement => {
+    const lastNavigation = useLastLocation();
+    return (
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        <DynamicImport load={getGuidedFlowModuleAsync} focusContentAfterMount={lastNavigation !== null}>
+            {(Component: any) => {
+                let loadedComponent = (
+                    <PageSection aria-label="Loading Content Container">
+                        <div className="pf-l-bullseye">
+                            <Alert title="Loading" className="pf-l-bullseye__item" />
+                        </div>
+                    </PageSection>
+                );
+                if (Component !== null) {
+                    loadedComponent = <Component.GuidedFlow {...routeProps} />;
+                }
+                return loadedComponent;
+            }}
+        </DynamicImport>
+    );
+};
+
 const getSupportModuleAsync = () => import(/* webpackChunkName: 'support' */ '@app/Support/Support');
 
 const Support = (routeProps: RouteComponentProps): React.ReactElement => {
@@ -100,6 +124,14 @@ const routes: IAppRoute[] = [
         label: 'Application',
         path: '/application/:name',
         title: 'Move2Kube | Application',
+    },
+    {
+        component: GuidedFlow,
+        exact: true,
+        isAsync: true,
+        label: 'New Application',
+        path: '/newapp',
+        title: 'Move2Kube | New Application',
     },
     {
         component: Support,

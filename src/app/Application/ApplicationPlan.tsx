@@ -37,22 +37,24 @@ import {
     CardTitle,
     KebabToggle,
     DropdownItem,
+    Spinner,
 } from '@patternfly/react-core';
 import { ApplicationContext } from './ApplicationContext';
 import Yaml from 'js-yaml';
 import { IService } from '@app/Application/Types';
+import { generatePlan, waitForPlan } from '@app/Networking/api';
 
 interface IPlanTabState {
     showServiceOption: string;
     showServiceKebab: string;
     planModalIsOpen: boolean;
     planYaml: string;
+    waitingForPlan: boolean;
 }
 
 class PlanTab extends React.Component<Readonly<unknown>, IPlanTabState> {
     declare context: React.ContextType<typeof ApplicationContext>;
     static contextType = ApplicationContext;
-    refreshTimerID = 0;
 
     constructor(props: Readonly<unknown>) {
         super(props);
@@ -73,6 +75,7 @@ class PlanTab extends React.Component<Readonly<unknown>, IPlanTabState> {
             showServiceKebab: 'none',
             planModalIsOpen: false,
             planYaml: '',
+            waitingForPlan: false,
         };
     }
 
@@ -81,25 +84,19 @@ class PlanTab extends React.Component<Readonly<unknown>, IPlanTabState> {
     }
 
     async generatePlan(aName: string, aStatus: Array<string>): Promise<void> {
-        if (aStatus.includes('assets')) {
-            const value = new URLSearchParams(window.location.search);
-            const debugSuffix = value.get('debug') ? `?debug=${value.get('debug')}` : '';
-            const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/plan' + debugSuffix;
-            try {
-                const res = await fetch(url, { method: 'POST' });
-                if (res.status > 400) {
-                    alert('Error while starting plan.');
-                    throw new Error(`Failed to start plan generation for the app ${aName}. Status: ${res.status}`);
-                }
-                this.context.updateApp();
-                alert(
-                    'Plan generation started. Come back in 5 mins for smaller projects and in half an hour for large projects and hit refresh.',
-                );
-            } catch (e) {
-                console.error(e);
-            }
-        } else {
-            alert('Upload assets before starting plan generation.');
+        if (!aStatus.includes('assets')) {
+            return alert('Upload assets before starting plan generation.');
+        }
+        try {
+            await generatePlan(aName);
+            this.setState({ waitingForPlan: true });
+            const plan = await waitForPlan(aName);
+            this.setState({ waitingForPlan: false });
+            this.context.setNewPlan(plan);
+            this.context.updateApp();
+        } catch (e) {
+            console.error(e);
+            alert(`Error while starting plan generation. ${e}`);
         }
     }
 
@@ -152,20 +149,11 @@ class PlanTab extends React.Component<Readonly<unknown>, IPlanTabState> {
     }
 
     componentDidMount(): void {
-        this.refreshTimerID = window.setInterval(this.refresh, 30000);
-    }
-
-    componentDidUpdate(): void {
-        clearInterval(this.refreshTimerID);
-        this.refreshTimerID = window.setInterval(this.refresh, 30000);
-    }
-
-    componentWillUnmount(): void {
-        clearInterval(this.refreshTimerID);
+        this.refresh();
     }
 
     render(): JSX.Element {
-        const { showServiceOption, showServiceKebab, planModalIsOpen, planYaml } = this.state;
+        const { showServiceOption, showServiceKebab, planModalIsOpen, planYaml, waitingForPlan } = this.state;
         const { aName, aPlan, aStatus } = this.context;
 
         return (
@@ -210,6 +198,12 @@ class PlanTab extends React.Component<Readonly<unknown>, IPlanTabState> {
                         )}
                     </ToolbarContent>
                 </Toolbar>
+                {waitingForPlan && (
+                    <>
+                        <h1>Generating the plan. Please wait, this could take a few minutes....</h1>
+                        <Spinner />
+                    </>
+                )}
                 {this.context.aPlan && this.context.aPlan.spec && this.context.aPlan.spec.inputs && (
                     <PageSection>
                         <TextContent>

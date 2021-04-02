@@ -53,4 +53,4 @@ const ApplicationContext: React.Context<IApplicationContext> = React.createConte
 });
 ApplicationContext.displayName = 'ApplicationContext';
 
-export { ApplicationContext };
+export { ApplicationContext, IApplicationContext };

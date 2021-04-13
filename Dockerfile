@@ -31,6 +31,7 @@ FROM registry.fedoraproject.org/fedora-minimal:latest
 # reads from environment variable first, otherwise fall back to move2kubeapi value
 ARG MOVE2KUBEAPI
 ENV MOVE2KUBEAPI=${MOVE2KUBEAPI:-http://move2kubeapi:8080}
+ENV MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-dockerfile"
 
 RUN microdnf -y install nodejs && microdnf clean all
 WORKDIR /app

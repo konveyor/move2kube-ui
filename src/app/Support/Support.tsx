@@ -24,23 +24,68 @@ import {
     EmptyStateIcon,
     EmptyStateBody,
 } from '@patternfly/react-core';
+import { Table, TableBody } from '@patternfly/react-table';
+import { getSupportInfo, ISupportInfo } from '@app/Networking/api';
 
 export interface ISupportProps {
     sampleProp?: string;
 }
 
-const Support: React.FunctionComponent<ISupportProps> = () => (
-    <PageSection>
-        <EmptyState variant={EmptyStateVariant.full}>
-            <EmptyStateIcon icon={CubesIcon} />
-            <Title headingLevel="h1" size="lg">
-                Website
-            </Title>
-            <EmptyStateBody>
-                For more details checkout <a href="https://move2kube.konveyor.io/">Konveyor Move2Kube Website</a>
-            </EmptyStateBody>
-        </EmptyState>
-    </PageSection>
-);
+interface ISupportState {
+    info: ISupportInfo | null;
+}
+
+class Support extends React.Component<unknown, ISupportState> {
+    constructor(props: unknown) {
+        super(props);
+        this.state = { info: null };
+    }
+
+    async componentDidMount(): Promise<void> {
+        const info = await getSupportInfo();
+        this.setState({ info });
+    }
+
+    render(): JSX.Element {
+        const { info } = this.state;
+        const columns = ['key', 'value'];
+        const rows = info
+            ? [
+                  ['version', info.version],
+                  ['commit', info.gitCommit],
+                  ['git tree state', info.gitTreeState],
+                  ['golang version', info.goVersion],
+                  ['platform', info.platform],
+                  ['docker', info.docker],
+              ]
+            : [];
+        return (
+            <PageSection>
+                {info === null ? (
+                    <EmptyState variant={EmptyStateVariant.full}>
+                        <EmptyStateIcon icon={CubesIcon} />
+                        <Title headingLevel="h1" size="lg">
+                            Website
+                        </Title>
+                        <EmptyStateBody>
+                            For more details checkout{' '}
+                            <a href="https://move2kube.konveyor.io/">Konveyor Move2Kube Website</a>
+                        </EmptyStateBody>
+                    </EmptyState>
+                ) : (
+                    <>
+                        <Table aria-label="Simple Table" cells={columns} rows={rows}>
+                            <TableBody />
+                        </Table>
+                        <div style={{ textAlign: 'center', padding: '1em' }}>
+                            For more details checkout{' '}
+                            <a href="https://move2kube.konveyor.io/">Konveyor Move2Kube Website</a>
+                        </div>
+                    </>
+                )}
+            </PageSection>
+        );
+    }
+}
 
 export { Support };

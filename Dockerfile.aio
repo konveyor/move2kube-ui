@@ -31,6 +31,7 @@ RUN npm prune --production
 ### Run Image ###
 FROM quay.io/konveyor/move2kube-api:${VERSION}
 ENV MOVE2KUBEAPI=http://localhost:9000
+ENV MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-aio-dockerfile"
 
 RUN dnf -y install nodejs \
     && dnf clean all \

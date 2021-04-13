@@ -5,6 +5,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "./workspace:/workspace"
+    environment:
+      - MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-docker-compose-dev"
   move2kubeui:
     build:
       context: ./

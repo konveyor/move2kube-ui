@@ -81,7 +81,8 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                     `Failed to get the target artifacts for the app ${this.context.aName}. Status: ${res.status}`,
                 );
             const artifacts = await res.json();
-            this.setState({ artifacts: artifacts });
+            artifacts.sort((a: string, b: string) => (parseInt(a.split('_')[1]) > parseInt(b.split('_')[1]) ? -1 : 1));
+            this.setState({ artifacts });
         } catch (e) {
             console.error(e);
         }

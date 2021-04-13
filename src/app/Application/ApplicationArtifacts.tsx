@@ -81,7 +81,8 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                     `Failed to get the target artifacts for the app ${this.context.aName}. Status: ${res.status}`,
                 );
             const artifacts = await res.json();
-            this.setState({ artifacts: artifacts });
+            artifacts.sort((a: string, b: string) => (parseInt(a.split('_')[1]) > parseInt(b.split('_')[1]) ? -1 : 1));
+            this.setState({ artifacts });
         } catch (e) {
             console.error(e);
         }
@@ -152,6 +153,10 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
     render(): JSX.Element {
         const { artifacts, qaartifacts } = this.state;
         const { aName, aPlan } = this.context;
+        const artifactNameToDate = (artifact: string): string => {
+            const unixSeconds = parseInt(artifact.split('_')[1]);
+            return new Date(unixSeconds * 1000).toString(); // seconds to milliseconds
+        };
 
         return (
             <>
@@ -198,7 +203,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                                             component={TextVariants.h3}
                                             style={{ textAlign: 'center', wordWrap: 'break-word' }}
                                         >
-                                            {artifact}
+                                            {artifactNameToDate(artifact)}
                                         </Text>
                                         <Button variant="secondary" onClick={() => this.get(artifact)}>
                                             Get

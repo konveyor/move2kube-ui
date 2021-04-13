@@ -152,6 +152,10 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
     render(): JSX.Element {
         const { artifacts, qaartifacts } = this.state;
         const { aName, aPlan } = this.context;
+        const artifactNameToDate = (artifact: string): string => {
+            const unixSeconds = parseInt(artifact.split('_')[1]);
+            return new Date(unixSeconds * 1000).toString(); // seconds to milliseconds
+        };
 
         return (
             <>
@@ -198,7 +202,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                                             component={TextVariants.h3}
                                             style={{ textAlign: 'center', wordWrap: 'break-word' }}
                                         >
-                                            {artifact}
+                                            {artifactNameToDate(artifact)}
                                         </Text>
                                         <Button variant="secondary" onClick={() => this.get(artifact)}>
                                             Get

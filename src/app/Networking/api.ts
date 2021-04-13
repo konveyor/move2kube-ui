@@ -14,6 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+async function wait(seconds: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(resolve, seconds * 1000);
+    });
+}
+
 async function createApp(aName: string): Promise<void> {
     const body = new FormData();
     body.append('name', aName);
@@ -51,10 +57,18 @@ async function updateStatus(aName: string): Promise<{ name: string; status: Arra
     return await res.json();
 }
 
-async function wait(seconds: number): Promise<void> {
-    return new Promise((resolve) => {
-        setTimeout(resolve, seconds * 1000);
-    });
+interface ISupportInfo {
+    version: string;
+    gitCommit: string;
+    gitTreeState: string;
+    goVersion: string;
 }
 
-export { createApp, generatePlan, waitForPlan, updateStatus };
+async function getSupportInfo(): Promise<ISupportInfo> {
+    const url = '/api/v1/support';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to get the support information. Status: ${res.status}`);
+    return await res.json();
+}
+
+export { createApp, generatePlan, waitForPlan, updateStatus, getSupportInfo, ISupportInfo };

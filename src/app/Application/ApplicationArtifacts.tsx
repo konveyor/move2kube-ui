@@ -42,6 +42,9 @@ interface IArtifactsTabState {
 }
 
 class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState> {
+    declare context: React.ContextType<typeof ApplicationContext>;
+    static contextType = ApplicationContext;
+
     constructor(props: Readonly<unknown>) {
         super(props);
         this.generate = this.generate.bind(this);
@@ -58,10 +61,9 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
 
     generate(): void {
         if (this.context.aStatus.includes('plan')) {
-            this.setState({ qaartifacts: 'new' });
-        } else {
-            alert('Generate plan before starting artifact generation.');
+            return this.setState({ qaartifacts: 'new' });
         }
+        alert('Generate plan before starting artifact generation.');
     }
 
     close(): void {
@@ -157,7 +159,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                     <Toolbar>
                         <ToolbarContent>
                             <ToolbarItem>
-                                <Button variant="primary" onClick={() => this.generate()}>
+                                <Button variant="primary" onClick={this.generate}>
                                     Translate
                                 </Button>
                             </ToolbarItem>
@@ -165,9 +167,10 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                     </Toolbar>
                 </PageSection>
                 <Modal
-                    isOpen={qaartifacts != ''}
+                    isOpen={qaartifacts !== ''}
                     variant={ModalVariant.large}
                     showClose={true}
+                    onClose={this.close}
                     aria-describedby="QADialog"
                     aria-labelledby="QADialog"
                 >
@@ -191,7 +194,10 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                                 </CardHeader>
                                 <CardBody>
                                     <TextContent style={{ textAlign: 'center' }}>
-                                        <Text component={TextVariants.h3} style={{ textAlign: 'center' }}>
+                                        <Text
+                                            component={TextVariants.h3}
+                                            style={{ textAlign: 'center', wordWrap: 'break-word' }}
+                                        >
                                             {artifact}
                                         </Text>
                                         <Button variant="secondary" onClick={() => this.get(artifact)}>
@@ -207,7 +213,5 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
         );
     }
 }
-
-ArtifactsTab.contextType = ApplicationContext;
 
 export { ArtifactsTab };

@@ -37,16 +37,19 @@ import {
 } from '@patternfly/react-core';
 import { ApplicationContext } from './ApplicationContext';
 import { CloseIcon } from '@patternfly/react-icons';
+import { Progress, ProgressMeasureLocation, ProgressVariant } from '@patternfly/react-core';
 
 interface IApplicationAssetUploadProps {
     update: () => void;
 }
 
 interface IApplicationAssetUploadState {
-    value: File | null;
+    file: File | null;
     filename: string;
     isLoading: boolean;
     isRejected: boolean;
+    uploadStatus: string;
+    uploadPercent: number;
     update: () => void;
 }
 
@@ -62,57 +65,62 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
         this.uploadFile = this.uploadFile.bind(this);
 
         this.state = {
-            value: null,
+            file: null,
             filename: '',
             isLoading: false,
             isRejected: false,
+            uploadStatus: '',
+            uploadPercent: 0,
             update: props.update,
         };
     }
 
-    handleFileChange(value: string | File, filename: string) {
+    handleFileChange(value: string | File, filename: string): void {
         if (typeof value === 'string') return alert('Invalid file type. Expected a binary file. Got a text file.');
-        this.setState({ value, filename, isRejected: false });
+        this.setState({ file: value, filename, isRejected: false });
     }
 
-    handleFileRejected(fileRejections: Array<File>) {
+    handleFileRejected(fileRejections: Array<File>): void {
         return alert(`Some files failed to load. Rejected files: ${fileRejections.map((file) => file.name)}`);
     }
 
-    async uploadFile(event: React.FormEvent<HTMLFormElement>, aName: string) {
-        event.preventDefault();
+    uploadFile(aName: string): Promise<void> {
+        if (!this.state.file)
+            return new Promise((_, reject) => {
+                const err = 'The file is null. Please upload a valid file.';
+                console.error(err);
+                reject(err);
+            });
         const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/assets';
         const formdata = new FormData();
-        if (!this.state.value) console.error('The file is null');
-        formdata.append('file', this.state.value ? this.state.value : '');
-        try {
-            const res = await fetch(url, { method: 'POST', body: formdata });
-            if (res.status >= 200 && res.status < 300) {
-                this.props.update();
-                console.log('Uploaded file');
-            } else if (res.status == 410) {
-                console.error(res);
-                alert('Unable to upload/process file. Try using simpler compression systems.');
-                throw new Error(
-                    `Failed to upload the file ${this.state.value} for the app ${aName}. Status: ${res.status}`,
-                );
-            } else {
-                console.error(res);
+        formdata.append('file', this.state.file);
+        const xhr = new XMLHttpRequest();
+        xhr.addEventListener('progress', (event) => {
+            console.log(`Uploaded ${event.loaded} bytes out of ${event.total}`);
+            const uploadPercent = Math.round((event.loaded / event.total) * 100);
+            this.setState({ uploadPercent, uploadStatus: '' });
+        });
+        return new Promise((resolve, reject) => {
+            xhr.addEventListener('error', () => {
+                const err = `Failed to upload the file. Status: ${xhr.status}`;
+                console.error(err);
+                this.setState({ uploadPercent: 0, uploadStatus: err });
                 alert(
-                    'If the file size is huge, try removing large files, which are not needed.\n If network is the problem, you can use the command line tool to accomplish the translation. Check out https://move2kube.konveyor.io/installation/cli/',
+                    `Failed to upload the file ${this.state.file} for the app ${aName}. Supported file formats are .zip/.tar/.tar.gz/.tgz.
+If the file size is huge, try removing large files, which are not needed.
+If network is the problem, you can use the command line tool to accomplish the translation. Check out https://move2kube.konveyor.io/installation/cli/`,
                 );
-                throw new Error(
-                    `Failed to upload the file ${this.state.value} for the app ${aName}. Status: ${res.status}`,
-                );
-            }
-        } catch (e) {
-            if (e) {
-                console.error(e);
-                alert(
-                    'Unable to upload/process file. Try using simpler compression systems.\n If the file size is huge, try removing large files, which are not needed.\n If network is the problem, you can use the command line tool to accomplish the translation. Check out https://move2kube.konveyor.io/installation/cli/',
-                );
-            }
-        }
+                reject(err);
+            });
+            xhr.addEventListener('load', () => {
+                console.log(`File upload complete. Status: ${xhr.status}`);
+                this.setState({ uploadPercent: 100, uploadStatus: 'File upload complete.' });
+                setTimeout(this.props.update, 10);
+                resolve();
+            });
+            xhr.open('POST', url);
+            xhr.send(formdata);
+        });
     }
 
     componentDidMount(): void {
@@ -129,11 +137,16 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
     }
 
     render(): JSX.Element {
-        const { value, filename, isLoading, isRejected } = this.state;
+        const { file: value, filename, isLoading, isRejected, uploadPercent, uploadStatus } = this.state;
         const { aName } = this.context;
 
         return (
-            <Form onSubmit={(e) => this.uploadFile(e, aName)}>
+            <Form
+                onSubmit={async (event: React.FormEvent<HTMLFormElement>) => {
+                    event.preventDefault();
+                    await this.uploadFile(aName);
+                }}
+            >
                 <FormGroup
                     fieldId="zip-file-upload"
                     helperText="Upload a zip file"
@@ -152,6 +165,19 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
                         }}
                         validated={isRejected ? 'error' : 'default'}
                     />
+                    <Progress
+                        aria-label="progress-bar"
+                        value={uploadPercent}
+                        title={uploadStatus}
+                        variant={
+                            uploadPercent === 100
+                                ? ProgressVariant.success
+                                : uploadStatus
+                                ? ProgressVariant.danger
+                                : undefined
+                        }
+                        measureLocation={ProgressMeasureLocation.outside}
+                    />
                 </FormGroup>
                 <Button variant="secondary" type="submit">
                     Upload Asset
@@ -168,6 +194,9 @@ interface IAssetsTabState {
 }
 
 class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
+    declare context: React.ContextType<typeof ApplicationContext>;
+    static contextType = ApplicationContext;
+
     constructor(props: Readonly<unknown>) {
         super(props);
         this.update = this.update.bind(this);
@@ -237,96 +266,91 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
 
     render(): JSX.Element {
         const { isCollectModalOpen, isUploadAssetModalOpen, assets } = this.state;
+        const { aName } = this.context;
 
         return (
-            <ApplicationContext.Consumer>
-                {({ aName }) => (
-                    <>
-                        <PageSection>
-                            <Toolbar>
-                                <ToolbarContent>
-                                    <ToolbarItem>
-                                        <Button variant="primary" onClick={this.openAssetUploadModal}>
-                                            Upload Asset
-                                        </Button>
-                                        <Modal
-                                            isOpen={isUploadAssetModalOpen}
-                                            variant={ModalVariant.small}
-                                            showClose={true}
-                                            onClose={this.closeAssetUploadModal}
-                                            aria-describedby="wiz-modal-example-description"
-                                            aria-labelledby="wiz-modal-example-title"
+            <>
+                <PageSection>
+                    <Toolbar>
+                        <ToolbarContent>
+                            <ToolbarItem>
+                                <Button variant="primary" onClick={this.openAssetUploadModal}>
+                                    Upload Asset
+                                </Button>
+                                <Modal
+                                    isOpen={isUploadAssetModalOpen}
+                                    variant={ModalVariant.small}
+                                    showClose={true}
+                                    onClose={this.closeAssetUploadModal}
+                                    aria-describedby="wiz-modal-example-description"
+                                    aria-labelledby="wiz-modal-example-title"
+                                >
+                                    <ApplicationAssetUpload update={this.update}></ApplicationAssetUpload>
+                                </Modal>
+                            </ToolbarItem>
+                            <ToolbarItem>
+                                <Button variant="primary" onClick={this.openCollectModal}>
+                                    Collect Source/Target Artifacts
+                                </Button>
+                                <Modal
+                                    isOpen={isCollectModalOpen}
+                                    variant={ModalVariant.small}
+                                    showClose={true}
+                                    onClose={this.closeCollectModal}
+                                    aria-describedby="wiz-modal-example-description"
+                                    aria-labelledby="wiz-modal-example-title"
+                                >
+                                    <TextContent>
+                                        <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
+                                            For collecting data, download the{' '}
+                                            <a
+                                                href="https://move2kube.konveyor.io/installation/cli/"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                move2kube command line tool
+                                            </a>{' '}
+                                            and run &apos;move2kube collect&apos;, and zip the results and upload here.
+                                        </Text>
+                                    </TextContent>
+                                </Modal>
+                            </ToolbarItem>
+                        </ToolbarContent>
+                    </Toolbar>
+                </PageSection>
+                <Gallery hasGutter>
+                    {assets.map((asset) => (
+                        <PageSection key={asset}>
+                            <Card isHoverable key={asset}>
+                                <CardHeader>
+                                    <CardActions>
+                                        <CloseIcon onClick={() => this.delete(asset)} />
+                                    </CardActions>
+                                </CardHeader>
+                                <CardBody>
+                                    <TextContent>
+                                        <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
+                                            {asset}
+                                        </Text>
+                                        <a
+                                            href={'/api/v1/applications/' + aName + '/assets/' + asset}
+                                            target="_blank"
+                                            rel="noreferrer"
                                         >
-                                            <ApplicationAssetUpload update={this.update}></ApplicationAssetUpload>
-                                        </Modal>
-                                    </ToolbarItem>
-                                    <ToolbarItem>
-                                        <Button variant="primary" onClick={this.openCollectModal}>
-                                            Collect Source/Target Artifacts
-                                        </Button>
-                                        <Modal
-                                            isOpen={isCollectModalOpen}
-                                            variant={ModalVariant.small}
-                                            showClose={true}
-                                            onClose={this.closeCollectModal}
-                                            aria-describedby="wiz-modal-example-description"
-                                            aria-labelledby="wiz-modal-example-title"
-                                        >
-                                            <TextContent>
-                                                <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
-                                                    For collecting data, download the{' '}
-                                                    <a
-                                                        href="https://move2kube.konveyor.io/installation/cli/"
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                    >
-                                                        move2kube command line tool
-                                                    </a>{' '}
-                                                    and run &apos;move2kube collect&apos;, and zip the results and
-                                                    upload here.
-                                                </Text>
-                                            </TextContent>
-                                        </Modal>
-                                    </ToolbarItem>
-                                </ToolbarContent>
-                            </Toolbar>
+                                            {' '}
+                                            <Text component={TextVariants.h3} style={{ textAlign: 'center' }}>
+                                                Download
+                                            </Text>
+                                        </a>
+                                    </TextContent>
+                                </CardBody>
+                            </Card>
                         </PageSection>
-                        <Gallery hasGutter>
-                            {assets.map((asset) => (
-                                <PageSection key={asset}>
-                                    <Card isHoverable key={asset}>
-                                        <CardHeader>
-                                            <CardActions>
-                                                <CloseIcon onClick={() => this.delete(asset)} />
-                                            </CardActions>
-                                        </CardHeader>
-                                        <CardBody>
-                                            <TextContent>
-                                                <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
-                                                    {asset}
-                                                </Text>
-                                                <a
-                                                    href={'/api/v1/applications/' + aName + '/assets/' + asset}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                >
-                                                    {' '}
-                                                    <Text component={TextVariants.h3} style={{ textAlign: 'center' }}>
-                                                        Download
-                                                    </Text>
-                                                </a>
-                                            </TextContent>
-                                        </CardBody>
-                                    </Card>
-                                </PageSection>
-                            ))}
-                        </Gallery>
-                    </>
-                )}
-            </ApplicationContext.Consumer>
+                    ))}
+                </Gallery>
+            </>
         );
     }
 }
-AssetsTab.contextType = ApplicationContext;
 
-export { AssetsTab };
+export { AssetsTab, ApplicationAssetUpload };

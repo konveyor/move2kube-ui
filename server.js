@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /*
 Copyright IBM Corporation 2020
 
@@ -21,9 +22,9 @@ const app = express();
 const port = 8080;
 
 if (process.env.MOVE2KUBEAPI) {
-  app.use('/api', createProxyMiddleware({ target: process.env.MOVE2KUBEAPI, changeOrigin: true })); //, pathRewrite: {'^/api' : ''} }));
+    app.use('/api', createProxyMiddleware({ target: process.env.MOVE2KUBEAPI, changeOrigin: true })); //, pathRewrite: {'^/api' : ''} }));
 } else {
-  app.use('/api', createProxyMiddleware({ target: 'http://move2kubeapi:8080', changeOrigin: true })); //, pathRewrite: {'^/api' : ''} }));
+    app.use('/api', createProxyMiddleware({ target: 'http://move2kubeapi:8080', changeOrigin: true })); //, pathRewrite: {'^/api' : ''} }));
 }
 
 app.use(express.static(path.join(__dirname, '/dist')));

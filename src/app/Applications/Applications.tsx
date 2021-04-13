@@ -48,12 +48,11 @@ import {
 } from '@patternfly/react-core';
 import { SearchIcon, FilterIcon } from '@patternfly/react-icons';
 import { Table, IActionsResolver, IAction, OnSelect, IRowData, TableHeader, TableBody } from '@patternfly/react-table';
-import { NewApplication } from '@app/Application/NewApplication';
 import { History, LocationState } from 'history';
 import { copy } from '@app/utils/utils';
 
 type RowT = {
-    cells: Array<string>;
+    cells: [{ title: JSX.Element; aName: string }, string];
     selected?: boolean;
 };
 
@@ -97,6 +96,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
         this.buildFilterDropdown = this.buildFilterDropdown.bind(this);
         this.renderToolbar = this.renderToolbar.bind(this);
         this.actionResolver = this.actionResolver.bind(this);
+        this.goToApplication = this.goToApplication.bind(this);
 
         this.state = {
             filters: {
@@ -108,7 +108,11 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
             isCategoryDropdownOpen: false,
             nameInput: '',
             columns: [{ title: 'Name' }, { title: 'Status' }],
-            rows: [{ cells: ['CacheApp1', 'New'] }, { cells: ['CacheApp2', 'Plan'] }, { cells: ['CacheApp3', 'Done'] }],
+            rows: [
+                { cells: [{ title: <a>CacheApp1</a>, aName: 'CacheApp1' }, 'New'] },
+                { cells: [{ title: <a>CacheApp2</a>, aName: 'CacheApp2' }, 'Plan'] },
+                { cells: [{ title: <a>CacheApp3</a>, aName: 'CacheApp3' }, 'Done'] },
+            ],
             inputValue: '',
         };
     }
@@ -122,13 +126,18 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
             const res = await fetch('/api/v1/applications', { headers: { 'Content-Type': 'application/json' } });
             if (!res.ok) throw new Error(`Failed to get the applications. Status: ${res.status}`);
             const data = await res.json();
-            const applications = data.applications;
-            const rows = new Array(applications.length);
-            for (let index = 0; index < applications.length; index++) {
-                const row = new Array(4);
-                row[0] = applications[index]['name'];
-                row[1] = JSON.stringify(applications[index]['status']);
-                rows[index] = { cells: row };
+            const applications: Array<{ name: string; status: Array<string> }> = data.applications;
+            const rows: Array<RowT> = [];
+            for (const { name, status } of applications) {
+                rows.push({
+                    cells: [
+                        {
+                            title: <a onClick={() => this.goToApplication(name)}>{name}</a>,
+                            aName: name,
+                        },
+                        JSON.stringify(status),
+                    ],
+                });
             }
             this.setState({ rows });
         } catch (e) {
@@ -192,18 +201,21 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
     }
 
     onRowSelect(_: React.FormEvent<HTMLInputElement>, isSelected: boolean, rowId: number): void {
-        let rows;
         if (rowId === -1) {
-            rows = this.state.rows.map((oneRow) => {
-                oneRow.selected = isSelected;
-                return oneRow;
+            return this.setState((prevState) => {
+                const rows = prevState.rows.map((row) => {
+                    row.selected = isSelected;
+                    return row;
+                });
+                return { rows };
             });
-        } else {
-            rows = [...this.state.rows];
-            rows[rowId].selected = isSelected;
         }
-        this.setState({
-            rows,
+        return this.setState((prevState) => {
+            const rows = prevState.rows.slice();
+            const row = copy(rows[rowId]);
+            row.selected = isSelected;
+            rows[rowId] = row;
+            return { rows };
         });
     }
 
@@ -339,11 +351,18 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
                     </ToolbarToggleGroup>
                     <ToolbarItem variant="separator" />
                     <ToolbarItem>
-                        <NewApplication update={this.update} />
+                        <Button onClick={() => this.props.history.push('/newapp')}>New Application</Button>
                     </ToolbarItem>
                 </ToolbarContent>
             </Toolbar>
         );
+    }
+
+    goToApplication(aName: string): void {
+        const value = new URLSearchParams(window.location.search);
+        const debugSuffix = value.get('debug') ? `?debug=${value.get('debug')}` : '';
+        const url = '/application/' + encodeURIComponent(aName) + debugSuffix;
+        this.props.history.push(url);
     }
 
     actionResolver(): IAction[] {
@@ -353,10 +372,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
                 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
                 onClick: (_: React.MouseEvent, __: number, rowData: IRowData) => {
                     if (!rowData.cells || rowData.cells.length === 0) return;
-                    const value = new URLSearchParams(window.location.search);
-                    const debugSuffix = value.get('debug') ? `?debug=${value.get('debug')}` : '';
-                    const url = '/application/' + encodeURIComponent(rowData.cells[0] as string) + debugSuffix;
-                    this.props.history.push(url);
+                    this.goToApplication((rowData as RowT).cells[0].aName as string);
                 },
             },
             {
@@ -364,7 +380,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
                 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
                 onClick: (_: React.MouseEvent, __: number, rowData: IRowData) => {
                     if (!rowData.cells || rowData.cells.length === 0) return;
-                    this.deleteApp(rowData.cells[0] as string);
+                    this.deleteApp((rowData as RowT).cells[0].aName as string);
                 },
             },
         ];
@@ -376,7 +392,9 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
         function filterFunc(row: RowT): boolean {
             let matchedName = true;
             if (filters.name.length > 0) {
-                matchedName = filters.name.some((name) => row.cells[0].toLowerCase().includes(name.toLowerCase()));
+                matchedName = filters.name.some((name) =>
+                    row.cells[0].aName.toLowerCase().includes(name.toLowerCase()),
+                );
             }
             let matchedStatus = true;
             if (filters.status.length > 0) {

@@ -137,9 +137,7 @@ class ApplicationTabs extends React.Component<Readonly<unknown>, IApplicationTab
 
     // Toggle currently active tab
     handleTabClick(tabIndex: string | number) {
-        this.setState({
-            activeTabKey: tabIndex,
-        });
+        this.setState({ activeTabKey: tabIndex });
     }
 
     render() {
@@ -250,10 +248,10 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
                 if (applications.length > 0) {
                     return this.changeApp(applications[0]['name']);
                 }
+                return console.log('No applications found.');
             } catch (e) {
-                console.error(e);
+                return console.error(e);
             }
-            return console.log('No applications found.');
         }
         if (this.state.aName !== appName) {
             return this.setState(() => ({ aName: appName, redirect: true }), this.updateApp);
@@ -339,6 +337,4 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
     }
 }
 
-Application.contextType = ApplicationContext;
-
-export { Application };
+export { Application, ArtifactsTab };

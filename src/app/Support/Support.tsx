@@ -55,6 +55,8 @@ class Support extends React.Component<unknown, ISupportState> {
                   ['commit', info.gitCommit],
                   ['git tree state', info.gitTreeState],
                   ['golang version', info.goVersion],
+                  ['platform', info.platform],
+                  ['docker', info.docker],
               ]
             : [];
         return (

@@ -62,6 +62,8 @@ interface ISupportInfo {
     gitCommit: string;
     gitTreeState: string;
     goVersion: string;
+    platform: string;
+    docker: string;
 }
 
 async function getSupportInfo(): Promise<ISupportInfo> {

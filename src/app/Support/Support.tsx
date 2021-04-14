@@ -51,10 +51,24 @@ class Support extends React.Component<unknown, ISupportState> {
         const columns = ['key', 'value'];
         const rows = info
             ? [
-                  ['version', info.version],
-                  ['commit', info.gitCommit],
-                  ['git tree state', info.gitTreeState],
-                  ['golang version', info.goVersion],
+                  [
+                      'cli',
+                      <>
+                          {info.cli_version.split('\n').map((x, id) => (
+                              <div key={id}>{x}</div>
+                          ))}
+                      </>,
+                  ],
+                  [
+                      'api',
+                      <>
+                          {info.api_version.split('\n').map((x, id) => (
+                              <div key={id}>{x}</div>
+                          ))}
+                      </>,
+                  ],
+                  ['api image hash', info.api_image],
+                  ['ui image hash', info.ui_image],
                   ['platform', info.platform],
                   ['docker', info.docker],
               ]

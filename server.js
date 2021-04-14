@@ -21,11 +21,8 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const port = 8080;
 
-if (process.env.MOVE2KUBEAPI) {
-    app.use('/api', createProxyMiddleware({ target: process.env.MOVE2KUBEAPI, changeOrigin: true })); //, pathRewrite: {'^/api' : ''} }));
-} else {
-    app.use('/api', createProxyMiddleware({ target: 'http://move2kubeapi:8080', changeOrigin: true })); //, pathRewrite: {'^/api' : ''} }));
-}
+const api_url = process.env['MOVE2KUBEAPI'] || 'http://move2kubeapi:8080';
+app.use('/api', createProxyMiddleware({ target: api_url, changeOrigin: true }));
 
 app.use(express.static(path.join(__dirname, '/dist')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname + '/dist/index.html')));

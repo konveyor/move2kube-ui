@@ -11,7 +11,8 @@
         "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
         "dr:surge": "node dr-surge.js",
         "build": "webpack --config webpack.prod.js && yarn run dr:surge",
-        "dev": "yarn lint && docker-compose -f docker-compose.dev.yml up --build --abort-on-container-exit"
+        "dev": "yarn lint && MOVE2KUBE_API_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-api:latest --format='{{.ID}}')\" MOVE2KUBE_UI_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-ui:latest --format='{{.ID}}')\" docker-compose -f docker-compose.dev.yml up --build --abort-on-container-exit",
+        "prod": "MOVE2KUBE_API_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-api:latest --format='{{.ID}}')\" MOVE2KUBE_UI_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-ui:latest --format='{{.ID}}')\" docker-compose up --build --abort-on-container-exit"
     },
     "dependencies": {
         "@axe-core/react": "^4.1.1",

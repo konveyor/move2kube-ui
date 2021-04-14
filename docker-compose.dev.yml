@@ -7,6 +7,8 @@ services:
       - "./workspace:/workspace"
     environment:
       - MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-docker-compose-dev"
+      - MOVE2KUBE_API_IMAGE_HASH="${MOVE2KUBE_API_IMAGE_HASH}"
+      - MOVE2KUBE_UI_IMAGE_HASH="${MOVE2KUBE_UI_IMAGE_HASH}"
   move2kubeui:
     build:
       context: ./

@@ -21,20 +21,30 @@ An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube
 
 For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
 
-## Starting UI
+## Starting the UI
 
-### Production
+### Production environments
 
-1. Run `make install`
-1. Run `make build`
-1. Run `make start`
+Use one of these three options:
 
-### Development
+-   `make prod`
 
-1. Run `make dev`
+    This uses docker compose and brings up 2 containers, one for the API and one for the UI.  
+    **IMPORTANT:** Don't forget to `docker-compose down` after stopping the server to remove the stopped containers and network.
 
-When editing the code inside the `src/` folder, the UI will update live.  
-**IMPORTANT:** Don't forget to `docker-compose down` after stopping the dev server to remove the stopped containers and network.
+-   `make aio`
+
+    This uses docker and runs everything inside a single container using the all-in-one image.
+
+-   `make start`
+
+    This will run without any containers. You will need to have a recent version of NodeJS installed and you will need to bring up the API server separately.
+
+### Development environments
+
+-   `make dev`  
+    When editing the code inside the `src/` folder, the UI will update live.  
+    **IMPORTANT:** Don't forget to `docker-compose down` after stopping the dev server to remove the stopped containers and network.
 
 ## Discussion
 

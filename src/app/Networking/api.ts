@@ -58,12 +58,12 @@ async function updateStatus(aName: string): Promise<{ name: string; status: Arra
 }
 
 interface ISupportInfo {
-    version: string;
-    gitCommit: string;
-    gitTreeState: string;
-    goVersion: string;
+    cli_version: string;
+    api_version: string;
     platform: string;
     docker: string;
+    api_image: string;
+    ui_image: string;
 }
 
 async function getSupportInfo(): Promise<ISupportInfo> {

@@ -50,8 +50,16 @@ build: ## Build application
 	@yarn run build
 
 .PHONY: dev
-dev: install ## Start Dev server
+dev: install ## Start Development server
 	@yarn run dev
+
+.PHONY: prod
+prod: ## Start Production server
+	@yarn run prod
+
+.PHONY: aio
+aio:
+	docker run --rm -p 8080:8080 -v ${PWD}/workspace:/workspace -v /var/run/docker.sock:/var/run/docker.sock -it quay.io/konveyor/move2kube-aio:latest
 
 .PHONY: start
 start: install build ## Start server

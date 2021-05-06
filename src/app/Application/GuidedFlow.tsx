@@ -22,6 +22,7 @@ import { NewAppForm } from '@app/Application/NewApplication';
 import { ApplicationAssetUpload } from '@app/Application/ApplicationAssets';
 import { ArtifactsTab } from '@app/Application/ApplicationArtifacts';
 import { IPlan, newPlan } from '@app/Application/Types';
+import { PlanTab } from '@app/Application/ApplicationPlan';
 import Yaml from 'js-yaml';
 import { copy } from '@app/utils/utils';
 import { createApp } from '@app/Networking/api';
@@ -36,6 +37,7 @@ interface IGuidedFlowState {
 class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
     constructor(props: Readonly<unknown>) {
         super(props);
+        this.uploadPlan = this.uploadPlan.bind(this);
         this.newAppCreated = this.newAppCreated.bind(this);
         this.updateApp = this.updateApp.bind(this);
 
@@ -86,6 +88,20 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                     canJumpTo: false,
                 },
                 {
+                    name: 'View and Edit the plan',
+                    component: (
+                        <WizardContextConsumer>
+                            {({ onNext }) => (
+                                <>
+                                    <PlanTab gotoNextStep={onNext} />
+                                    <Prompt message={navWarn} />
+                                </>
+                            )}
+                        </WizardContextConsumer>
+                    ),
+                    canJumpTo: false,
+                },
+                {
                     name: 'Translate',
                     component: (
                         <>
@@ -100,6 +116,7 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                 aName: '',
                 aStatus: [],
                 aPlan: newPlan(),
+                isGuidedFlow: true,
                 changeApp: () => {
                     /*do nothing*/
                 },
@@ -112,14 +129,38 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                     appContext.aPlan = planJson;
                     this.setState({ appContext });
                 },
-                selectServiceOption: () => {
-                    /*do nothing*/
+                selectServiceOption: (serviceName: string, optionIdx: number): void => {
+                    const appContext = copy(this.state.appContext);
+                    const oldoption = appContext.aPlan.spec.inputs.services[serviceName][0];
+                    appContext.aPlan.spec.inputs.services[serviceName][0] =
+                        appContext.aPlan.spec.inputs.services[serviceName][optionIdx];
+                    appContext.aPlan.spec.inputs.services[serviceName][optionIdx] = oldoption;
+                    this.setState({ appContext }, this.uploadPlan);
                 },
-                deleteServiceOption: () => {
-                    /*do nothing*/
+                deleteServiceOption: (serviceName: string): void => {
+                    const appContext = copy(this.state.appContext);
+                    delete appContext.aPlan.spec.inputs.services[serviceName];
+                    this.setState({ appContext }, this.uploadPlan);
                 },
             },
         };
+    }
+
+    async uploadPlan(): Promise<void> {
+        const url = '/api/v1/applications/' + encodeURIComponent(this.state.appContext.aName) + '/plan';
+        const formdata = new FormData();
+        formdata.append('plan', Yaml.dump(this.state.appContext.aPlan));
+        try {
+            const res = await fetch(url, { method: 'PUT', body: formdata });
+            if (!res.ok)
+                throw new Error(
+                    `Failed to update the plan for the app ${this.state.appContext.aName}. Status: ${res.status}`,
+                );
+            console.log('Uploaded the new plan');
+            this.updateApp();
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async newAppCreated(aName: string, onNext: () => void): Promise<void> {

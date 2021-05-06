@@ -21,6 +21,7 @@ interface IApplicationContext {
     aName: string;
     aStatus: Array<string>;
     aPlan: IPlan;
+    isGuidedFlow: boolean;
     updateApp: () => void;
     changeApp: (appName: string) => void;
     setNewPlan: (plan: string) => void;
@@ -32,6 +33,7 @@ const ApplicationContext: React.Context<IApplicationContext> = React.createConte
     aName: 'App1',
     aStatus: ['New'],
     aPlan: newPlan(),
+    isGuidedFlow: false,
     updateApp: () => {
         /*By default does nothing*/
     },

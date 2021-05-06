@@ -44,6 +44,10 @@ import Yaml from 'js-yaml';
 import { IService } from '@app/Application/Types';
 import { generatePlan, waitForPlan } from '@app/Networking/api';
 
+interface IPlanProps {
+    gotoNextStep?: () => void;
+}
+
 interface IPlanTabState {
     showServiceOption: string;
     showServiceKebab: string;
@@ -52,11 +56,11 @@ interface IPlanTabState {
     waitingForPlan: boolean;
 }
 
-class PlanTab extends React.Component<Readonly<unknown>, IPlanTabState> {
+class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
     declare context: React.ContextType<typeof ApplicationContext>;
     static contextType = ApplicationContext;
 
-    constructor(props: Readonly<unknown>) {
+    constructor(props: IPlanProps) {
         super(props);
         this.refresh = this.refresh.bind(this);
         this.generatePlan = this.generatePlan.bind(this);
@@ -154,17 +158,26 @@ class PlanTab extends React.Component<Readonly<unknown>, IPlanTabState> {
 
     render(): JSX.Element {
         const { showServiceOption, showServiceKebab, planModalIsOpen, planYaml, waitingForPlan } = this.state;
-        const { aName, aPlan, aStatus } = this.context;
+        const { aName, aPlan, aStatus, isGuidedFlow } = this.context;
 
         return (
             <PageSection>
                 <Toolbar>
                     <ToolbarContent>
-                        <ToolbarItem>
-                            <Button variant="primary" onClick={() => this.generatePlan(aName, aStatus)}>
-                                Generate Plan
-                            </Button>
-                        </ToolbarItem>
+                        {isGuidedFlow && (
+                            <ToolbarItem>
+                                <Button variant="primary" onClick={this.props.gotoNextStep}>
+                                    Next Step
+                                </Button>
+                            </ToolbarItem>
+                        )}
+                        {!isGuidedFlow && (
+                            <ToolbarItem>
+                                <Button variant="primary" onClick={() => this.generatePlan(aName, aStatus)}>
+                                    Generate Plan
+                                </Button>
+                            </ToolbarItem>
+                        )}
                         <ToolbarItem>
                             <Button variant="primary" onClick={this.refresh}>
                                 Refresh

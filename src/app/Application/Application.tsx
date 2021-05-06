@@ -171,6 +171,7 @@ interface IApplicationState {
     aName: string;
     aStatus: Array<string>;
     aPlan: IPlan;
+    isGuidedFlow: boolean;
     redirect: boolean;
     changeApp: (x: string) => void;
     updateApp: () => void;
@@ -180,8 +181,6 @@ interface IApplicationState {
 }
 
 class Application extends React.Component<IApplicationProps, IApplicationState> {
-    aPlan: IPlan = newPlan();
-
     constructor(props: IApplicationProps) {
         super(props);
         this.updateApp = this.updateApp.bind(this);
@@ -198,6 +197,7 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
             aName: '',
             aStatus: [],
             aPlan: newPlan(),
+            isGuidedFlow: false,
             redirect: false,
             changeApp: this.changeApp,
             updateApp: this.updateApp,
@@ -228,7 +228,6 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
                 const planjson = Yaml.load(data) as IPlan;
                 planjson.metadata.name = this.state.aName;
                 this.setState({ aPlan: planjson });
-                this.aPlan = planjson;
             } catch (e) {
                 this.setState({ aPlan: newPlan() });
                 console.error(e);

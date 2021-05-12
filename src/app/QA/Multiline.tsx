@@ -33,14 +33,14 @@ class Multiline extends React.Component<IMultilineProps, IMultilineState> {
         super(props);
         this.handleTextAreaChange = this.handleTextAreaChange.bind(this);
         const problem = copy(props.problem);
-        problem.solution.answer = [problem.solution.default ? problem.solution.default[0] : ''];
+        problem.answer = problem.default || '';
         props.setResolvedProblem(problem);
         this.state = { problem };
     }
 
     handleTextAreaChange(value: string): void {
         const problem = copy(this.state.problem);
-        problem.solution.answer = [value];
+        problem.answer = value;
         this.props.setResolvedProblem(problem);
         this.setState({ problem });
     }
@@ -51,14 +51,8 @@ class Multiline extends React.Component<IMultilineProps, IMultilineState> {
         return (
             <div>
                 <span id={problem.id}>{problem.description}</span>
-                <TextArea
-                    value={problem.solution.answer[0]}
-                    onChange={this.handleTextAreaChange}
-                    aria-label="textarea"
-                />
-                <i>
-                    [Hint: {problem.context}] (Default: {problem.solution.default})
-                </i>
+                <TextArea value={problem.answer} onChange={this.handleTextAreaChange} aria-label="textarea" />
+                {problem.hints && problem.hints.length > 0 && <i>[Hint: {problem.hints}]</i>}
             </div>
         );
     }

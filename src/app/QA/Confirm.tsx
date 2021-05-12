@@ -33,14 +33,15 @@ class Confirm extends React.Component<IConfirmProps, IConfirmState> {
         super(props);
         this.handleChange = this.handleChange.bind(this);
         const problem = copy(props.problem);
-        problem.solution.answer = problem.solution.default;
+        problem.answer = problem.default || false;
         props.setResolvedProblem(problem);
         this.state = { problem };
     }
 
-    handleChange(checked: boolean): void {
+    handleChange(checked: boolean, event: React.FormEvent<HTMLInputElement>): void {
+        if (!checked) return;
         const problem = copy(this.state.problem);
-        problem.solution.answer = [checked ? 'true' : 'false'];
+        problem.answer = (event.target as HTMLInputElement).value === 'true';
         this.props.setResolvedProblem(problem);
         this.setState({ problem });
     }
@@ -58,7 +59,7 @@ class Confirm extends React.Component<IConfirmProps, IConfirmState> {
                     label="Yes"
                     value="true"
                     onChange={this.handleChange}
-                    isChecked={this.state.problem.solution.answer[0] === 'true'}
+                    isChecked={this.state.problem.answer}
                 />
                 <Radio
                     aria-label={'No'}
@@ -67,9 +68,9 @@ class Confirm extends React.Component<IConfirmProps, IConfirmState> {
                     label="No"
                     value="false"
                     onChange={this.handleChange}
-                    isChecked={this.state.problem.solution.answer[0] !== 'true'}
+                    isChecked={!this.state.problem.answer}
                 />
-                <i>[Hint: {problem.context}]</i>
+                {problem.hints && problem.hints.length > 0 && <i>[Hint: {problem.hints}]</i>}
             </div>
         );
     }

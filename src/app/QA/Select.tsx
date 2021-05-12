@@ -33,7 +33,7 @@ class Select extends React.Component<ISelectProps, ISelectState> {
         super(props);
         this.handleChange = this.handleChange.bind(this);
         const problem = copy(props.problem);
-        problem.solution.answer = problem.solution.default;
+        problem.answer = problem.default || '';
         props.setResolvedProblem(problem);
         this.state = { problem };
     }
@@ -41,7 +41,7 @@ class Select extends React.Component<ISelectProps, ISelectState> {
     handleChange(checked: boolean, event: React.FormEvent<HTMLInputElement>): void {
         if (!checked) return;
         const problem = copy(this.state.problem);
-        problem.solution.answer = [(event.target as HTMLInputElement).value];
+        problem.answer = (event.target as HTMLInputElement).value;
         this.props.setResolvedProblem(problem);
         this.setState({ problem });
     }
@@ -52,7 +52,7 @@ class Select extends React.Component<ISelectProps, ISelectState> {
         return (
             <div>
                 <span id={problem.id}>{problem.description}</span>
-                {problem.solution.options.map((option: string, idx: number) => (
+                {problem.options.map((option: string, idx: number) => (
                     <Radio
                         aria-label={option}
                         id={`${problem.id}-${option}-${idx}`}
@@ -61,10 +61,10 @@ class Select extends React.Component<ISelectProps, ISelectState> {
                         label={option}
                         value={option}
                         onChange={this.handleChange}
-                        isChecked={problem.solution.answer[0] === option}
+                        isChecked={problem.answer === option}
                     />
                 ))}
-                <i>[Hint: {problem.context}]</i>
+                {problem.hints && problem.hints.length > 0 && <i>[Hint: {problem.hints}]</i>}
             </div>
         );
     }

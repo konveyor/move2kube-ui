@@ -33,14 +33,14 @@ class Input extends React.Component<IInputProps, IInputState> {
         super(props);
         this.handleTextInputChange = this.handleTextInputChange.bind(this);
         const problem = copy(props.problem);
-        problem.solution.answer = [problem.solution.default ? problem.solution.default[0] : ''];
+        problem.answer = problem.default || '';
         props.setResolvedProblem(problem);
         this.state = { problem };
     }
 
     handleTextInputChange(value: string): void {
         const problem = copy(this.state.problem);
-        problem.solution.answer = [value];
+        problem.answer = value;
         this.props.setResolvedProblem(problem);
         this.setState({ problem });
     }
@@ -52,14 +52,12 @@ class Input extends React.Component<IInputProps, IInputState> {
             <div>
                 <span id={problem.id}>{problem.description}</span>
                 <TextInput
-                    value={problem.solution.answer[0]}
+                    value={problem.answer}
                     type="text"
                     onChange={this.handleTextInputChange}
                     aria-label="text input example"
                 />
-                <i>
-                    [Hint: {problem.context}] (Default: {problem.solution.default})
-                </i>
+                {problem.hints && problem.hints.length > 0 && <i>[Hint: {problem.hints}]</i>}
             </div>
         );
     }

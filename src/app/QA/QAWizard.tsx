@@ -78,10 +78,12 @@ class QAWizard extends React.Component<IQAWizardProps, IQAWizardState> {
 
         this.currResolvedProblem = {
             id: '',
+            type: '',
             description: '',
-            context: [],
-            resolved: true,
-            solution: { type: '', default: [], options: [], answer: [] },
+            hints: [],
+            options: [],
+            default: null,
+            answer: null,
         };
         this.state = {
             aName: props.aName,
@@ -97,7 +99,7 @@ class QAWizard extends React.Component<IQAWizardProps, IQAWizardState> {
     }
 
     getComponent(problem: ProblemT): JSX.Element {
-        switch (problem.solution.type) {
+        switch (problem.type) {
             case 'MultiSelect':
                 return <MultiSelect key={problem.id} problem={problem} setResolvedProblem={this.setResolvedProblem} />;
             case 'Select':
@@ -137,9 +139,6 @@ class QAWizard extends React.Component<IQAWizardProps, IQAWizardState> {
                 );
             }
             const question = await res.json();
-            if (!question.solution) {
-                throw new Error('The solution is invalid');
-            }
             const steps = this.state.steps.map((step) => ({ ...step, canJumpTo: false }));
             steps.push({
                 local: false,
@@ -164,8 +163,8 @@ class QAWizard extends React.Component<IQAWizardProps, IQAWizardState> {
                 '/problems/current/solution';
             const options = {
                 method: 'POST',
-                body: JSON.stringify(this.currResolvedProblem),
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.currResolvedProblem),
             };
             const res = await fetch(url, options);
             if (!res.ok) {

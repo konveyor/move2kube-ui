@@ -18,35 +18,24 @@ limitations under the License.
 /*
 // Problem defines the QA problem
 type Problem struct {
-  ID       string       `yaml:"id,omitempty" json:"id,omitempty"`
-  Desc     string       `yaml:"description,omitempty" json:"description,omitempty"`
-  Context  []string     `yaml:"context,omitempty" json:"context,omitempty"`
-  Solution SolutionForm `yaml:"solution" json:"solution,omitempty"`
-  Resolved bool         `yaml:"resolved,omitempty" json:"resolved,omitempty"`
-}
-
-// SolutionForm defines the solution
-type SolutionForm struct {
-  Type    SolutionFormType `yaml:"type,omitempty" json:"type,omitempty"`
-  Default []string         `yaml:"default,omitempty" json:"default,omitempty"`
-  Options []string         `yaml:"options,omitempty" json:"options,omitempty"`
-  Answer  []string         `yaml:"answer" json:"answer"`
+	ID      string           `yaml:"id" json:"id"`
+	Type    SolutionFormType `yaml:"type,omitempty" json:"type,omitempty"`
+	Desc    string           `yaml:"description,omitempty" json:"description,omitempty"`
+	Hints   []string         `yaml:"hints,omitempty" json:"hints,omitempty"`
+	Options []string         `yaml:"options,omitempty" json:"options,omitempty"`
+	Default interface{}      `yaml:"default,omitempty" json:"default,omitempty"`
+	Answer  interface{}      `yaml:"answer,omitempty" json:"answer,omitempty"`
 }
 */
 
 type ProblemT = {
     id: string;
-    description: string;
-    context: Array<string>;
-    solution: SolutionT;
-    resolved: boolean;
-};
-
-type SolutionT = {
     type: string;
-    default: Array<string>;
+    description: string;
+    hints: Array<string>;
     options: Array<string>;
-    answer: Array<string>;
+    default: any;
+    answer: any;
 };
 
-export { ProblemT, SolutionT };
+export { ProblemT };

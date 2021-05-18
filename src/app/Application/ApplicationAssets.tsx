@@ -40,7 +40,8 @@ import { CloseIcon } from '@patternfly/react-icons';
 import { Progress, ProgressMeasureLocation, ProgressVariant } from '@patternfly/react-core';
 
 interface IApplicationAssetUploadProps {
-    update: () => void;
+    update?: () => void;
+    onNext?: () => void;
 }
 
 interface IApplicationAssetUploadState {
@@ -50,7 +51,6 @@ interface IApplicationAssetUploadState {
     isRejected: boolean;
     uploadStatus: string;
     uploadPercent: number;
-    update: () => void;
 }
 
 class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProps, IApplicationAssetUploadState> {
@@ -71,7 +71,6 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
             isRejected: false,
             uploadStatus: '',
             uploadPercent: 0,
-            update: props.update,
         };
     }
 
@@ -85,15 +84,15 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
     }
 
     uploadFile(aName: string): Promise<void> {
-        if (!this.state.file)
-            return new Promise((_, reject) => {
-                const err = 'The file is null. Please upload a valid file.';
-                console.error(err);
-                reject(err);
-            });
+        if (!this.state.file) {
+            const err = 'The file is null. Please upload a valid file.';
+            console.error(err);
+            throw new Error(err);
+        }
+        const file: File = this.state.file;
         const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/assets';
         const formdata = new FormData();
-        formdata.append('file', this.state.file);
+        formdata.append('file', file);
         const xhr = new XMLHttpRequest();
         xhr.addEventListener('progress', (event) => {
             console.log(`Uploaded ${event.loaded} bytes out of ${event.total}`);
@@ -106,7 +105,7 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
                 console.error(err);
                 this.setState({ uploadPercent: 0, uploadStatus: err });
                 alert(
-                    `Failed to upload the file ${this.state.file} for the app ${aName}. Supported file formats are .zip/.tar/.tar.gz/.tgz.
+                    `Failed to upload the file ${file.name} for the app ${aName}. Supported file formats are .zip/.tar/.tar.gz/.tgz.
 If the file size is huge, try removing large files, which are not needed.
 If network is the problem, you can use the command line tool to accomplish the translation. Check out https://move2kube.konveyor.io/installation/cli/`,
                 );
@@ -115,7 +114,7 @@ If network is the problem, you can use the command line tool to accomplish the t
             xhr.addEventListener('load', () => {
                 console.log(`File upload complete. Status: ${xhr.status}`);
                 this.setState({ uploadPercent: 100, uploadStatus: 'File upload complete.' });
-                setTimeout(this.props.update, 10);
+                if (this.props.update) setTimeout(this.props.update, 10);
                 resolve();
             });
             xhr.open('POST', url);
@@ -124,16 +123,16 @@ If network is the problem, you can use the command line tool to accomplish the t
     }
 
     componentDidMount(): void {
-        this.updateTimerID = window.setInterval(this.props.update, 30000);
+        if (this.props.update) this.updateTimerID = window.setInterval(this.props.update, 30000);
     }
 
     componentDidUpdate(): void {
-        clearInterval(this.updateTimerID);
-        this.updateTimerID = window.setInterval(this.props.update, 30000);
+        if (this.updateTimerID) clearInterval(this.updateTimerID);
+        if (this.props.update) this.updateTimerID = window.setInterval(this.props.update, 30000);
     }
 
     componentWillUnmount(): void {
-        clearInterval(this.updateTimerID);
+        if (this.updateTimerID) clearInterval(this.updateTimerID);
     }
 
     render(): JSX.Element {
@@ -145,6 +144,7 @@ If network is the problem, you can use the command line tool to accomplish the t
                 onSubmit={async (event: React.FormEvent<HTMLFormElement>) => {
                     event.preventDefault();
                     await this.uploadFile(aName);
+                    if (this.props.onNext) this.props.onNext();
                 }}
             >
                 <FormGroup

@@ -61,7 +61,7 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                         <WizardContextConsumer>
                             {({ onNext }) => (
                                 <>
-                                    <ApplicationAssetUpload update={onNext} /> <Prompt message={navWarn} />
+                                    <ApplicationAssetUpload onNext={onNext} /> <Prompt message={navWarn} />
                                 </>
                             )}
                         </WizardContextConsumer>

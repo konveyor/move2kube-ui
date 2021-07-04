@@ -94,12 +94,19 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
         const formdata = new FormData();
         formdata.append('file', file);
         const xhr = new XMLHttpRequest();
-        xhr.addEventListener('progress', (event) => {
+        xhr.upload.addEventListener('progress', (event) => {
             console.log(`Uploaded ${event.loaded} bytes out of ${event.total}`);
             const uploadPercent = Math.round((event.loaded / event.total) * 100);
             this.setState({ uploadPercent, uploadStatus: '' });
         });
         return new Promise((resolve, reject) => {
+            xhr.addEventListener('abort', () => {
+                const err = `File upload aborted. Status: ${xhr.status}`;
+                console.error(err);
+                this.setState({ uploadPercent: 0, uploadStatus: err });
+                alert(err);
+                reject(err);
+            });
             xhr.addEventListener('error', () => {
                 const err = `Failed to upload the file. Status: ${xhr.status}`;
                 console.error(err);

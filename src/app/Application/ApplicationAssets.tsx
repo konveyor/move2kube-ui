@@ -114,7 +114,7 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
                 alert(
                     `Failed to upload the file ${file.name} for the app ${aName}. Supported file formats are .zip/.tar/.tar.gz/.tgz.
 If the file size is huge, try removing large files, which are not needed.
-If network is the problem, you can use the command line tool to accomplish the translation. Check out https://move2kube.konveyor.io/installation/cli/`,
+If network is the problem, you can use the command line tool to accomplish the transformation. Check out https://move2kube.konveyor.io/installation/cli/`,
                 );
                 reject(err);
             });

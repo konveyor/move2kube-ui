@@ -16,32 +16,18 @@ limitations under the License.
 
 // https://github.com/konveyor/move2kube/blob/main/types/plan/plan.go#L131-L136
 
-interface IService {
-    serviceName: string;
-    translationType: string;
-    containerBuildType: string;
-}
-
 interface IPlan {
+    apiVersion: string;
+    kind: string;
     metadata: { name: string };
-    spec: {
-        inputs: {
-            services: {
-                [serviceName: string]: Array<IService>;
-            };
-        };
-    };
 }
 
 function newPlan(): IPlan {
     return {
+        apiVersion: '',
+        kind: '',
         metadata: { name: '' },
-        spec: {
-            inputs: {
-                services: {},
-            },
-        },
     };
 }
 
-export { IPlan, IService, newPlan };
+export { IPlan, newPlan };

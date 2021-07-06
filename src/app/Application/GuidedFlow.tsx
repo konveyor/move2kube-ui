@@ -102,7 +102,7 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                     canJumpTo: false,
                 },
                 {
-                    name: 'Translate',
+                    name: 'Transform',
                     component: (
                         <>
                             <ArtifactsTab />
@@ -130,17 +130,10 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                     this.setState({ appContext });
                 },
                 selectServiceOption: (serviceName: string, optionIdx: number): void => {
-                    const appContext = copy(this.state.appContext);
-                    const oldoption = appContext.aPlan.spec.inputs.services[serviceName][0];
-                    appContext.aPlan.spec.inputs.services[serviceName][0] =
-                        appContext.aPlan.spec.inputs.services[serviceName][optionIdx];
-                    appContext.aPlan.spec.inputs.services[serviceName][optionIdx] = oldoption;
-                    this.setState({ appContext }, this.uploadPlan);
+                    /*do nothing*/
                 },
                 deleteServiceOption: (serviceName: string): void => {
-                    const appContext = copy(this.state.appContext);
-                    delete appContext.aPlan.spec.inputs.services[serviceName];
-                    this.setState({ appContext }, this.uploadPlan);
+                    /*do nothing*/
                 },
             },
         };
@@ -216,6 +209,7 @@ class WaitForPlanGeneration extends React.Component<IWaitForPlanGenerationProps>
         try {
             await generatePlan(this.context.aName);
             const plan = await waitForPlan(this.context.aName);
+            console.log('plan', plan);
             this.context.setNewPlan(plan);
             this.props.callback();
         } catch (e) {

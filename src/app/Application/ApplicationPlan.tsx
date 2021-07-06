@@ -15,33 +15,9 @@ limitations under the License.
 */
 
 import React from 'react';
-import {
-    PageSection,
-    TextContent,
-    Text,
-    TextVariants,
-    Modal,
-    ModalVariant,
-    Gallery,
-    Card,
-    Radio,
-    CardBody,
-    TextArea,
-    Toolbar,
-    ToolbarContent,
-    ToolbarItem,
-    Button,
-    CardHeader,
-    CardActions,
-    Dropdown,
-    CardTitle,
-    KebabToggle,
-    DropdownItem,
-    Spinner,
-} from '@patternfly/react-core';
+import { PageSection, TextArea, Toolbar, ToolbarContent, ToolbarItem, Button, Spinner } from '@patternfly/react-core';
 import { ApplicationContext } from './ApplicationContext';
 import Yaml from 'js-yaml';
-import { IService } from '@app/Application/Types';
 import { generatePlan, waitForPlan } from '@app/Networking/api';
 
 interface IPlanProps {
@@ -51,7 +27,6 @@ interface IPlanProps {
 interface IPlanTabState {
     showServiceOption: string;
     showServiceKebab: string;
-    planModalIsOpen: boolean;
     planYaml: string;
     waitingForPlan: boolean;
 }
@@ -64,8 +39,6 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
         super(props);
         this.refresh = this.refresh.bind(this);
         this.generatePlan = this.generatePlan.bind(this);
-        this.openEditPlanModal = this.openEditPlanModal.bind(this);
-        this.closeEditPlanModal = this.closeEditPlanModal.bind(this);
         this.kebabToggle = this.kebabToggle.bind(this);
         this.deleteService = this.deleteService.bind(this);
         this.showServiceOption = this.showServiceOption.bind(this);
@@ -77,7 +50,6 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
         this.state = {
             showServiceOption: 'none',
             showServiceKebab: 'none',
-            planModalIsOpen: false,
             planYaml: '',
             waitingForPlan: false,
         };
@@ -102,15 +74,6 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
             console.error(e);
             alert(`Error while starting plan generation. ${e}`);
         }
-    }
-
-    openEditPlanModal(): void {
-        const planYaml = Yaml.dump(this.context.aPlan);
-        this.setState({ planModalIsOpen: true, planYaml });
-    }
-
-    closeEditPlanModal(): void {
-        this.setState({ planModalIsOpen: false });
     }
 
     kebabToggle(servicename: string): void {
@@ -146,22 +109,23 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
     saveEdittedPlan(): void {
         try {
             this.context.setNewPlan(this.state.planYaml);
-            this.setState({ planModalIsOpen: false });
         } catch (e) {
             alert(`Failed to parse the plan yaml. ${e}`);
         }
     }
 
     componentDidMount(): void {
+        const planYaml = Yaml.dump(this.context.aPlan);
+        this.setState({ planYaml });
         this.refresh();
     }
 
     render(): JSX.Element {
-        const { showServiceOption, showServiceKebab, planModalIsOpen, planYaml, waitingForPlan } = this.state;
-        const { aName, aPlan, aStatus, isGuidedFlow } = this.context;
+        const { planYaml, waitingForPlan } = this.state;
+        const { aName, aStatus, isGuidedFlow } = this.context;
 
         return (
-            <PageSection>
+            <PageSection style={{ height: '80vh', display: 'grid', gridTemplateRows: '4em 1fr' }}>
                 <Toolbar>
                     <ToolbarContent>
                         {isGuidedFlow && (
@@ -185,28 +149,7 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
                         </ToolbarItem>
                         {this.context.aPlan.metadata.name && (
                             <ToolbarItem>
-                                <Button variant="primary" onClick={this.openEditPlanModal}>
-                                    View and edit the plan
-                                </Button>
-                                <Modal
-                                    isOpen={planModalIsOpen}
-                                    variant={ModalVariant.small}
-                                    showClose={true}
-                                    onClose={this.closeEditPlanModal}
-                                    aria-describedby="wiz-modal-example-description"
-                                    aria-labelledby="wiz-modal-example-title"
-                                >
-                                    <TextContent>
-                                        <Button onClick={this.saveEdittedPlan}>Save and close</Button>
-                                        <div style={{ height: '1em' }}></div>
-                                        <TextArea
-                                            aria-label="Plan"
-                                            onChange={this.onPlanEditted}
-                                            value={planYaml}
-                                            rows={100}
-                                        />
-                                    </TextContent>
-                                </Modal>
+                                <Button onClick={this.saveEdittedPlan}>Save and close</Button>
                             </ToolbarItem>
                         )}
                     </ToolbarContent>
@@ -217,128 +160,7 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
                         <Spinner />
                     </>
                 )}
-                {this.context.aPlan && this.context.aPlan.spec && this.context.aPlan.spec.inputs && (
-                    <PageSection>
-                        <TextContent>
-                            <Text component={TextVariants.h2}>Services</Text>
-                        </TextContent>
-                        {Object.entries(aPlan.spec.inputs.services).map(
-                            ([serviceName, service]: [string, Array<IService>], id: number) => (
-                                <Card key={serviceName}>
-                                    <CardHeader>
-                                        <CardActions>
-                                            <Dropdown
-                                                toggle={
-                                                    <KebabToggle
-                                                        onToggle={() => {
-                                                            this.kebabToggle(
-                                                                Object.keys(aPlan.spec.inputs.services)[id],
-                                                            );
-                                                        }}
-                                                    />
-                                                }
-                                                isOpen={Object.keys(aPlan.spec.inputs.services)[id] == showServiceKebab}
-                                                isPlain
-                                                dropdownItems={[
-                                                    <DropdownItem
-                                                        key="link"
-                                                        onClick={() => {
-                                                            this.deleteService(
-                                                                Object.keys(aPlan.spec.inputs.services)[id],
-                                                            );
-                                                        }}
-                                                    >
-                                                        Delete
-                                                    </DropdownItem>,
-                                                ]}
-                                                position={'right'}
-                                            />
-                                        </CardActions>
-                                        <CardTitle>{Object.keys(aPlan.spec.inputs.services)[id]}</CardTitle>
-                                    </CardHeader>
-                                    <PageSection key={Object.keys(aPlan.spec.inputs.services)[id]}>
-                                        <Gallery hasGutter>
-                                            {Object.values(service).map((serviceoption: IService, optionid: number) => (
-                                                <PageSection key={serviceoption.serviceName + '_' + optionid}>
-                                                    <Card isHoverable key={serviceoption.serviceName + '_' + optionid}>
-                                                        <Modal
-                                                            isOpen={
-                                                                serviceoption.serviceName + '_' + optionid ==
-                                                                showServiceOption
-                                                            }
-                                                            variant={ModalVariant.small}
-                                                            showClose={true}
-                                                            onClose={this.closeServiceOption}
-                                                            aria-describedby="wiz-modal-example-description"
-                                                            aria-labelledby="wiz-modal-example-title"
-                                                        >
-                                                            <TextContent>
-                                                                <TextArea
-                                                                    aria-label="service option"
-                                                                    value={Yaml.dump(serviceoption)}
-                                                                    rows={17}
-                                                                />
-                                                            </TextContent>
-                                                        </Modal>
-                                                        <CardBody>
-                                                            <Radio
-                                                                isChecked={optionid == 0}
-                                                                name={serviceoption.serviceName}
-                                                                onChange={() =>
-                                                                    this.handleServiceOptionChange(
-                                                                        serviceoption.serviceName,
-                                                                        optionid,
-                                                                    )
-                                                                }
-                                                                id={serviceoption.serviceName + '_' + optionid}
-                                                                value={serviceoption.serviceName + '_' + optionid}
-                                                                aria-label={serviceoption.serviceName}
-                                                            />
-                                                            <TextContent>
-                                                                <Text
-                                                                    component={TextVariants.h3}
-                                                                    style={{ textAlign: 'center' }}
-                                                                >
-                                                                    {serviceoption.translationType}
-                                                                </Text>
-                                                            </TextContent>
-                                                            <TextContent>
-                                                                <Text
-                                                                    component={TextVariants.p}
-                                                                    style={{ textAlign: 'center' }}
-                                                                >
-                                                                    {serviceoption.containerBuildType}
-                                                                </Text>
-                                                                <div
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        justifyContent: 'center',
-                                                                    }}
-                                                                >
-                                                                    <Button
-                                                                        onClick={() =>
-                                                                            this.showServiceOption(
-                                                                                serviceoption.serviceName +
-                                                                                    '_' +
-                                                                                    optionid,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Details
-                                                                    </Button>
-                                                                </div>
-                                                            </TextContent>
-                                                        </CardBody>
-                                                    </Card>
-                                                </PageSection>
-                                            ))}
-                                        </Gallery>
-                                    </PageSection>
-                                </Card>
-                            ),
-                        )}
-                    </PageSection>
-                )}
+                {!waitingForPlan && <TextArea aria-label="Plan" onChange={this.onPlanEditted} value={planYaml} />}
             </PageSection>
         );
     }

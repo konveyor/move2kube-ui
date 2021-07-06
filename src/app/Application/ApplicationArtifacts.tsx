@@ -119,7 +119,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                 encodeURIComponent(qaartifacts);
             const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
             if (res.status > 300) {
-                alert('There was an error during translation. Please regenerate.');
+                alert('There was an error during transformation. Please regenerate.');
                 throw new Error(
                     `Failed to get the target artifacts ${qaartifacts} for the app ${this.context.aName}. Status: ${res.status}`,
                 );
@@ -165,7 +165,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                         <ToolbarContent>
                             <ToolbarItem>
                                 <Button variant="primary" onClick={this.generate}>
-                                    Translate
+                                    Transform
                                 </Button>
                             </ToolbarItem>
                         </ToolbarContent>

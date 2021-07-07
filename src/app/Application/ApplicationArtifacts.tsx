@@ -154,7 +154,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
         const { artifacts, qaartifacts } = this.state;
         const { aName, aPlan } = this.context;
         const artifactNameToDate = (artifact: string): string => {
-            const unixSeconds = parseInt(artifact.split('_')[1]);
+            const unixSeconds = parseInt(artifact.split('-')[1]);
             return new Date(unixSeconds * 1000).toString(); // seconds to milliseconds
         };
 

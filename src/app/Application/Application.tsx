@@ -33,7 +33,7 @@ import { AssetsTab } from './ApplicationAssets';
 import { ArtifactsTab } from './ApplicationArtifacts';
 import Yaml from 'js-yaml';
 import { IPlan, newPlan, validatePlan } from '@app/Application/Types';
-import {updatePlan} from '@app/Networking/api';
+import { updatePlan } from '@app/Networking/api';
 
 interface IApplicationContextSelectorProps {
     selected: string;
@@ -270,7 +270,7 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
     setNewPlan(plan: string): void {
         const aPlan = Yaml.load(plan) as IPlan;
         const err = validatePlan(aPlan);
-        if(err) {
+        if (err) {
             console.error(err);
             alert(err);
             throw err;

@@ -55,8 +55,10 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
         };
     }
 
-    refresh(): void {
-        this.context.updateApp();
+    async refresh(): Promise<void> {
+        await this.context.updateApp();
+        const planYaml = Yaml.dump(this.context.aPlan);
+        this.setState({ planYaml });
     }
 
     async generatePlan(aName: string, aStatus: Array<string>): Promise<void> {
@@ -115,8 +117,6 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
     }
 
     componentDidMount(): void {
-        const planYaml = Yaml.dump(this.context.aPlan);
-        this.setState({ planYaml });
         this.refresh();
     }
 

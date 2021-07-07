@@ -32,8 +32,8 @@ import { PlanTab } from './ApplicationPlan';
 import { AssetsTab } from './ApplicationAssets';
 import { ArtifactsTab } from './ApplicationArtifacts';
 import Yaml from 'js-yaml';
-import { IPlan, newPlan } from '@app/Application/Types';
-import { copy } from '@app/utils/utils';
+import { IPlan, newPlan, validatePlan } from '@app/Application/Types';
+import {updatePlan} from '@app/Networking/api';
 
 interface IApplicationContextSelectorProps {
     selected: string;
@@ -187,7 +187,6 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
         this.changeApp = this.changeApp.bind(this);
         this.setNewPlan = this.setNewPlan.bind(this);
         this.uploadPlan = this.uploadPlan.bind(this);
-        this.validatePlan = this.validatePlan.bind(this);
         this.selectServiceOption = this.selectServiceOption.bind(this);
         this.deleteServiceOption = this.deleteServiceOption.bind(this);
 
@@ -225,9 +224,9 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
                 if (!res.ok)
                     throw new Error(`Failed to get the plan for the app ${this.state.aName}. Status: ${res.status}`);
                 const data = await res.text();
-                const planjson = Yaml.load(data) as IPlan;
-                planjson.metadata.name = this.state.aName;
-                this.setState({ aPlan: planjson });
+                const aPlan = Yaml.load(data) as IPlan;
+                aPlan.metadata.name = this.state.aName;
+                this.setState({ aPlan });
             } catch (e) {
                 this.setState({ aPlan: newPlan() });
                 console.error(e);
@@ -259,13 +258,8 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
     }
 
     async uploadPlan(): Promise<void> {
-        const url = '/api/v1/applications/' + encodeURIComponent(this.state.aName) + '/plan';
-        const formdata = new FormData();
-        formdata.append('plan', Yaml.dump(this.state.aPlan));
         try {
-            const res = await fetch(url, { method: 'PUT', body: formdata });
-            if (!res.ok)
-                throw new Error(`Failed to update the plan for the app ${this.state.aName}. Status: ${res.status}`);
+            updatePlan(this.state.aName, this.state.aPlan);
             console.log('Uploaded the new plan');
             this.updateApp();
         } catch (e) {
@@ -273,14 +267,14 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
         }
     }
 
-    validatePlan(plan: IPlan): void {
-        // TODO: better plan validation
-        if (!('metadata' in plan)) throw new Error('The plan is missing metadata');
-    }
-
     setNewPlan(plan: string): void {
         const aPlan = Yaml.load(plan) as IPlan;
-        this.validatePlan(aPlan);
+        const err = validatePlan(aPlan);
+        if(err) {
+            console.error(err);
+            alert(err);
+            throw err;
+        }
         this.setState({ aPlan }, this.uploadPlan);
     }
 

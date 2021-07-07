@@ -97,6 +97,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
         this.renderToolbar = this.renderToolbar.bind(this);
         this.actionResolver = this.actionResolver.bind(this);
         this.goToApplication = this.goToApplication.bind(this);
+        this.deleteSelectedRows = this.deleteSelectedRows.bind(this);
 
         this.state = {
             filters: {
@@ -352,6 +353,12 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
                     <ToolbarItem variant="separator" />
                     <ToolbarItem>
                         <Button onClick={() => this.props.history.push('/newapp')}>New Application</Button>
+                        <ToolbarItem variant="separator" />
+                        {this.state.rows.some((row) => row.selected) && (
+                            <Button variant="danger" onClick={this.deleteSelectedRows}>
+                                Delete Selected
+                            </Button>
+                        )}
                     </ToolbarItem>
                 </ToolbarContent>
             </Toolbar>
@@ -380,10 +387,15 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
                 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
                 onClick: (_: React.MouseEvent, __: number, rowData: IRowData) => {
                     if (!rowData.cells || rowData.cells.length === 0) return;
-                    this.deleteApp((rowData as RowT).cells[0].aName as string);
+                    this.deleteApp((rowData as RowT).cells[0].aName);
                 },
             },
         ];
+    }
+
+    deleteSelectedRows() {
+        const selectedRows = this.state.rows.filter((row) => row.selected);
+        selectedRows.forEach((selectedRow) => this.deleteApp(selectedRow.cells[0].aName));
     }
 
     render(): JSX.Element {

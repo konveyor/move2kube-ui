@@ -285,17 +285,11 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
     }
 
     selectServiceOption(serviceName: string, optionIdx: number): void {
-        const aPlan = copy(this.state.aPlan);
-        const oldoption = aPlan.spec.inputs.services[serviceName][0];
-        aPlan.spec.inputs.services[serviceName][0] = aPlan.spec.inputs.services[serviceName][optionIdx];
-        aPlan.spec.inputs.services[serviceName][optionIdx] = oldoption;
-        this.setState({ aPlan }, this.uploadPlan);
+        /*do nothing*/
     }
 
     deleteServiceOption(serviceName: string): void {
-        const aPlan = copy(this.state.aPlan);
-        delete aPlan.spec.inputs.services[serviceName];
-        this.setState({ aPlan }, this.uploadPlan);
+        /*do nothing*/
     }
 
     componentDidMount(): void {

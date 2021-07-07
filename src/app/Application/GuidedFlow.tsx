@@ -21,11 +21,11 @@ import { ApplicationContext, IApplicationContext } from '@app/Application/Applic
 import { NewAppForm } from '@app/Application/NewApplication';
 import { ApplicationAssetUpload } from '@app/Application/ApplicationAssets';
 import { ArtifactsTab } from '@app/Application/ApplicationArtifacts';
-import { IPlan, newPlan } from '@app/Application/Types';
+import { IPlan, newPlan, validatePlan } from '@app/Application/Types';
 import { PlanTab } from '@app/Application/ApplicationPlan';
 import Yaml from 'js-yaml';
 import { copy } from '@app/utils/utils';
-import { createApp } from '@app/Networking/api';
+import { createApp, updatePlan } from '@app/Networking/api';
 import { generatePlan, waitForPlan, updateStatus } from '@app/Networking/api';
 import { Prompt } from 'react-router-dom';
 
@@ -125,9 +125,15 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                 },
                 setNewPlan: (plan: string) => {
                     const appContext = copy(this.state.appContext);
-                    const planJson = Yaml.load(plan) as IPlan;
-                    appContext.aPlan = planJson;
-                    this.setState({ appContext });
+                    const aPlan = Yaml.load(plan) as IPlan;
+                    const err = validatePlan(aPlan);
+                    if(err) {
+                        console.error(err);
+                        alert(err);
+                        throw err;
+                    }
+                    appContext.aPlan = aPlan;
+                    this.setState({ appContext }, this.uploadPlan);
                 },
                 selectServiceOption: (serviceName: string, optionIdx: number): void => {
                     /*do nothing*/
@@ -140,15 +146,8 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
     }
 
     async uploadPlan(): Promise<void> {
-        const url = '/api/v1/applications/' + encodeURIComponent(this.state.appContext.aName) + '/plan';
-        const formdata = new FormData();
-        formdata.append('plan', Yaml.dump(this.state.appContext.aPlan));
         try {
-            const res = await fetch(url, { method: 'PUT', body: formdata });
-            if (!res.ok)
-                throw new Error(
-                    `Failed to update the plan for the app ${this.state.appContext.aName}. Status: ${res.status}`,
-                );
+            updatePlan(this.state.appContext.aName, this.state.appContext.aPlan);
             console.log('Uploaded the new plan');
             this.updateApp();
         } catch (e) {
@@ -209,7 +208,6 @@ class WaitForPlanGeneration extends React.Component<IWaitForPlanGenerationProps>
         try {
             await generatePlan(this.context.aName);
             const plan = await waitForPlan(this.context.aName);
-            console.log('plan', plan);
             this.context.setNewPlan(plan);
             this.props.callback();
         } catch (e) {

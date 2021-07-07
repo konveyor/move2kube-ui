@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { IPlan } from "@app/Application/Types";
+import Yaml from 'js-yaml';
+
 async function wait(seconds: number): Promise<void> {
     return new Promise((resolve) => {
         setTimeout(resolve, seconds * 1000);
@@ -73,4 +76,12 @@ async function getSupportInfo(): Promise<ISupportInfo> {
     return await res.json();
 }
 
-export { createApp, generatePlan, waitForPlan, updateStatus, getSupportInfo, ISupportInfo };
+async function updatePlan(aName: string, aPlan: IPlan): Promise<void> {
+    const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/plan';
+    const body = new FormData();
+    body.append('plan', Yaml.dump(aPlan));
+    const res = await fetch(url, { method: 'PUT', body });
+    if (!res.ok) throw new Error(`Failed to update the plan for the app ${aName}. Status: ${res.status}`);
+}
+
+export { ISupportInfo, createApp, generatePlan, waitForPlan, updateStatus, getSupportInfo, updatePlan };

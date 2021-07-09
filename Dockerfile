@@ -13,7 +13,7 @@
 #   limitations under the License.
 
 ### Builder image ###
-FROM registry.fedoraproject.org/fedora-minimal:latest as build_base
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as build_base
 # allows microdnf to install yarn
 RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
 RUN microdnf -y install yarn nodejs && microdnf clean all
@@ -26,7 +26,7 @@ RUN npm prune --production
 
 
 ### Run Image ###
-FROM registry.fedoraproject.org/fedora-minimal:latest
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 # reads from environment variable first, otherwise fall back to move2kubeapi value
 ARG MOVE2KUBEAPI

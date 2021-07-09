@@ -16,7 +16,8 @@ node_modules
 build
 .dockerignore
 Dockerfile
-Dockerfile.prod
+Dockerfile.aio
+Dockerfile.dev
 docker-compose.yml
 contributing.md
 code-of-conduct.md

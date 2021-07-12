@@ -30,11 +30,10 @@ function newPlan(): IPlan {
     };
 }
 
-function validatePlan(plan: IPlan): (Error | null) {
+function validatePlan(plan: IPlan): Error | null {
     // TODO: better plan validation
     if (!('metadata' in plan)) return new Error('The plan is missing metadata');
     return null;
 }
-
 
 export { IPlan, newPlan, validatePlan };

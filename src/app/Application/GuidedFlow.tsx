@@ -61,7 +61,8 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                         <WizardContextConsumer>
                             {({ onNext }) => (
                                 <>
-                                    <ApplicationAssetUpload onNext={onNext} /> <Prompt message={navWarn} />
+                                    <ApplicationAssetUpload isCustomization={false} onNext={onNext} />{' '}
+                                    <Prompt message={navWarn} />
                                 </>
                             )}
                         </WizardContextConsumer>
@@ -127,7 +128,7 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                     const appContext = copy(this.state.appContext);
                     const aPlan = Yaml.load(plan) as IPlan;
                     const err = validatePlan(aPlan);
-                    if(err) {
+                    if (err) {
                         console.error(err);
                         alert(err);
                         throw err;

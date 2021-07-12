@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { IPlan } from "@app/Application/Types";
+import { IPlan } from '@app/Application/Types';
 import Yaml from 'js-yaml';
 
 async function wait(seconds: number): Promise<void> {

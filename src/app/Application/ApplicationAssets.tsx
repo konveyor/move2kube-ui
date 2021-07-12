@@ -38,8 +38,10 @@ import {
 import { ApplicationContext } from './ApplicationContext';
 import { CloseIcon } from '@patternfly/react-icons';
 import { Progress, ProgressMeasureLocation, ProgressVariant } from '@patternfly/react-core';
+import { Tooltip } from '@patternfly/react-core';
 
 interface IApplicationAssetUploadProps {
+    isCustomization: boolean;
     update?: () => void;
     onNext?: () => void;
 }
@@ -90,7 +92,10 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
             throw new Error(err);
         }
         const file: File = this.state.file;
-        const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/assets';
+        const url =
+            '/api/v1/applications/' +
+            encodeURIComponent(aName) +
+            (this.props.isCustomization ? '/customizations' : '/assets');
         const formdata = new FormData();
         formdata.append('file', file);
         const xhr = new XMLHttpRequest();
@@ -143,6 +148,7 @@ If network is the problem, you can use the command line tool to accomplish the t
     }
 
     render(): JSX.Element {
+        const { isCustomization } = this.props;
         const { file: value, filename, isLoading, isRejected, uploadPercent, uploadStatus } = this.state;
         const { aName } = this.context;
 
@@ -187,7 +193,7 @@ If network is the problem, you can use the command line tool to accomplish the t
                     />
                 </FormGroup>
                 <Button variant="secondary" type="submit">
-                    Upload Asset
+                    Upload {isCustomization ? 'Customization' : 'Asset'}
                 </Button>
             </Form>
         );
@@ -196,8 +202,9 @@ If network is the problem, you can use the command line tool to accomplish the t
 
 interface IAssetsTabState {
     isUploadAssetModalOpen: boolean;
-    isCollectModalOpen: boolean;
+    isUploadCustomizationModalOpen: boolean;
     assets: Array<string>;
+    customizations: Array<string>;
 }
 
 class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
@@ -207,46 +214,47 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
     constructor(props: Readonly<unknown>) {
         super(props);
         this.update = this.update.bind(this);
-        this.openAssetUploadModal = this.openAssetUploadModal.bind(this);
-        this.closeAssetUploadModal = this.closeAssetUploadModal.bind(this);
-        this.openCollectModal = this.openCollectModal.bind(this);
-        this.closeCollectModal = this.closeCollectModal.bind(this);
+        this.toggleAssetUploadModal = this.toggleAssetUploadModal.bind(this);
+        this.toggleCustomizationUploadModal = this.toggleCustomizationUploadModal.bind(this);
         this.delete = this.delete.bind(this);
+        this.deleteCustomization = this.deleteCustomization.bind(this);
 
         this.state = {
             isUploadAssetModalOpen: false,
-            isCollectModalOpen: false,
+            isUploadCustomizationModalOpen: false,
             assets: [],
+            customizations: [],
         };
     }
 
     async update(): Promise<void> {
         try {
-            const res = await fetch('/api/v1/applications/' + encodeURIComponent(this.context.aName) + '/assets', {
+            // assets
+            const aName = this.context.aName;
+            const res1 = await fetch('/api/v1/applications/' + encodeURIComponent(aName) + '/assets', {
                 headers: { 'Content-Type': 'application/json' },
             });
-            if (!res.ok) throw new Error(`Failed to get the assets for ${this.context.aName}. Status: ${res.status}`);
-            const assets = await res.json();
+            if (!res1.ok) throw new Error(`Failed to get the assets for ${aName}. Status: ${res1.status}`);
+            const assets = await res1.json();
             this.setState({ assets }, this.context.updateApp);
+            // customizations
+            const res2 = await fetch('/api/v1/applications/' + encodeURIComponent(aName) + '/customizations', {
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!res2.ok) throw new Error(`Failed to get the customizations for ${aName}. Status: ${res2.status}`);
+            const customizations = await res2.json();
+            this.setState({ customizations }, this.context.updateApp);
         } catch (e) {
             console.error(e);
         }
     }
 
-    openAssetUploadModal(): void {
-        this.setState({ isUploadAssetModalOpen: true });
+    toggleAssetUploadModal(open: boolean): void {
+        this.setState({ isUploadAssetModalOpen: open });
     }
 
-    closeAssetUploadModal(): void {
-        this.setState({ isUploadAssetModalOpen: false });
-    }
-
-    openCollectModal(): void {
-        this.setState({ isCollectModalOpen: true });
-    }
-
-    closeCollectModal(): void {
-        this.setState({ isCollectModalOpen: false });
+    toggleCustomizationUploadModal(open: boolean): void {
+        this.setState({ isUploadCustomizationModalOpen: open });
     }
 
     async delete(asset: string): Promise<void> {
@@ -257,9 +265,29 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
                 '/assets/' +
                 encodeURIComponent(asset);
             const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
-            if (res.status > 300) {
-                alert('Error while trying to delete asset.');
-                throw new Error(`Failed to delete the asset ${asset} of ${this.context.aName}. Status: ${res.status}`);
+            if (!res.ok) {
+                const err = `Failed to delete the asset ${asset} of ${this.context.aName}. Status: ${res.status}`;
+                alert(err);
+                throw new Error(err);
+            }
+            this.update();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async deleteCustomization(customization: string): Promise<void> {
+        try {
+            const url =
+                '/api/v1/applications/' +
+                encodeURIComponent(this.context.aName) +
+                '/customizations/' +
+                encodeURIComponent(customization);
+            const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+            if (!res.ok) {
+                const err = `Failed to delete the customization ${customization} of ${this.context.aName}. Status: ${res.status}`;
+                alert(err);
+                throw new Error(err);
             }
             this.update();
         } catch (e) {
@@ -272,90 +300,148 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
     }
 
     render(): JSX.Element {
-        const { isCollectModalOpen, isUploadAssetModalOpen, assets } = this.state;
+        const { isUploadAssetModalOpen, isUploadCustomizationModalOpen, assets, customizations } = this.state;
         const { aName } = this.context;
 
         return (
-            <>
+            <div className="assets-wrapper">
                 <PageSection>
                     <Toolbar>
                         <ToolbarContent>
                             <ToolbarItem>
-                                <Button variant="primary" onClick={this.openAssetUploadModal}>
+                                <Button variant="primary" onClick={() => this.toggleAssetUploadModal(true)}>
                                     Upload Asset
                                 </Button>
                                 <Modal
                                     isOpen={isUploadAssetModalOpen}
                                     variant={ModalVariant.small}
                                     showClose={true}
-                                    onClose={this.closeAssetUploadModal}
+                                    onClose={() => this.toggleAssetUploadModal(false)}
                                     aria-describedby="wiz-modal-example-description"
                                     aria-labelledby="wiz-modal-example-title"
                                 >
-                                    <ApplicationAssetUpload update={this.update}></ApplicationAssetUpload>
+                                    <ApplicationAssetUpload
+                                        isCustomization={false}
+                                        update={this.update}
+                                    ></ApplicationAssetUpload>
+                                </Modal>
+                            </ToolbarItem>
+                        </ToolbarContent>
+                    </Toolbar>
+                    <Gallery hasGutter>
+                        {assets.map((asset) => (
+                            <PageSection key={asset}>
+                                <Card isHoverable>
+                                    <CardHeader>
+                                        <CardActions>
+                                            <CloseIcon onClick={() => this.delete(asset)} />
+                                        </CardActions>
+                                    </CardHeader>
+                                    <CardBody>
+                                        <TextContent>
+                                            <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
+                                                {asset}
+                                            </Text>
+                                            <a
+                                                href={
+                                                    '/api/v1/applications/' +
+                                                    encodeURIComponent(aName) +
+                                                    '/assets/' +
+                                                    encodeURIComponent(asset)
+                                                }
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                <Text component={TextVariants.h3} style={{ textAlign: 'center' }}>
+                                                    Download
+                                                </Text>
+                                            </a>
+                                        </TextContent>
+                                    </CardBody>
+                                </Card>
+                            </PageSection>
+                        ))}
+                    </Gallery>
+                </PageSection>
+                <PageSection>
+                    <Toolbar>
+                        <ToolbarContent>
+                            <ToolbarItem>
+                                <Button variant="primary" onClick={() => this.toggleCustomizationUploadModal(true)}>
+                                    Upload Customization
+                                </Button>
+                                <Modal
+                                    isOpen={isUploadCustomizationModalOpen}
+                                    variant={ModalVariant.small}
+                                    showClose={true}
+                                    onClose={() => this.toggleCustomizationUploadModal(false)}
+                                    aria-describedby="wiz-modal-example-description"
+                                    aria-labelledby="wiz-modal-example-title"
+                                >
+                                    <ApplicationAssetUpload
+                                        isCustomization={true}
+                                        update={this.update}
+                                    ></ApplicationAssetUpload>
                                 </Modal>
                             </ToolbarItem>
                             <ToolbarItem>
-                                <Button variant="primary" onClick={this.openCollectModal}>
-                                    Collect Source/Target Artifacts
-                                </Button>
-                                <Modal
-                                    isOpen={isCollectModalOpen}
-                                    variant={ModalVariant.small}
-                                    showClose={true}
-                                    onClose={this.closeCollectModal}
-                                    aria-describedby="wiz-modal-example-description"
-                                    aria-labelledby="wiz-modal-example-title"
-                                >
-                                    <TextContent>
-                                        <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
-                                            For collecting data, download the{' '}
+                                <Tooltip
+                                    exitDelay={500}
+                                    content={
+                                        <div>
+                                            For collecting data, download the
                                             <a
                                                 href="https://move2kube.konveyor.io/installation/cli/"
                                                 target="_blank"
                                                 rel="noreferrer"
                                             >
                                                 move2kube command line tool
-                                            </a>{' '}
+                                            </a>
                                             and run &apos;move2kube collect&apos;, and zip the results and upload here.
-                                        </Text>
-                                    </TextContent>
-                                </Modal>
+                                        </div>
+                                    }
+                                >
+                                    <span style={{ border: '1px dashed' }}>Collect Source/Target Artifacts</span>
+                                </Tooltip>
                             </ToolbarItem>
                         </ToolbarContent>
                     </Toolbar>
-                </PageSection>
-                <Gallery hasGutter>
-                    {assets.map((asset) => (
-                        <PageSection key={asset}>
-                            <Card isHoverable key={asset}>
-                                <CardHeader>
-                                    <CardActions>
-                                        <CloseIcon onClick={() => this.delete(asset)} />
-                                    </CardActions>
-                                </CardHeader>
-                                <CardBody>
-                                    <TextContent>
-                                        <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
-                                            {asset}
-                                        </Text>
-                                        <a
-                                            href={'/api/v1/applications/' + aName + '/assets/' + asset}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                        >
-                                            {' '}
-                                            <Text component={TextVariants.h3} style={{ textAlign: 'center' }}>
-                                                Download
+                    <Gallery hasGutter>
+                        {customizations.map((customization) => (
+                            <PageSection key={customization}>
+                                <Card isHoverable>
+                                    <CardHeader>
+                                        <CardActions>
+                                            <CloseIcon onClick={() => this.deleteCustomization(customization)} />
+                                        </CardActions>
+                                    </CardHeader>
+                                    <CardBody>
+                                        <TextContent>
+                                            <Text component={TextVariants.h1} style={{ textAlign: 'center' }}>
+                                                {customization}
                                             </Text>
-                                        </a>
-                                    </TextContent>
-                                </CardBody>
-                            </Card>
-                        </PageSection>
-                    ))}
-                </Gallery>
-            </>
+                                            <a
+                                                href={
+                                                    '/api/v1/applications/' +
+                                                    encodeURIComponent(aName) +
+                                                    '/customizations/' +
+                                                    encodeURIComponent(customization)
+                                                }
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                <Text component={TextVariants.h3} style={{ textAlign: 'center' }}>
+                                                    Download
+                                                </Text>
+                                            </a>
+                                        </TextContent>
+                                    </CardBody>
+                                </Card>
+                            </PageSection>
+                        ))}
+                    </Gallery>
+                </PageSection>
+            </div>
         );
     }
 }

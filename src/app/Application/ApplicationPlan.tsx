@@ -149,7 +149,7 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
                         </ToolbarItem>
                         {this.context.aPlan.metadata.name && (
                             <ToolbarItem>
-                                <Button onClick={this.saveEdittedPlan}>Save and close</Button>
+                                <Button onClick={this.saveEdittedPlan}>Save</Button>
                             </ToolbarItem>
                         )}
                     </ToolbarContent>

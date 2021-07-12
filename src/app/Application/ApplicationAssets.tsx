@@ -368,7 +368,7 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
                         <ToolbarContent>
                             <ToolbarItem>
                                 <Button variant="primary" onClick={() => this.toggleCustomizationUploadModal(true)}>
-                                    Upload Customizations
+                                    Upload Customization
                                 </Button>
                                 <Modal
                                     isOpen={isUploadCustomizationModalOpen}

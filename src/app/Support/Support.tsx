@@ -25,7 +25,8 @@ import {
     EmptyStateBody,
 } from '@patternfly/react-core';
 import { Table, TableBody } from '@patternfly/react-table';
-import { getSupportInfo, ISupportInfo } from '@app/Networking/api';
+import { getSupportInfo } from '@app/Networking/api';
+import { ISupportInfo } from '@app/Networking/types';
 
 export interface ISupportProps {
     sampleProp?: string;

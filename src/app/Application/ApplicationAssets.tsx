@@ -121,6 +121,9 @@ class ApplicationAssetUpload extends React.Component<IApplicationAssetUploadProp
 If the file size is huge, try removing large files, which are not needed.
 If network is the problem, you can use the command line tool to accomplish the transformation. Check out https://move2kube.konveyor.io/installation/cli/`,
                 );
+                if (xhr.status === 403) {
+                    this.context.goToRoute('/login', 'unauthorized');
+                }
                 reject(err);
             });
             xhr.addEventListener('load', () => {
@@ -232,14 +235,14 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
             // assets
             const aName = this.context.aName;
             const res1 = await fetch('/api/v1/applications/' + encodeURIComponent(aName) + '/assets', {
-                headers: { 'Content-Type': 'application/json' },
+                headers: { Accept: 'application/json' },
             });
             if (!res1.ok) throw new Error(`Failed to get the assets for ${aName}. Status: ${res1.status}`);
             const assets = await res1.json();
             this.setState({ assets }, this.context.updateApp);
             // customizations
             const res2 = await fetch('/api/v1/applications/' + encodeURIComponent(aName) + '/customizations', {
-                headers: { 'Content-Type': 'application/json' },
+                headers: { Accept: 'application/json' },
             });
             if (!res2.ok) throw new Error(`Failed to get the customizations for ${aName}. Status: ${res2.status}`);
             const customizations = await res2.json();
@@ -264,7 +267,7 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
                 encodeURIComponent(this.context.aName) +
                 '/assets/' +
                 encodeURIComponent(asset);
-            const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+            const res = await fetch(url, { method: 'DELETE', headers: { Accept: 'application/json' } });
             if (!res.ok) {
                 const err = `Failed to delete the asset ${asset} of ${this.context.aName}. Status: ${res.status}`;
                 alert(err);
@@ -283,7 +286,7 @@ class AssetsTab extends React.Component<Readonly<unknown>, IAssetsTabState> {
                 encodeURIComponent(this.context.aName) +
                 '/customizations/' +
                 encodeURIComponent(customization);
-            const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+            const res = await fetch(url, { method: 'DELETE', headers: { Accept: 'application/json' } });
             if (!res.ok) {
                 const err = `Failed to delete the customization ${customization} of ${this.context.aName}. Status: ${res.status}`;
                 alert(err);

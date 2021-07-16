@@ -14,33 +14,35 @@
 
 ARG VERSION=latest
 
-### Build Image ###
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as build_base
-# allows microdnf to install yarn
-RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-RUN microdnf -y install yarn nodejs \
-    && microdnf clean all
-COPY package.json /app/
-COPY yarn.lock /app/
+### Builder Image ###
+FROM registry.access.redhat.com/ubi8/nodejs-14-minimal:1-11 as build_base
+USER root:root
 WORKDIR /app
-RUN yarn
-COPY . /app
-RUN yarn build
-RUN npm prune --production
+# install yarn
+RUN npm install -g yarn
+ENV PATH="${PATH}:${HOME}/.npm-global/bin/"
+# copy sources
+COPY . .
+# install dependencies and build the project
+RUN yarn install && yarn run build
+# prune dev dependencies for production https://yarnpkg.com/getting-started/migration#renamed
+RUN yarn workspaces focus --all --production
 
-### Run Image ###
+### Runner Image ###
 FROM quay.io/konveyor/move2kube-api:${VERSION}
 ENV MOVE2KUBEAPI=http://localhost:9000
 ENV MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-aio-dockerfile"
-
-RUN microdnf -y install nodejs \
-    && microdnf clean all \
-    && rm -rf /var/cache/yum
+ENV NODE_ENV=production
+# install nodejs 14
+# https://catalog.redhat.com/software/containers/ubi8/nodejs-14-minimal/6065b8e1b92fbda3a4c65d91?container-tabs=dockerfile
+RUN echo -e "[nodejs]\nname=nodejs\nstream=14\nprofiles=\nstate=enabled\n" > /etc/dnf/modules.d/nodejs.module
+RUN microdnf -y install nodejs && microdnf clean all && rm -rf /var/cache/yum
+# copy build output
 WORKDIR /workspace
 COPY --from=build_base /app/dist /app/dist
 COPY --from=build_base /app/server.js /app/server.js
 COPY --from=build_base /app/package.json /app/package.json
 COPY --from=build_base /app/node_modules /app/node_modules
-
-CMD cd /workspace && move2kube-api -p 9000 & cd /app && npm start
+# run the app
 EXPOSE 8080
+CMD cd /workspace && move2kube-api -p 9000 & cd /app && node server.js

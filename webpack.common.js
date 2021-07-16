@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,11 @@ limitations under the License.
 */
 
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-const Dotenv = require('dotenv-webpack');
 const BG_IMAGES_DIRNAME = 'bgimages';
+const Dotenv = require('dotenv-webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = () => {
     return {
@@ -63,7 +64,7 @@ module.exports = () => {
                 },
                 {
                     test: /\.svg$/,
-                    include: (input) => input.indexOf('background-filter.svg') > 1,
+                    include: (input) => input.indexOf('background-filter.svg') > 1, // TODO: can this be replaced by .includes() ?
                     use: [
                         {
                             loader: 'url-loader',
@@ -79,9 +80,9 @@ module.exports = () => {
                     test: /\.svg$/,
                     // only process SVG modules with this loader if they live under a 'bgimages' directory
                     // this is primarily useful when applying a CSS background using an SVG
-                    include: (input) => input.indexOf(BG_IMAGES_DIRNAME) > -1,
+                    include: (input) => input.includes(BG_IMAGES_DIRNAME),
                     use: {
-                        loader: 'svg-url-loader',
+                        loader: 'url-loader',
                         options: {},
                     },
                 },
@@ -90,12 +91,12 @@ module.exports = () => {
                     // only process SVG modules with this loader when they don't live under a 'bgimages',
                     // 'fonts', or 'pficon' directory, those are handled with other loaders
                     include: (input) =>
-                        input.indexOf(BG_IMAGES_DIRNAME) === -1 &&
-                        input.indexOf('fonts') === -1 &&
-                        input.indexOf('background-filter') === -1 &&
-                        input.indexOf('pficon') === -1,
+                        !input.includes(BG_IMAGES_DIRNAME) &&
+                        !input.includes('fonts') &&
+                        !input.includes('background-filter') &&
+                        !input.includes('pficon'),
                     use: {
-                        loader: 'raw-loader',
+                        loader: 'url-loader',
                         options: {},
                     },
                 },
@@ -141,6 +142,7 @@ module.exports = () => {
             new HtmlWebpackPlugin({
                 template: path.resolve(__dirname, 'src', 'index.html'),
             }),
+            new FaviconsWebpackPlugin('src/app/favicon.svg'),
             new Dotenv({
                 systemvars: true,
                 silent: true,

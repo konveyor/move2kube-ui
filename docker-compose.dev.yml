@@ -15,7 +15,9 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - "./src:/app/src"
+      - "./secrets/auth.json:/app/auth.json"
     image: quay.io/konveyor/move2kube-ui:latest
+    command: ["node", "server.js", "--auth", "auth.json", "--log", "m2k-ui-server.log"]
     environment:
       - MOVE2KUBEAPI=http://move2kubeapi:8080
     ports:

@@ -7,11 +7,11 @@
     "repository": "https://github.com/konveyor/move2kube-ui.git",
     "scripts": {
         "start": "node server.js",
-        "start:dev": "webpack-dev-server --hot --color --progress --info=true --config webpack.dev.js",
-        "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
-        "dr:surge": "node dr-surge.js",
-        "build": "webpack --config webpack.prod.js && yarn run dr:surge",
-        "dev": "yarn lint && MOVE2KUBE_API_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-api:latest --format='{{.ID}}')\" MOVE2KUBE_UI_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-ui:latest --format='{{.ID}}')\" docker-compose -f docker-compose.dev.yml up --build --abort-on-container-exit",
+        "start:dev": "node server.js",
+        "start:dev-live": "webpack-dev-server --hot --color --progress --info=true --config webpack.dev.js",
+        "lint": "eslint server.js --fix && eslint '*/**/*.{js,ts,tsx}' --fix",
+        "build": "webpack --config webpack.prod.js && echo 'https://surge.sh/help/adding-a-200-page-for-client-side-routing' && cp dist/index.html dist/200.html",
+        "dev": "yarn run lint && MOVE2KUBE_API_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-api:latest --format='{{.ID}}')\" MOVE2KUBE_UI_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-ui:latest --format='{{.ID}}')\" docker-compose -f docker-compose.dev.yml up --build --abort-on-container-exit",
         "prod": "MOVE2KUBE_API_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-api:latest --format='{{.ID}}')\" MOVE2KUBE_UI_IMAGE_HASH=\"$(docker inspect quay.io/konveyor/move2kube-ui:latest --format='{{.ID}}')\" docker-compose up --build --abort-on-container-exit"
     },
     "dependencies": {
@@ -23,16 +23,30 @@
         "@types/js-yaml": "^4.0.0",
         "@types/react-router-dom": "^5.1.7",
         "express": "^4.17.1",
+        "express-session": "^1.17.2",
         "http-proxy-middleware": "^1.0.4",
+        "jose": "^3.14.3",
         "js-yaml": "^4.0.0",
+        "jsonschema": "^1.4.0",
+        "leveldown": "^6.0.0",
+        "levelup": "^5.0.1",
+        "node-fetch": "^2.6.1",
+        "passport": "^0.4.1",
+        "passport-oauth2": "^1.6.0",
+        "passport-saml": "^3.1.0",
         "query-string": "^6.13.7",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "react-router-dom": "^5.2.0",
         "react-router-last-location": "^2.0.1",
-        "tslib": "^2.1.0"
+        "session-file-store": "^1.5.0",
+        "tslib": "^2.1.0",
+        "winston": "^3.3.3",
+        "yargs": "^17.0.1"
     },
     "devDependencies": {
+        "@types/node-fetch": "^2.5.11",
+        "@types/passport-oauth2": "^1.4.11",
         "@types/react": "^17.0.3",
         "@types/react-dom": "^17.0.3",
         "@typescript-eslint/eslint-plugin": "^4.19.0",
@@ -43,7 +57,8 @@
         "eslint-config-prettier": "^8.1.0",
         "eslint-plugin-prettier": "^3.3.1",
         "eslint-plugin-react": "^7.23.1",
-        "file-loader": "^6.1.0",
+        "favicons-webpack-plugin": "4",
+        "file-loader": "^6.2.0",
         "html-webpack-plugin": "^4.5.0",
         "mini-css-extract-plugin": "^0.11.2",
         "optimize-css-assets-webpack-plugin": "^5.0.4",
@@ -57,5 +72,6 @@
         "webpack-cli": "^3.3.12",
         "webpack-dev-server": "^3.11.0",
         "webpack-merge": "^4.1.4"
-    }
+    },
+    "packageManager": "yarn@3.0.0"
 }

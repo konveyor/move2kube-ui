@@ -15,19 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import { IPlan, newPlan } from '@app/Application/Types';
-
-interface IApplicationContext {
-    aName: string;
-    aStatus: Array<string>;
-    aPlan: IPlan;
-    isGuidedFlow: boolean;
-    updateApp: () => void;
-    changeApp: (appName: string) => void;
-    setNewPlan: (plan: string) => void;
-    selectServiceOption: (serviceName: string, optionIdx: number) => void;
-    deleteServiceOption: (serviceName: string) => void;
-}
+import { IApplicationContext, newPlan } from '@app/Application/Types';
 
 const ApplicationContext: React.Context<IApplicationContext> = React.createContext<IApplicationContext>({
     aName: 'App1',
@@ -40,19 +28,19 @@ const ApplicationContext: React.Context<IApplicationContext> = React.createConte
     changeApp: () => {
         /*By default does nothing*/
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setNewPlan: (plan: string) => {
+    setNewPlan: (_: string) => {
         /*By default does nothing*/
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    selectServiceOption: (serviceName: string, optionIdx: number) => {
+    selectServiceOption: (_: string, __: number) => {
         /*By default does nothing*/
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    deleteServiceOption: (serviceName: string) => {
+    deleteServiceOption: (_: string) => {
+        /*By default does nothing*/
+    },
+    goToRoute: (_: string, __?: string) => {
         /*By default does nothing*/
     },
 });
 ApplicationContext.displayName = 'ApplicationContext';
 
-export { ApplicationContext, IApplicationContext };
+export { ApplicationContext };

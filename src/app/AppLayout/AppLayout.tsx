@@ -15,15 +15,30 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Nav, NavList, NavItem, Page, PageHeader, PageSidebar, SkipToContent } from '@patternfly/react-core';
-import { routes } from '@app/routes';
+import {
+    Nav,
+    Page,
+    Avatar,
+    Button,
+    Popover,
+    NavList,
+    NavItem,
+    PageHeader,
+    PageSidebar,
+    SkipToContent,
+    PageHeaderTools,
+} from '@patternfly/react-core';
+import { AppRoutes, routes } from '@app/routes';
+import { NavLink, Link, Redirect } from 'react-router-dom';
+import { Location } from 'history';
+import defaultProfileImage from '@app/user-picture.svg';
+import { ILoginContext, LoginContext } from '@app/Login/Login';
 
 interface IAppLayoutProps {
-    children: React.ReactNode;
+    location: Location;
 }
 
-const AppLayout: React.FunctionComponent<IAppLayoutProps> = ({ children }: IAppLayoutProps) => {
+const AppLayout: React.FunctionComponent<IAppLayoutProps> = (props: IAppLayoutProps) => {
     const logoProps = { href: '/', target: '_blank' };
     const [isNavOpen, setIsNavOpen] = React.useState(true);
     const [isMobileView, setIsMobileView] = React.useState(true);
@@ -31,14 +46,38 @@ const AppLayout: React.FunctionComponent<IAppLayoutProps> = ({ children }: IAppL
     const onNavToggleMobile = () => setIsNavOpenMobile(!isNavOpenMobile);
     const onNavToggle = () => setIsNavOpen(!isNavOpen);
     const onPageResize = (x: { mobileView: boolean; windowSize: number }) => setIsMobileView(x.mobileView);
+    const getHeaderTools = (user: ILoginContext) => (
+        <PageHeaderTools>
+            {user.isLoggedIn ? (
+                <Popover
+                    position="bottom"
+                    bodyContent={
+                        <>
+                            <h1>{user.userName}</h1>
+                            <Button onClick={user.logOut}>Logout</Button>
+                        </>
+                    }
+                >
+                    <Avatar src={user.userImage || defaultProfileImage} alt="user profile picture" />
+                </Popover>
+            ) : (
+                <Link to="/login"></Link>
+            )}
+        </PageHeaderTools>
+    );
     const Header = (
-        <PageHeader
-            logo="Move2Kube"
-            logoProps={logoProps}
-            showNavToggle
-            isNavOpen={isNavOpen}
-            onNavToggle={isMobileView ? onNavToggleMobile : onNavToggle}
-        />
+        <LoginContext.Consumer>
+            {(user) => (
+                <PageHeader
+                    logo="Move2Kube"
+                    headerTools={user.useAuth ? getHeaderTools(user) : null}
+                    logoProps={logoProps}
+                    showNavToggle
+                    isNavOpen={isNavOpen}
+                    onNavToggle={isMobileView ? onNavToggleMobile : onNavToggle}
+                />
+            )}
+        </LoginContext.Consumer>
     );
     const Navigation = (
         <Nav id="nav-primary-simple" theme="dark">
@@ -60,7 +99,7 @@ const AppLayout: React.FunctionComponent<IAppLayoutProps> = ({ children }: IAppL
         <PageSidebar theme="dark" nav={Navigation} isNavOpen={isMobileView ? isNavOpenMobile : isNavOpen} />
     );
     const PageSkipToContent = <SkipToContent href="#primary-app-container">Skip to Content</SkipToContent>;
-    return (
+    const appRoutes = (
         <Page
             mainContainerId="primary-app-container"
             header={Header}
@@ -68,8 +107,19 @@ const AppLayout: React.FunctionComponent<IAppLayoutProps> = ({ children }: IAppL
             onPageResize={onPageResize}
             skipToContent={PageSkipToContent}
         >
-            {children}
+            <AppRoutes />
         </Page>
+    );
+    return (
+        <LoginContext.Consumer>
+            {(user) =>
+                !user.useAuth || user.isLoggedIn || props.location.pathname === '/support' ? (
+                    appRoutes
+                ) : (
+                    <Redirect to="/login" />
+                )
+            }
+        </LoginContext.Consumer>
     );
 };
 

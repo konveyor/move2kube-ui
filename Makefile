@@ -14,6 +14,7 @@
 
 BINNAME     ?= move2kube-ui
 REGISTRYNS  := quay.io/konveyor
+DISTDIR     := $(CURDIR)/dist
 
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_SHA    = $(shell git rev-parse --short HEAD)
@@ -40,6 +41,10 @@ endif
 .PHONY: help
 help: ## This help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[0-9a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+.PHONY: clean
+clean:
+	rm -rf $(DISTDIR)
 
 .PHONY: install
 install: ## Install dependencies

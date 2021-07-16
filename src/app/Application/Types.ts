@@ -22,6 +22,19 @@ interface IPlan {
     metadata: { name: string };
 }
 
+interface IApplicationContext {
+    aName: string;
+    aStatus: Array<string>;
+    aPlan: IPlan;
+    isGuidedFlow: boolean;
+    updateApp: () => void;
+    changeApp: (appName: string) => void;
+    setNewPlan: (plan: string) => void;
+    selectServiceOption: (serviceName: string, optionIdx: number) => void;
+    deleteServiceOption: (serviceName: string) => void;
+    goToRoute: (route: string, message?: string) => void;
+}
+
 function newPlan(): IPlan {
     return {
         apiVersion: '',
@@ -36,4 +49,4 @@ function validatePlan(plan: IPlan): Error | null {
     return null;
 }
 
-export { IPlan, newPlan, validatePlan };
+export { IPlan, IApplicationContext, newPlan, validatePlan };

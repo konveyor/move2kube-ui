@@ -109,11 +109,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
             isCategoryDropdownOpen: false,
             nameInput: '',
             columns: [{ title: 'Name' }, { title: 'Status' }],
-            rows: [
-                { cells: [{ title: <a>CacheApp1</a>, aName: 'CacheApp1' }, 'New'] },
-                { cells: [{ title: <a>CacheApp2</a>, aName: 'CacheApp2' }, 'Plan'] },
-                { cells: [{ title: <a>CacheApp3</a>, aName: 'CacheApp3' }, 'Done'] },
-            ],
+            rows: [],
             inputValue: '',
         };
     }
@@ -124,7 +120,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
 
     async update(): Promise<void> {
         try {
-            const res = await fetch('/api/v1/applications', { headers: { 'Content-Type': 'application/json' } });
+            const res = await fetch('/api/v1/applications', { headers: { Accept: 'application/json' } });
             if (!res.ok) throw new Error(`Failed to get the applications. Status: ${res.status}`);
             const data = await res.json();
             const applications: Array<{ name: string; status: Array<string> }> = data.applications;
@@ -150,7 +146,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
         try {
             const res = await fetch('/api/v1/applications/' + encodeURIComponent(aName), {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { Accept: 'application/json' },
             });
             if (res.status > 300) {
                 alert('Error while trying to deleting application.');
@@ -393,7 +389,7 @@ class Applications extends React.Component<IApplicationsProps, IApplicationsStat
         ];
     }
 
-    deleteSelectedRows() {
+    deleteSelectedRows(): void {
         const selectedRows = this.state.rows.filter((row) => row.selected);
         selectedRows.forEach((selectedRow) => this.deleteApp(selectedRow.cells[0].aName));
     }

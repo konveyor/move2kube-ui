@@ -52,7 +52,7 @@ class Input extends React.Component<IInputProps, IInputState> {
             <div>
                 <span id={problem.id}>{problem.description}</span>
                 <TextInput
-                    value={problem.answer}
+                    value={problem.answer as string}
                     type="text"
                     onChange={this.handleTextInputChange}
                     aria-label="text input example"

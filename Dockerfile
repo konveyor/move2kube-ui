@@ -12,33 +12,34 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-### Builder image ###
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as build_base
-# allows microdnf to install yarn
-RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-RUN microdnf -y install yarn nodejs && microdnf clean all
+### Builder Image ###
+FROM registry.access.redhat.com/ubi8/nodejs-14-minimal:1-11 as build_base
+USER root:root
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn
+# install yarn
+RUN npm install -g yarn
+ENV PATH="${PATH}:${HOME}/.npm-global/bin/"
+# copy sources
 COPY . .
-RUN yarn build
-RUN npm prune --production
+# install dependencies and build the project
+RUN yarn install && yarn run build
+# prune dev dependencies for production https://yarnpkg.com/getting-started/migration#renamed
+RUN yarn workspaces focus --all --production
 
-
-### Run Image ###
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
-
+### Runner Image ###
+FROM registry.access.redhat.com/ubi8/nodejs-14-minimal:1-11
+USER root:root
 # reads from environment variable first, otherwise fall back to move2kubeapi value
 ARG MOVE2KUBEAPI
 ENV MOVE2KUBEAPI=${MOVE2KUBEAPI:-http://move2kubeapi:8080}
 ENV MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-dockerfile"
-
-RUN microdnf -y install nodejs && microdnf clean all
+ENV NODE_ENV=production
+# copy build output
 WORKDIR /app
 COPY --from=build_base /app/dist /app/dist
 COPY --from=build_base /app/server.js /app/server.js
 COPY --from=build_base /app/package.json /app/package.json
 COPY --from=build_base /app/node_modules /app/node_modules
-
-CMD npm start
+# run the app
 EXPOSE 8080
+CMD ["node", "server.js"]

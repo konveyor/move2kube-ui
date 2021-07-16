@@ -33,18 +33,15 @@ const GuidedFlow = (routeProps: RouteComponentProps): React.ReactElement => {
     return (
         /* eslint-disable @typescript-eslint/no-explicit-any */
         <DynamicImport load={getGuidedFlowModuleAsync} focusContentAfterMount={lastNavigation !== null}>
-            {(Component: any) => {
-                let loadedComponent = (
+            {(Module: any) => {
+                if (Module !== null) return <Module.GuidedFlow {...routeProps} />;
+                return (
                     <PageSection aria-label="Loading Content Container">
                         <div className="pf-l-bullseye">
                             <Alert title="Loading" className="pf-l-bullseye__item" />
                         </div>
                     </PageSection>
                 );
-                if (Component !== null) {
-                    loadedComponent = <Component.GuidedFlow {...routeProps} />;
-                }
-                return loadedComponent;
             }}
         </DynamicImport>
     );
@@ -57,18 +54,15 @@ const Support = (routeProps: RouteComponentProps): React.ReactElement => {
     return (
         /* eslint-disable @typescript-eslint/no-explicit-any */
         <DynamicImport load={getSupportModuleAsync} focusContentAfterMount={lastNavigation !== null}>
-            {(Component: any) => {
-                let loadedComponent = (
+            {(Module: any) => {
+                if (Module !== null) return <Module.Support {...routeProps} />;
+                return (
                     <PageSection aria-label="Loading Content Container">
                         <div className="pf-l-bullseye">
                             <Alert title="Loading" className="pf-l-bullseye__item" />
                         </div>
                     </PageSection>
                 );
-                if (Component !== null) {
-                    loadedComponent = <Component.Support {...routeProps} />;
-                }
-                return loadedComponent;
             }}
         </DynamicImport>
     );
@@ -81,28 +75,24 @@ const Application = (routeProps: RouteComponentProps): React.ReactElement => {
     return (
         /* eslint-disable @typescript-eslint/no-explicit-any */
         <DynamicImport load={getApplicationModuleAsync} focusContentAfterMount={lastNavigation !== null}>
-            {(Component: any) => {
-                let loadedComponent = (
+            {(Module: any) => {
+                if (Module !== null) return <Module.Application {...routeProps} />;
+                return (
                     <PageSection aria-label="Loading Content Container">
                         <div className="pf-l-bullseye">
                             <Alert title="Loading" className="pf-l-bullseye__item" />
                         </div>
                     </PageSection>
                 );
-                if (Component !== null) {
-                    loadedComponent = <Component.Application {...routeProps} />;
-                }
-                return loadedComponent;
             }}
         </DynamicImport>
     );
 };
 
-export interface IAppRoute {
+interface IAppRoute {
     label?: string;
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any>;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+    component: React.ComponentType<any>;
     exact?: boolean;
     path: string;
     title: string;
@@ -152,25 +142,24 @@ const useA11yRouteChange = (isAsync: boolean) => {
         if (!isAsync && lastNavigation !== null) {
             routeFocusTimer = accessibleRouteChangeHandler();
         }
-        return () => {
-            window.clearTimeout(routeFocusTimer);
-        };
+        return () => window.clearTimeout(routeFocusTimer);
     }, [isAsync, lastNavigation]);
 };
 
-const RouteWithTitleUpdates = ({ component: Component, isAsync = false, title, ...rest }: IAppRoute) => {
+const RouteWithTitleUpdates = ({ component: Component, path, exact, isAsync = false, title, ...rest }: IAppRoute) => {
     useA11yRouteChange(isAsync);
     useDocumentTitle(title);
-
-    function routeWithTitle(routeProps: RouteComponentProps) {
-        return <Component {...rest} {...routeProps} />;
-    }
-
-    return <Route render={routeWithTitle} />;
+    return (
+        <Route
+            path={path}
+            exact={exact}
+            render={(routeProps: RouteComponentProps) => <Component {...rest} {...routeProps} />}
+        />
+    );
 };
 
-const PageNotFound = ({ title }: { title: string }) => {
-    useDocumentTitle(title);
+const PageNotFound = () => {
+    useDocumentTitle('404 Page Not Found');
     return <Route component={NotFound} />;
 };
 
@@ -179,15 +168,15 @@ const AppRoutes = (): React.ReactElement => (
         <Switch>
             {routes.map(({ path, exact, component, title, isAsync }, idx) => (
                 <RouteWithTitleUpdates
+                    key={idx}
                     path={path}
                     exact={exact}
-                    component={component}
-                    key={idx}
                     title={title}
                     isAsync={isAsync}
+                    component={component}
                 />
             ))}
-            <PageNotFound title="404 Page Not Found" />
+            <PageNotFound />
         </Switch>
     </LastLocationProvider>
 );

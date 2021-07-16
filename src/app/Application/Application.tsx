@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
+import Yaml from 'js-yaml';
 import {
     ContextSelector,
     ContextSelectorItem,
@@ -26,14 +27,14 @@ import {
     Text,
     TextVariants,
 } from '@patternfly/react-core';
-import { Redirect } from 'react-router-dom';
-import { ApplicationContext } from './ApplicationContext';
 import { PlanTab } from './ApplicationPlan';
+import { Redirect } from 'react-router-dom';
 import { AssetsTab } from './ApplicationAssets';
-import { ArtifactsTab } from './ApplicationArtifacts';
-import Yaml from 'js-yaml';
-import { IPlan, newPlan, validatePlan } from '@app/Application/Types';
+import { History, LocationState } from 'history';
 import { updatePlan } from '@app/Networking/api';
+import { ArtifactsTab } from './ApplicationArtifacts';
+import { ApplicationContext } from './ApplicationContext';
+import { IPlan, IApplicationContext, newPlan, validatePlan } from '@app/Application/Types';
 
 interface IApplicationContextSelectorProps {
     selected: string;
@@ -91,7 +92,7 @@ class ApplicationContextSelector extends React.Component<
 
     async componentDidMount(): Promise<void> {
         try {
-            const res = await fetch('/api/v1/applications', { headers: { 'Content-Type': 'application/json' } });
+            const res = await fetch('/api/v1/applications', { headers: { Accept: 'application/json' } });
             if (!res.ok) throw new Error(`Failed to get the applications. Status: ${res.status}`);
             const data = await res.json();
             const apps: Array<string> = data.applications.map((app: { name: string }) => app.name);
@@ -165,9 +166,10 @@ class ApplicationTabs extends React.Component<Readonly<unknown>, IApplicationTab
 
 interface IApplicationProps {
     computedMatch: { params?: { name: string } };
+    history: History<LocationState>;
 }
 
-interface IApplicationState {
+interface IApplicationState extends IApplicationContext {
     aName: string;
     aStatus: Array<string>;
     aPlan: IPlan;
@@ -189,6 +191,7 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
         this.uploadPlan = this.uploadPlan.bind(this);
         this.selectServiceOption = this.selectServiceOption.bind(this);
         this.deleteServiceOption = this.deleteServiceOption.bind(this);
+        this.goToRoute = this.goToRoute.bind(this);
 
         // State also contains the updater function so it will
         // be passed down into the context provider
@@ -203,6 +206,7 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
             setNewPlan: this.setNewPlan,
             selectServiceOption: this.selectServiceOption,
             deleteServiceOption: this.deleteServiceOption,
+            goToRoute: this.goToRoute,
         };
     }
 
@@ -212,14 +216,14 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
         }
         try {
             const res = await fetch('/api/v1/applications/' + encodeURIComponent(this.state.aName), {
-                headers: { 'Content-Type': 'application/json' },
+                headers: { Accept: 'application/json' },
             });
             if (!res.ok) throw new Error(`Failed to get the application ${this.state.aName}. Status: ${res.status}`);
             const data = await res.json();
             this.setState(() => ({ aName: data.name, aStatus: data.status, redirect: false }));
             try {
                 const res = await fetch('/api/v1/applications/' + encodeURIComponent(this.state.aName) + '/plan', {
-                    headers: { 'Content-Type': 'application/text' },
+                    headers: { Accept: 'application/json' },
                 });
                 if (!res.ok)
                     throw new Error(`Failed to get the plan for the app ${this.state.aName}. Status: ${res.status}`);
@@ -239,7 +243,7 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
     async changeApp(appName: string): Promise<void> {
         if (appName === ':name') {
             try {
-                const res = await fetch('/api/v1/applications', { headers: { 'Content-Type': 'application/json' } });
+                const res = await fetch('/api/v1/applications', { headers: { Accept: 'application/json' } });
                 if (!res.ok) throw new Error(`Failed to get the applications. Status: ${res.status}`);
                 const data = await res.json();
                 const applications = data.applications;
@@ -278,12 +282,17 @@ class Application extends React.Component<IApplicationProps, IApplicationState> 
         this.setState({ aPlan }, this.uploadPlan);
     }
 
-    selectServiceOption(serviceName: string, optionIdx: number): void {
+    selectServiceOption(_: string, __: number): void {
         /*do nothing*/
     }
 
-    deleteServiceOption(serviceName: string): void {
+    deleteServiceOption(_: string): void {
         /*do nothing*/
+    }
+
+    goToRoute(route: string, message?: string): void {
+        this.props.history.push(route);
+        if (message) alert(message);
     }
 
     componentDidMount(): void {

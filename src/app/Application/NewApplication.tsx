@@ -15,8 +15,9 @@ limitations under the License.
 */
 
 import React from 'react';
-import { Modal, Button, Form, FormGroup, ModalVariant, TextInput, ActionGroup } from '@patternfly/react-core';
 import { createApp } from '@app/Networking/api';
+import { ErrHTTP403 } from '@app/Networking/types';
+import { Modal, Button, Form, FormGroup, ModalVariant, TextInput, ActionGroup } from '@patternfly/react-core';
 
 interface INewApplicationProps {
     update: (aName: string) => void;
@@ -42,8 +43,11 @@ class NewApplication extends React.Component<INewApplicationProps, INewApplicati
             this.props.update(aName);
             this.closeApplicationModal();
         } catch (e) {
-            alert(`Failed to create the app. ${e}`);
             console.error(e);
+            if (e instanceof ErrHTTP403) {
+                return this.context.goToRoute('/login', e.message);
+            }
+            alert(`Failed to create the app. ${e}`);
         }
     }
 
@@ -97,7 +101,6 @@ class NewAppForm extends React.Component<INewAppFormProps, INewAppFormState> {
     }
 
     render(): JSX.Element {
-        const { createNewApplication } = this.props;
         const { aName } = this.state;
 
         return (
@@ -105,7 +108,7 @@ class NewAppForm extends React.Component<INewAppFormProps, INewAppFormState> {
                 isHorizontal
                 onSubmit={(e) => {
                     e.preventDefault();
-                    createNewApplication(aName);
+                    this.props.createNewApplication(aName);
                 }}
             >
                 <FormGroup

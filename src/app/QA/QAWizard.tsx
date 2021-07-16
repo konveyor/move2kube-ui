@@ -130,7 +130,7 @@ class QAWizard extends React.Component<IQAWizardProps, IQAWizardState> {
                 '/targetartifacts/' +
                 encodeURIComponent(this.state.aArtifactsName) +
                 '/problems/current';
-            const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+            const res = await fetch(url, { headers: { Accept: 'application/json' } });
             if (!res.ok) {
                 this.setState({ aArtifactsName: '' });
                 this.closeWizard();
@@ -163,7 +163,7 @@ class QAWizard extends React.Component<IQAWizardProps, IQAWizardState> {
                 '/problems/current/solution';
             const options = {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify(this.currResolvedProblem),
             };
             const res = await fetch(url, options);
@@ -203,7 +203,11 @@ class QAWizard extends React.Component<IQAWizardProps, IQAWizardState> {
             const url =
                 '/api/v1/applications/' + encodeURIComponent(this.state.aName) + '/targetartifacts' + debugSuffix;
             try {
-                const res = await fetch(url, { method: 'POST', body: formdata });
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { Accept: 'application/json' },
+                    body: formdata,
+                });
                 if (!res.ok)
                     throw new Error(
                         `Failed to send the plan ${planYaml} for the app ${this.state.aName}. Status: ${res.status}`,

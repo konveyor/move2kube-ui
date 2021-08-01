@@ -413,28 +413,27 @@ async function setupAuth(app, passport, apiProxy, req_logger) {
         const failureRedirect = '/login';
         if (identity_provider.type === 'saml') {
             const store_path = path.join(config.saml_id_store_path || 'sessions/saml-ids', auth_strategy);
+            const saml_options = {
+                protocol: 'https',
+                path: callback_path,
+                entryPoint: identity_provider.sso_url,
+                cert: identity_provider.sso_cert,
+                issuer: identity_provider.sp_entity_id,
+                audience: identity_provider.sp_entity_id,
+                validateInResponseTo: true,
+                requestIdExpirationPeriodMs: config.saml_id_expiration_time || 20 * 60 * 1000, // 20 minutes
+                cacheProvider: new SessionStoreBasedCacheProvider(
+                    new FileStore({
+                        path: store_path,
+                        secret: config.session_store_encryption_secret || config.session_secret,
+                    }),
+                    logger.debug.bind(logger),
+                ),
+            };
+            if (identity_provider.decryption_key) saml_options.decryptionPvk = identity_provider.decryption_key;
             passport.use(
                 auth_strategy,
-                new SamlStrategy(
-                    {
-                        protocol: 'https',
-                        path: callback_path,
-                        entryPoint: identity_provider.sso_url,
-                        cert: identity_provider.sso_cert,
-                        issuer: identity_provider.sp_entity_id,
-                        audience: identity_provider.sp_entity_id,
-                        validateInResponseTo: true,
-                        requestIdExpirationPeriodMs: config.saml_id_expiration_time || 20 * 60 * 1000, // 20 minutes
-                        cacheProvider: new SessionStoreBasedCacheProvider(
-                            new FileStore({
-                                path: store_path,
-                                secret: config.session_store_encryption_secret || config.session_secret,
-                            }),
-                            logger.debug.bind(logger),
-                        ),
-                    },
-                    (profile, done) => verifyUserSAML(identity_provider, profile, done),
-                ),
+                new SamlStrategy(saml_options, (profile, done) => verifyUserSAML(identity_provider, profile, done)),
             );
             login_options.push({
                 idp_type: identity_provider.type,

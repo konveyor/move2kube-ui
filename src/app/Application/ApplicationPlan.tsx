@@ -157,7 +157,7 @@ class PlanTab extends React.Component<IPlanProps, IPlanTabState> {
                 {waitingForPlan && (
                     <>
                         <h1>Generating the plan. Please wait, this could take a few minutes....</h1>
-                        <Spinner />
+                        <Spinner isSVG />
                     </>
                 )}
                 {!waitingForPlan && <TextArea aria-label="Plan" onChange={this.onPlanEditted} value={planYaml} />}

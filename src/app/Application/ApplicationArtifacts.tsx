@@ -74,7 +74,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
         try {
             const res = await fetch(
                 '/api/v1/applications/' + encodeURIComponent(this.context.aName) + '/targetartifacts',
-                { headers: { 'Content-Type': 'application/json' } },
+                { headers: { Accept: 'application/json' } },
             );
             if (!res.ok)
                 throw new Error(
@@ -96,7 +96,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                     encodeURIComponent(this.context.aName) +
                     '/targetartifacts/' +
                     encodeURIComponent(artifact),
-                { method: 'DELETE', headers: { 'Content-Type': 'application/json' } },
+                { method: 'DELETE', headers: { Accept: 'application/json' } },
             );
             if (!res.ok) {
                 alert('Error while trying to delete the artifact.');
@@ -117,7 +117,7 @@ class ArtifactsTab extends React.Component<Readonly<unknown>, IArtifactsTabState
                 encodeURIComponent(this.context.aName) +
                 '/targetartifacts/' +
                 encodeURIComponent(qaartifacts);
-            const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+            const res = await fetch(url, { headers: { Accept: 'application/json' } });
             if (res.status > 300) {
                 alert('There was an error during transformation. Please regenerate.');
                 throw new Error(

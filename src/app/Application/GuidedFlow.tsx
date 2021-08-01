@@ -15,30 +15,35 @@ limitations under the License.
 */
 
 import React from 'react';
-// import { Modal, Button, Form, FormGroup, ModalVariant, TextInput, ActionGroup } from '@patternfly/react-core';
-import { PageSection, Wizard, WizardStep, WizardContextConsumer, Spinner } from '@patternfly/react-core';
-import { ApplicationContext, IApplicationContext } from '@app/Application/ApplicationContext';
-import { NewAppForm } from '@app/Application/NewApplication';
-import { ApplicationAssetUpload } from '@app/Application/ApplicationAssets';
-import { ArtifactsTab } from '@app/Application/ApplicationArtifacts';
-import { IPlan, newPlan, validatePlan } from '@app/Application/Types';
-import { PlanTab } from '@app/Application/ApplicationPlan';
 import Yaml from 'js-yaml';
 import { copy } from '@app/utils/utils';
-import { createApp, updatePlan } from '@app/Networking/api';
-import { generatePlan, waitForPlan, updateStatus } from '@app/Networking/api';
 import { Prompt } from 'react-router-dom';
+import { History, LocationState } from 'history';
+import { ErrHTTP403 } from '@app/Networking/types';
+import { PlanTab } from '@app/Application/ApplicationPlan';
+import { createApp, updatePlan } from '@app/Networking/api';
+import { NewAppForm } from '@app/Application/NewApplication';
+import { ArtifactsTab } from '@app/Application/ApplicationArtifacts';
+import { ApplicationContext } from '@app/Application/ApplicationContext';
+import { ApplicationAssetUpload } from '@app/Application/ApplicationAssets';
+import { generatePlan, waitForPlan, updateStatus } from '@app/Networking/api';
+import { IPlan, newPlan, validatePlan, IApplicationContext } from '@app/Application/Types';
+import { PageSection, Wizard, WizardStep, WizardContextConsumer, Spinner } from '@patternfly/react-core';
+
+interface IGuidedFlowProps {
+    history: History<LocationState>;
+}
 
 interface IGuidedFlowState {
     steps: Array<WizardStep>;
     appContext: IApplicationContext;
 }
 
-class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
-    constructor(props: Readonly<unknown>) {
+class GuidedFlow extends React.Component<IGuidedFlowProps, IGuidedFlowState> {
+    constructor(props: IGuidedFlowProps) {
         super(props);
         this.uploadPlan = this.uploadPlan.bind(this);
-        this.newAppCreated = this.newAppCreated.bind(this);
+        this.createNewApp = this.createNewApp.bind(this);
         this.updateApp = this.updateApp.bind(this);
 
         const navWarn = 'Are you sure you want to leave? Some progress may be lost.';
@@ -49,7 +54,7 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                     component: (
                         <WizardContextConsumer>
                             {({ onNext }) => (
-                                <NewAppForm createNewApplication={(aName) => this.newAppCreated(aName, onNext)} />
+                                <NewAppForm createNewApplication={(aName) => this.createNewApp(aName, onNext)} />
                             )}
                         </WizardContextConsumer>
                     ),
@@ -136,11 +141,15 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
                     appContext.aPlan = aPlan;
                     this.setState({ appContext }, this.uploadPlan);
                 },
-                selectServiceOption: (serviceName: string, optionIdx: number): void => {
+                selectServiceOption: (_: string, __: number): void => {
                     /*do nothing*/
                 },
-                deleteServiceOption: (serviceName: string): void => {
+                deleteServiceOption: (_: string): void => {
                     /*do nothing*/
+                },
+                goToRoute: (route: string, message?: string) => {
+                    this.props.history.push(route);
+                    if (message) alert(message);
                 },
             },
         };
@@ -156,12 +165,20 @@ class GuidedFlow extends React.Component<Readonly<unknown>, IGuidedFlowState> {
         }
     }
 
-    async newAppCreated(aName: string, onNext: () => void): Promise<void> {
-        const appContext = copy(this.state.appContext);
-        appContext.aName = aName;
-        this.setState({ appContext });
-        await createApp(aName);
-        onNext();
+    async createNewApp(aName: string, onNext: () => void): Promise<void> {
+        try {
+            const appContext = copy(this.state.appContext);
+            appContext.aName = aName;
+            this.setState({ appContext });
+            await createApp(aName);
+            onNext();
+        } catch (e) {
+            console.error(e);
+            if (e instanceof ErrHTTP403) {
+                return this.state.appContext.goToRoute('/login', e.message);
+            }
+            alert(`Error while creating a new app. ${e}`);
+        }
     }
 
     async updateApp(): Promise<void> {
@@ -213,6 +230,9 @@ class WaitForPlanGeneration extends React.Component<IWaitForPlanGenerationProps>
             this.props.callback();
         } catch (e) {
             console.error(e);
+            if (e instanceof ErrHTTP403) {
+                return this.context.goToRoute('/login', e.message);
+            }
             alert(`Error while starting plan generation. ${e}`);
         }
     }
@@ -221,7 +241,7 @@ class WaitForPlanGeneration extends React.Component<IWaitForPlanGenerationProps>
         return (
             <>
                 <h1>Generating the plan. Please wait, this could take a few minutes....</h1>
-                <Spinner />
+                <Spinner isSVG />
             </>
         );
     }

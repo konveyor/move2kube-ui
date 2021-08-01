@@ -14,37 +14,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { IPlan } from '@app/Application/Types';
 import Yaml from 'js-yaml';
+import { IPlan } from '@app/Application/Types';
+import { ErrHTTP403, ISupportInfo } from '@app/Networking/types';
 
 async function wait(seconds: number): Promise<void> {
-    return new Promise((resolve) => {
-        setTimeout(resolve, seconds * 1000);
-    });
+    return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
 async function createApp(aName: string): Promise<void> {
     const body = new FormData();
     body.append('name', aName);
-    const res = await fetch('/api/v1/applications', { method: 'POST', body });
-    if (!res.ok) throw new Error(`Failed to create a new app ${aName}. Status: ${res.status}`);
+    const res = await fetch('/api/v1/applications', { headers: { Accept: 'application/json' }, method: 'POST', body });
+    if (!res.ok) {
+        if (res.status === 403) throw new ErrHTTP403(`Failed to create a new app ${aName}. Status: ${res.status}`);
+        throw new Error(`Failed to create a new app ${aName}. Status: ${res.status}`);
+    }
 }
 
 async function generatePlan(aName: string): Promise<void> {
     const value = new URLSearchParams(window.location.search);
     const debugSuffix = value.get('debug') ? `?debug=${value.get('debug')}` : '';
     const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/plan' + debugSuffix;
-    const res = await fetch(url, { method: 'POST' });
-    if (!res.ok) throw new Error(`Failed to start plan generation for the app ${aName}. Status: ${res.status}`);
+    const res = await fetch(url, { method: 'POST', headers: { Accept: 'application/json' } });
+    if (!res.ok) {
+        if (res.status === 403)
+            throw new ErrHTTP403(`Failed to start plan generation for the app ${aName}. Status: ${res.status}`);
+        throw new Error(`Failed to start plan generation for the app ${aName}. Status: ${res.status}`);
+    }
 }
 
 async function waitForPlan(aName: string): Promise<string> {
     const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/plan';
-    const options = { headers: { 'Content-Type': 'application/text' } };
+    const options = { headers: { Accept: 'application/text' } };
     // eslint-disable-next-line no-constant-condition
     while (true) {
         const res = await fetch(url, options);
         if (!res.ok) {
+            if (res.status === 403) throw new ErrHTTP403('cannot wait for plan. unauthorized.');
             console.log(`Still waiting for plan generation to finish. Status: ${res.status}`);
             await wait(3);
             continue;
@@ -55,24 +62,21 @@ async function waitForPlan(aName: string): Promise<string> {
 
 async function updateStatus(aName: string): Promise<{ name: string; status: Array<string> }> {
     const url = '/api/v1/applications/' + encodeURIComponent(aName);
-    const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
-    if (!res.ok) throw new Error(`Failed to get the application ${aName}. Status: ${res.status}`);
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) {
+        if (res.status === 403) throw new ErrHTTP403(`Failed to get the application ${aName}. Status: ${res.status}`);
+        throw new Error(`Failed to get the application ${aName}. Status: ${res.status}`);
+    }
     return await res.json();
-}
-
-interface ISupportInfo {
-    cli_version: string;
-    api_version: string;
-    platform: string;
-    docker: string;
-    api_image: string;
-    ui_image: string;
 }
 
 async function getSupportInfo(): Promise<ISupportInfo> {
     const url = '/api/v1/support';
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to get the support information. Status: ${res.status}`);
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) {
+        if (res.status === 403) throw new ErrHTTP403(`Failed to get the support information. Status: ${res.status}`);
+        throw new Error(`Failed to get the support information. Status: ${res.status}`);
+    }
     return await res.json();
 }
 
@@ -80,8 +84,12 @@ async function updatePlan(aName: string, aPlan: IPlan): Promise<void> {
     const url = '/api/v1/applications/' + encodeURIComponent(aName) + '/plan';
     const body = new FormData();
     body.append('plan', Yaml.dump(aPlan));
-    const res = await fetch(url, { method: 'PUT', body });
-    if (!res.ok) throw new Error(`Failed to update the plan for the app ${aName}. Status: ${res.status}`);
+    const res = await fetch(url, { method: 'PUT', headers: { Accept: 'application/json' }, body });
+    if (!res.ok) {
+        if (res.status === 403)
+            throw new ErrHTTP403(`Failed to update the plan for the app ${aName}. Status: ${res.status}`);
+        throw new Error(`Failed to update the plan for the app ${aName}. Status: ${res.status}`);
+    }
 }
 
-export { ISupportInfo, createApp, generatePlan, waitForPlan, updateStatus, getSupportInfo, updatePlan };
+export { createApp, generatePlan, waitForPlan, updateStatus, getSupportInfo, updatePlan };

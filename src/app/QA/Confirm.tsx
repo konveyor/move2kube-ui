@@ -59,7 +59,7 @@ class Confirm extends React.Component<IConfirmProps, IConfirmState> {
                     label="Yes"
                     value="true"
                     onChange={this.handleChange}
-                    isChecked={this.state.problem.answer}
+                    isChecked={this.state.problem.answer as boolean}
                 />
                 <Radio
                     aria-label={'No'}

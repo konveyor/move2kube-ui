@@ -43,11 +43,11 @@ class MultiSelect extends React.Component<IMultiSelectProps, IMultiSelectState> 
         const problem = copy(this.state.problem);
         const option = target.name;
         if (checked) {
-            if (!problem.answer.includes(option)) {
-                problem.answer.push(option);
+            if (!(problem.answer as Array<string>).includes(option)) {
+                (problem.answer as Array<string>).push(option);
             }
         } else {
-            problem.answer = problem.answer.filter((x: string) => x !== option);
+            problem.answer = (problem.answer as Array<string>).filter((x: string) => x !== option);
         }
         this.props.setResolvedProblem(problem);
         this.setState({ problem });
@@ -67,7 +67,7 @@ class MultiSelect extends React.Component<IMultiSelectProps, IMultiSelectState> 
                         name={option}
                         label={option}
                         onChange={this.handleChange}
-                        isChecked={problem.answer.includes(option)}
+                        isChecked={(problem.answer as Array<string>).includes(option)}
                     />
                 ))}
                 {problem.hints && problem.hints.length > 0 && <i>[Hint: {problem.hints}]</i>}

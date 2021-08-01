@@ -34,8 +34,8 @@ type ProblemT = {
     description: string;
     hints: Array<string>;
     options: Array<string>;
-    default: any;
-    answer: any;
+    default: unknown;
+    answer: unknown;
 };
 
 export { ProblemT };

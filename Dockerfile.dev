@@ -12,15 +12,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-### Builder image ###
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as build_base
-ENV MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-dev-dockerfile"
-# allows microdnf to install yarn
-RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-RUN microdnf -y install yarn nodejs && microdnf clean all
+FROM registry.access.redhat.com/ubi8/nodejs-14-minimal:1-11
+USER root:root
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn
+# install yarn
+RUN npm install -g yarn
+ENV PATH="${PATH}:${HOME}/.npm-global/bin/"
+# copy sources
 COPY . .
+# install dependencies and build the project
+RUN yarn install && yarn run build
+# run the app
+ENV MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-dev-dockerfile"
 EXPOSE 8080
-CMD ["yarn", "run", "start:dev"]
+CMD ["node", "server.js"]

@@ -51,7 +51,7 @@ class Multiline extends React.Component<IMultilineProps, IMultilineState> {
         return (
             <div>
                 <span id={problem.id}>{problem.description}</span>
-                <TextArea value={problem.answer} onChange={this.handleTextAreaChange} aria-label="textarea" />
+                <TextArea value={problem.answer as string} onChange={this.handleTextAreaChange} aria-label="textarea" />
                 {problem.hints && problem.hints.length > 0 && <i>[Hint: {problem.hints}]</i>}
             </div>
         );

@@ -236,7 +236,7 @@ function validateAuthFile(authDetails) {
             saml_id_expiration_time: {
                 type: 'number',
                 description:
-                    'time after which the SAML request will expire. If we receive a response after this time we will reject it. Default is 20 minutes',
+                    'time (in milliseconds) after which the SAML request will expire. If we receive a response after this time we will reject it. Default is 20 minutes',
                 default: 20 * 60 * 1000,
             },
             trust_proxy: {
@@ -420,16 +420,18 @@ async function setupAuth(app, passport, apiProxy, req_logger) {
                 cert: identity_provider.sso_cert,
                 issuer: identity_provider.sp_entity_id,
                 audience: identity_provider.sp_entity_id,
-                validateInResponseTo: true,
-                requestIdExpirationPeriodMs: config.saml_id_expiration_time || 20 * 60 * 1000, // 20 minutes
-                cacheProvider: new SessionStoreBasedCacheProvider(
+            };
+            if (!('validate_in_response_to' in identity_provider) || identity_provider.validate_in_response_to) {
+                saml_options.validateInResponseTo = true;
+                saml_options.requestIdExpirationPeriodMs = config.saml_id_expiration_time || 20 * 60 * 1000; // 20 minutes
+                saml_options.cacheProvider = new SessionStoreBasedCacheProvider(
                     new FileStore({
                         path: store_path,
                         secret: config.session_store_encryption_secret || config.session_secret,
                     }),
                     logger.debug.bind(logger),
-                ),
-            };
+                );
+            }
             if (identity_provider.decryption_key) saml_options.decryptionPvk = identity_provider.decryption_key;
             passport.use(
                 auth_strategy,

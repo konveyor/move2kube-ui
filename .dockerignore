@@ -24,7 +24,7 @@ code-of-conduct.md
 README.md
 Makefile
 LICENSE
-workspace
+/data/
 dist
 sessions
 secrets

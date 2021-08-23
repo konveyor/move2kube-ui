@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 import React from 'react';
+import { App } from '@app/App';
 import ReactDOM from 'react-dom';
-import { App } from '@app/index';
 
 // if (process.env.NODE_ENV !== 'production') {
 //     const config = { rules: [{ id: 'color-contrast', enabled: false }] };

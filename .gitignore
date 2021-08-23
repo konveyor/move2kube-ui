@@ -22,7 +22,7 @@ storybook-static
 .idea
 .env
 wksps/
-workspace/
+/data/
 sessions/
 secrets/
 

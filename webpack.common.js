@@ -142,7 +142,7 @@ module.exports = () => {
             new HtmlWebpackPlugin({
                 template: path.resolve(__dirname, 'src', 'index.html'),
             }),
-            new FaviconsWebpackPlugin('src/app/favicon.svg'),
+            new FaviconsWebpackPlugin('src/app/assets/favicon.svg'),
             new Dotenv({
                 systemvars: true,
                 silent: true,

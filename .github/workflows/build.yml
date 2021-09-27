@@ -45,7 +45,6 @@ jobs:
       - name: pull latest image to reuse layers
         run: |
           docker pull quay.io/konveyor/move2kube-ui:latest || true
-          docker pull quay.io/konveyor/move2kube-aio:latest || true
           docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
       - run: echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
       - name: build image
@@ -57,7 +56,7 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_ICON: https://github.com/actions.png?size=48
-          SLACK_MESSAGE: "Built and pushed quay.io/konveyor/move2kube-ui:${{ steps.image_tag.outputs.tag }} and quay.io/konveyor/move2kube-aio:${{ steps.image_tag.outputs.tag }}"
+          SLACK_MESSAGE: "Built and pushed quay.io/konveyor/move2kube-ui:${{ steps.image_tag.outputs.tag }}"
           SLACK_TITLE: Success
           SLACK_USERNAME: GitHubActions
       - if: failure()
@@ -67,6 +66,6 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_COLOR: "#BD3232"
           SLACK_ICON: https://github.com/actions.png?size=48
-          SLACK_MESSAGE: "Failed to build and push image quay.io/konveyor/move2kube-ui:${{ steps.image_tag.outputs.tag }} add/or quay.io/konveyor/move2kube-aio:${{ steps.image_tag.outputs.tag }}"
+          SLACK_MESSAGE: "Failed to build and push image quay.io/konveyor/move2kube-ui:${{ steps.image_tag.outputs.tag }}"
           SLACK_TITLE: Failed
           SLACK_USERNAME: GitHubActions

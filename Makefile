@@ -62,10 +62,6 @@ dev: install ## Start Development server
 prod: ## Start Production server
 	@yarn run prod
 
-.PHONY: ui
-ui:
-	docker run --rm -it -p 8080:8080 -v ${PWD}/:/move2kube-api/data -v /var/run/docker.sock:/var/run/docker.sock quay.io/konveyor/move2kube-ui:latest
-
 .PHONY: start
 start: install build ## Start server
 	@yarn run start
@@ -87,5 +83,5 @@ cpush: ## Push docker image
 	docker push ${REGISTRYNS}/${BINNAME}:${VERSION}
 
 .PHONY: crun
-crun: ## Run using docker compose
-	docker-compose up -d
+crun: ## Run using docker
+	docker run --rm -it -p 8080:8080 -v ${PWD}/data:/move2kube-api/data -v /var/run/docker.sock:/var/run/docker.sock quay.io/konveyor/move2kube-ui:latest

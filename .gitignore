@@ -12,7 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-**/node_modules
+/node_modules/
 dist
 yarn-error.log
 stats.json
@@ -23,8 +23,8 @@ storybook-static
 .env
 wksps/
 /data/
-sessions/
-secrets/
+/sessions/
+/secrets/
 
 # https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 .yarn/*

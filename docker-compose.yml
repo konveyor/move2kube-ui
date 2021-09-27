@@ -1,22 +1,12 @@
 version: "3"
 services:
-  move2kubeapi:
-    image: quay.io/konveyor/move2kube-api:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - "./workspace:/workspace"
-    environment:
-      - MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-docker-compose"
-      - MOVE2KUBE_API_IMAGE_HASH="${MOVE2KUBE_API_IMAGE_HASH}"
-      - MOVE2KUBE_UI_IMAGE_HASH="${MOVE2KUBE_UI_IMAGE_HASH}"
   move2kubeui:
     build:
       context: ./
       dockerfile: Dockerfile
     image: quay.io/konveyor/move2kube-ui:latest
-    environment:
-      - MOVE2KUBEAPI=http://move2kubeapi:8080
     ports:
       - "8080:8080"
-    depends_on:
-      - move2kubeapi
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "./data:/move2kube-api/data"

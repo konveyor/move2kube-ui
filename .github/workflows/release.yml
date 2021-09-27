@@ -131,7 +131,6 @@ jobs:
         run: |
           docker pull quay.io/konveyor/move2kube-ui:latest || true
           docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
-          docker pull quay.io/konveyor/move2kube-aio:latest || true
       - run: echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
       - name: build container image
         run: VERSION='${{ github.event.inputs.tag }}' make cbuild

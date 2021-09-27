@@ -12,6 +12,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+ARG VERSION=latest
+
 ### Builder Image ###
 FROM registry.access.redhat.com/ubi8/nodejs-14-minimal:1-11 as build_base
 USER root:root
@@ -23,23 +25,17 @@ ENV PATH="${PATH}:${HOME}/.npm-global/bin/"
 COPY . .
 # install dependencies and build the project
 RUN yarn install && yarn run build
-# prune dev dependencies for production https://yarnpkg.com/getting-started/migration#renamed
-RUN yarn workspaces focus --all --production
 
 ### Runner Image ###
-FROM registry.access.redhat.com/ubi8/nodejs-14-minimal:1-11
-USER root:root
-# reads from environment variable first, otherwise fall back to move2kubeapi value
-ARG MOVE2KUBEAPI
-ENV MOVE2KUBEAPI=${MOVE2KUBEAPI:-http://move2kubeapi:8080}
-ENV MOVE2KUBE_PLATFORM="${MOVE2KUBE_PLATFORM}:ui-dockerfile"
-ENV NODE_ENV=production
+FROM quay.io/konveyor/move2kube-api:${VERSION}
+ARG VERSION=latest
+ARG MOVE2KUBE_UI_VERSION
+ARG MOVE2KUBE_UI_GIT_COMMIT_HASH
+ARG MOVE2KUBE_UI_GIT_TREE_STATUS
+ENV MOVE2KUBE_UI_VERSION="${VERSION}"
+ENV MOVE2KUBE_UI_GIT_COMMIT_HASH="${MOVE2KUBE_UI_GIT_COMMIT_HASH}"
+ENV MOVE2KUBE_UI_GIT_TREE_STATUS="${MOVE2KUBE_UI_GIT_TREE_STATUS}"
+
 # copy build output
-WORKDIR /app
-COPY --from=build_base /app/dist /app/dist
-COPY --from=build_base /app/server.js /app/server.js
-COPY --from=build_base /app/package.json /app/package.json
-COPY --from=build_base /app/node_modules /app/node_modules
-# run the app
-EXPOSE 8080
-CMD ["node", "server.js"]
+COPY --from=build_base /app/dist ./dist
+CMD ["move2kube-api", "--port", "8080", "--log-level", "info", "--static-files-dir", "dist"]

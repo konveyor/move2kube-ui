@@ -12,19 +12,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-node_modules
+/node_modules/
 build
 .dockerignore
 Dockerfile
-Dockerfile.aio
-Dockerfile.dev
 docker-compose.yml
 contributing.md
 code-of-conduct.md
 README.md
 Makefile
 LICENSE
-workspace
+/data/
 dist
 sessions
 secrets

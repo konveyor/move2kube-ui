@@ -62,10 +62,6 @@ dev: install ## Start Development server
 prod: ## Start Production server
 	@yarn run prod
 
-.PHONY: aio
-aio:
-	docker run --rm -p 8080:8080 -v ${PWD}/workspace:/workspace -v /var/run/docker.sock:/var/run/docker.sock -it quay.io/konveyor/move2kube-aio:latest
-
 .PHONY: start
 start: install build ## Start server
 	@yarn run start
@@ -76,20 +72,16 @@ start: install build ## Start server
 cbuild: ## Build docker image
 	docker build -t ${REGISTRYNS}/${BINNAME}-builder:${VERSION} --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --target build_base                             --build-arg VERSION=${VERSION} .
 	docker tag ${REGISTRYNS}/${BINNAME}-builder:${VERSION} ${REGISTRYNS}/${BINNAME}-builder:latest
-
-	docker build -t ${REGISTRYNS}/${BINNAME}:${VERSION}         --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/${BINNAME}:latest    --build-arg VERSION=${VERSION} .
+ 
+	docker build -t ${REGISTRYNS}/${BINNAME}:${VERSION}         --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/${BINNAME}:latest    --build-arg VERSION=${VERSION} --build-arg "MOVE2KUBE_UI_GIT_COMMIT_HASH=${GIT_COMMIT}" --build-arg "MOVE2KUBE_UI_GIT_TREE_STATUS=${GIT_DIRTY}" .
 	docker tag ${REGISTRYNS}/${BINNAME}:${VERSION} ${REGISTRYNS}/${BINNAME}:latest
-
-	docker build -t ${REGISTRYNS}/move2kube-aio:${VERSION}      --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/move2kube-aio:latest --build-arg VERSION=${VERSION} -f Dockerfile.aio .
-	docker tag ${REGISTRYNS}/move2kube-aio:${VERSION} ${REGISTRYNS}/move2kube-aio:latest
 
 .PHONY: cpush
 cpush: ## Push docker image
 	# To help with reusing layers and hence speeding up build
 	docker push ${REGISTRYNS}/${BINNAME}-builder:${VERSION}
 	docker push ${REGISTRYNS}/${BINNAME}:${VERSION}
-	docker push ${REGISTRYNS}/move2kube-aio:${VERSION}
 
 .PHONY: crun
-crun: ## Run using docker compose
-	docker-compose up -d
+crun: ## Run using docker
+	docker run --rm -it -p 8080:8080 -v ${PWD}/data:/move2kube-api/data -v /var/run/docker.sock:/var/run/docker.sock quay.io/konveyor/move2kube-ui:latest

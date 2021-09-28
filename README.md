@@ -8,26 +8,13 @@
 
 An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube-api).
 
-## Bringing up Move2Kube UI
-
-1. Run `docker-compose up`
-1. Access the UI in `http://localhost:8080/`.
-
-For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
-
 ## Starting the UI
 
-### Production environments
+1. Build the UI image: `make cbuild`
+2. This uses docker and runs everything inside a single container using the UI image: `make crun`
+3. Access the UI at http://localhost:8080
 
-Use one of these three options:
-
--   `make cbuild`
-
-    Build the UI image.
-
--   `make crun`
-
-    This uses docker and runs everything inside a single container using the UI image.
+For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
 
 ## Discussion
 

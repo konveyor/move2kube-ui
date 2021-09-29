@@ -37,8 +37,8 @@ ifneq ($(GIT_TAG),)
 endif
 
 # Setting container tool
-DOCKER_CMD := $(shell command -v docker)
-PODMAN_CMD := $(shell command -v podman)
+DOCKER_CMD := $(shell command -v docker 2> /dev/null)
+PODMAN_CMD := $(shell command -v podman 2> /dev/null)
 
 ifdef DOCKER_CMD
 	CONTAINER_TOOL = 'docker'

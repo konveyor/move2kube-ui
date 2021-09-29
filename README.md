@@ -11,11 +11,11 @@ An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube
 ## Starting the UI
 
 1. Build the UI image: `make cbuild`
-2. This uses docker and runs everything inside a single container using the UI image: `make crun`
+2. This uses `docker` or `podman` and runs everything inside a single container using the UI image: `make crun`
 3. Access the UI at http://localhost:8080
 
 For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
 
 ## Discussion
 
--   For any questions reach out to us on any of the communication channels given on our website https://move2kube.konveyor.io/.
+- For any questions reach out to us on any of the communication channels given on our website https://move2kube.konveyor.io/.

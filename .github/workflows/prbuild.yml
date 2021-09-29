@@ -6,6 +6,10 @@ on:
       - "main"
       - "release-*"
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     name: Build

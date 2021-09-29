@@ -58,9 +58,11 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                     title:
                         output.status === PROJECT_OUTPUT_STATUS_DONE ? (
                             <a
-                                download={normalizeFilename(
-                                    `${ctx.currentWorkspace.name}-${ctx.currentProject.name}-output-${output.id}.zip`,
-                                )}
+                                download={
+                                    normalizeFilename(
+                                        `${ctx.currentWorkspace.name}-${ctx.currentProject.name}-output-${output.id}`,
+                                    ) + '.zip'
+                                }
                                 href={readProjectOutputURL(ctx.currentWorkspace.id, ctx.currentProject.id, output.id)}
                             >
                                 {output.id}

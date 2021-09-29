@@ -13,7 +13,7 @@
     "dependencies": {
         "@axe-core/react": "^4.1.1",
         "@patternfly/patternfly": "^4.90.5",
-        "@patternfly/react-core": "^4.101.3",
+        "@patternfly/react-core": "4.157.3",
         "@patternfly/react-icons": "^4.7.6",
         "@patternfly/react-table": "^4.16.20",
         "@types/js-yaml": "^4.0.0",

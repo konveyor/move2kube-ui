@@ -103,8 +103,9 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                                 isDisabled={!ctx.currentProject.status?.plan}
                                 onClick={() => {
                                     startTransformation(ctx.currentWorkspace.id, ctx.currentProject.id, false)
-                                        .then(() => {
+                                        .then((meta) => {
                                             setTransformErr(null);
+                                            setQAOutputId(meta.id);
                                             props.refresh();
                                         })
                                         .catch((e) => {

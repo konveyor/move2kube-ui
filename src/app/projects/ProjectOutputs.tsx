@@ -43,6 +43,10 @@ interface IProjectOutputsProps {
     refresh: () => void;
 }
 
+function normalizeFilename(name: string): string {
+    return name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+}
+
 function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
     const ctx = useContext(ApplicationContext);
     const [qaOutputId, setQAOutputId] = useState('');
@@ -54,7 +58,9 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                     title:
                         output.status === PROJECT_OUTPUT_STATUS_DONE ? (
                             <a
-                                download={`workspace-${ctx.currentWorkspace.name}-project-${ctx.currentProject.name}-output-${output.id}.zip`}
+                                download={normalizeFilename(
+                                    `${ctx.currentWorkspace.name}-${ctx.currentProject.name}-output-${output.id}.zip`,
+                                )}
                                 href={readProjectOutputURL(ctx.currentWorkspace.id, ctx.currentProject.id, output.id)}
                             >
                                 {output.id}

@@ -16,6 +16,10 @@ on:
         required: false
         default: main
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     name: Build

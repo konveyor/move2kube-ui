@@ -81,23 +81,19 @@ start: install build ## Start server
 .PHONY: cbuild
 cbuild: ## Build container image	
 ifndef CONTAINER_TOOL
-$(error No container tool (docker, podman) found in your environment. Please, install one)
+	$(error No container tool (docker, podman) found in your environment. Please, install one)
 endif
-
 	@echo "Building image with $(CONTAINER_TOOL)"
-
 	${CONTAINER_TOOL} build -t ${REGISTRYNS}/${BINNAME}-builder:${VERSION} --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --target build_base                             --build-arg VERSION=${VERSION} .
 	${CONTAINER_TOOL} tag ${REGISTRYNS}/${BINNAME}-builder:${VERSION} ${REGISTRYNS}/${BINNAME}-builder:latest
- 
 	${CONTAINER_TOOL} build -t ${REGISTRYNS}/${BINNAME}:${VERSION}         --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/${BINNAME}:latest    --build-arg VERSION=${VERSION} --build-arg "MOVE2KUBE_UI_GIT_COMMIT_HASH=${GIT_COMMIT}" --build-arg "MOVE2KUBE_UI_GIT_TREE_STATUS=${GIT_DIRTY}" .
 	${CONTAINER_TOOL} tag ${REGISTRYNS}/${BINNAME}:${VERSION} ${REGISTRYNS}/${BINNAME}:latest
 
 .PHONY: cpush
 cpush: ## Push container image
 ifndef CONTAINER_TOOL
-$(error No container tool (docker, podman) found in your environment. Please, install one)
+	$(error No container tool (docker, podman) found in your environment. Please, install one)
 endif
-
 	@echo "Pushing image with $(CONTAINER_TOOL)"
 	# To help with reusing layers and hence speeding up build
 	${CONTAINER_TOOL} push ${REGISTRYNS}/${BINNAME}-builder:${VERSION}
@@ -106,9 +102,8 @@ endif
 .PHONY: crun
 crun: ## Run using container image
 ifndef CONTAINER_TOOL
-$(error No container tool (docker, podman) found in your environment. Please, install one)
+	$(error No container tool (docker, podman) found in your environment. Please, install one)
 endif
-
 	@echo "Running image with $(CONTAINER_TOOL)"	
 ifdef DOCKER_CMD
 	${CONTAINER_TOOL} run --rm -it -p 8080:8080 -v ${PWD}/data:/move2kube-api/data -v /var/run/docker.sock:/var/run/docker.sock quay.io/konveyor/move2kube-ui:latest

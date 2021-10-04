@@ -80,7 +80,6 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
     const actions: Array<IAction> = [
         {
             title: 'Delete',
-            /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: async (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
                 await deleteProjectOutput(

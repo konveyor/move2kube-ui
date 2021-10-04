@@ -58,6 +58,14 @@ const ApplicationContext: React.Context<IApplicationContext> = React.createConte
     goToRoute: () => {
         /*By default does nothing*/
     },
+
+    files: {},
+    uploadFile: () => {
+        /*By default does nothing*/
+    },
+    cancelUpload: () => {
+        /*By default does nothing*/
+    },
 });
 ApplicationContext.displayName = 'ApplicationContext';
 

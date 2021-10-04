@@ -27,9 +27,17 @@ import {
     createWorkspace,
     updateWorkspace,
     deleteWorkspace,
+    createProjectInputURL,
 } from '@app/networking/api';
+import {
+    IProject,
+    IMetadata,
+    IWorkspace,
+    IProjectInput,
+    FileUploadStatus,
+    SUPPORTED_ARCHIVE_FORMATS,
+} from '@app/common/types';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { IWorkspace, IProject, IMetadata } from '@app/common/types';
 import { ErrHTTP404, IApplicationContext } from '@app/common/types';
 import { ApplicationContext } from '@app/common/ApplicationContext';
 
@@ -58,6 +66,8 @@ class _AppContextProvider extends React.Component<IAppContextProviderProps, IApp
         this.updateProject = this.updateProject.bind(this);
         this.deleteProject = this.deleteProject.bind(this);
         this.goToRoute = this.goToRoute.bind(this);
+        this.uploadFile = this.uploadFile.bind(this);
+        this.cancelUpload = this.cancelUpload.bind(this);
 
         this.state = {
             isLoading: true,
@@ -86,6 +96,10 @@ class _AppContextProvider extends React.Component<IAppContextProviderProps, IApp
             deleteProject: this.deleteProject,
 
             goToRoute: this.goToRoute,
+
+            files: {},
+            uploadFile: this.uploadFile,
+            cancelUpload: this.cancelUpload,
         };
     }
 
@@ -345,9 +359,166 @@ class _AppContextProvider extends React.Component<IAppContextProviderProps, IApp
         if (message) alert(message);
     }
 
+    async uploadFile(
+        workspaceId: string,
+        projectId: string,
+        projInput: IProjectInput,
+        file: File,
+        callback: () => void,
+    ) {
+        const fileId = uuidv4();
+        const url = createProjectInputURL(workspaceId, projectId);
+        const formdata = new FormData();
+        formdata.set('type', projInput.type);
+        if (projInput.description) formdata.set('description', projInput.description);
+        formdata.set('file', file);
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+        const tf1 = (prev: IAppContextProviderState) => ({
+            files: {
+                ...prev.files,
+                [projectId]: {
+                    ...prev.files[projectId],
+                    [fileId]: {
+                        xhr,
+                        file,
+                        filename: projInput.name || 'filename unknown',
+                        percent: 0,
+                        status: FileUploadStatus.Uploading,
+                        statusMsg: '',
+                    },
+                },
+            },
+        });
+        await new Promise<void>((resolve) => this.setState(tf1, resolve));
+        const progressListener = (event: ProgressEvent<XMLHttpRequestEventTarget>) => {
+            console.log(`Uploaded ${event.loaded} bytes out of ${event.total}`);
+            const newUploadPercent = Math.round((event.loaded / event.total) * 100);
+            this.setState((prev) => ({
+                files: {
+                    ...prev.files,
+                    [projectId]: {
+                        ...prev.files[projectId],
+                        [fileId]: { ...prev.files[projectId][fileId], percent: newUploadPercent },
+                    },
+                },
+            }));
+        };
+
+        const abortListener = () => {
+            const err = `File upload aborted. Status: ${xhr.status}`;
+            this.setState((prev) => {
+                const t1 = {
+                    files: { ...prev.files, [projectId]: { ...prev.files[projectId] } },
+                };
+                delete t1.files[projectId][fileId];
+                return t1;
+            });
+            console.error(err);
+        };
+
+        const errorListener = () => {
+            const err = `Failed to upload the file for the project ${projectId}. Status: ${xhr.status}
+Supported file formats are ${SUPPORTED_ARCHIVE_FORMATS} .
+If the file size is huge, try removing large files, which are not needed.
+If network is the problem, you can use the command line tool to accomplish the transformation. Check out https://move2kube.konveyor.io/installation/cli/`;
+            this.setState((prev) => ({
+                files: {
+                    ...prev.files,
+                    [projectId]: {
+                        ...prev.files[projectId],
+                        [fileId]: {
+                            ...prev.files[projectId][fileId],
+                            percent: 0,
+                            status: FileUploadStatus.DoneError,
+                            statusMsg: err,
+                        },
+                    },
+                },
+            }));
+            console.error(err);
+        };
+
+        const loadListener = () => {
+            if (xhr.status < 200 || xhr.status > 299) {
+                let reason = 'Please check the input type and try again.';
+                if (xhr.response && typeof xhr.response === 'object') {
+                    reason = 'Error: ' + xhr.response.error.description;
+                }
+                const err = `failed to upload the file. Status: ${xhr.status} . ${reason}`;
+                this.setState((prev) => ({
+                    files: {
+                        ...prev.files,
+                        [projectId]: {
+                            ...prev.files[projectId],
+                            [fileId]: {
+                                ...prev.files[projectId][fileId],
+                                percent: 0,
+                                status: FileUploadStatus.DoneError,
+                                statusMsg: err,
+                            },
+                        },
+                    },
+                }));
+                console.error(err);
+                return callback();
+            }
+            console.log(`File upload complete. Status: ${xhr.status}`);
+            this.setState((prev) => ({
+                files: {
+                    ...prev.files,
+                    [projectId]: {
+                        ...prev.files[projectId],
+                        [fileId]: {
+                            ...prev.files[projectId][fileId],
+                            percent: 100,
+                            status: FileUploadStatus.DoneSuccess,
+                            statusMsg: 'File upload complete.',
+                        },
+                    },
+                },
+            }));
+            console.log(`upload complete for file ${fileId} of project ${projectId}`);
+            console.log('xhr.response', xhr.response);
+            return callback();
+        };
+        xhr.upload.addEventListener('progress', progressListener);
+        xhr.addEventListener('abort', abortListener);
+        xhr.addEventListener('error', errorListener);
+        xhr.addEventListener('load', loadListener);
+        xhr.open('POST', url);
+        xhr.send(formdata);
+    }
+
+    cancelUpload(projectId: string, fileId: string) {
+        if (!this.state.files[projectId] || !this.state.files[projectId][fileId])
+            throw new Error(`cannot cancel. there is no file with id ${fileId} for project ${projectId}`);
+        if (this.state.files[projectId][fileId].status === FileUploadStatus.Uploading) {
+            return this.state.files[projectId][fileId].xhr.abort();
+        } else if (this.state.files[projectId][fileId].status === FileUploadStatus.DoneError) {
+            this.setState((prev) => {
+                const t1 = {
+                    files: { ...prev.files, [projectId]: { ...prev.files[projectId] } },
+                };
+                delete t1.files[projectId][fileId];
+                return t1;
+            });
+        } else {
+            console.log('cancelUpload called while status is', this.state.files[projectId][fileId].status);
+        }
+    }
+
     render(): JSX.Element {
         return <ApplicationContext.Provider value={this.state}>{this.props.children}</ApplicationContext.Provider>;
     }
+}
+
+function uuidv4(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = (Math.random() * 16) | 0,
+            v = c == 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
 }
 
 export const AppContextProvider = withRouter(_AppContextProvider);

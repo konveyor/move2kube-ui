@@ -129,7 +129,6 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
     const actions: Array<IAction> = [
         {
             title: 'Details',
-            /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
                 goToRoute('/workspaces/' + (rowData as WorkspacesRowT).cells[0].id);
@@ -137,7 +136,6 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
         },
         {
             title: 'Delete',
-            /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
                 deleteWorkspace((rowData as WorkspacesRowT).cells[0].id);

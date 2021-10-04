@@ -219,7 +219,6 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
     const actions: Array<IAction> = [
         {
             title: 'Details',
-            /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
                 goToRoute(`/workspaces/${currentWorkspace.id}/projects/${(rowData as ProjectsRowT).cells[0].id}`);
@@ -227,7 +226,6 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
         },
         {
             title: 'Delete',
-            /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
                 deleteProject((rowData as ProjectsRowT).cells[0].id);

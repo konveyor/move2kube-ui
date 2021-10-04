@@ -15,10 +15,10 @@ limitations under the License.
 */
 
 import React from 'react';
+import { Title } from '@patternfly/react-core';
 import { IWorkspace } from '@app/common/types';
 import { getWorkspaceStatus } from '@app/networking/api';
 import { Table, TableBody } from '@patternfly/react-table';
-import { PageSection, Title } from '@patternfly/react-core';
 
 interface IWorkspaceProps {
     workspace: IWorkspace;

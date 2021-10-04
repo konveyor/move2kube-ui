@@ -107,11 +107,7 @@ function ProjectsToolbar(props: IProjectsToolbarProps): JSX.Element {
     );
 }
 
-function getRowsFromProjects(
-    workspaceId: string,
-    projects: Array<IProject>,
-    oldRows?: Array<ProjectsRowT>,
-): Array<ProjectsRowT> {
+function getRowsFromProjects(workspaceId: string, projects: Array<IProject>): Array<ProjectsRowT> {
     return sortByTimeStamp(projects).map((proj) => ({
         cells: [
             {
@@ -125,51 +121,70 @@ function getRowsFromProjects(
             new Date(proj.timestamp).toString(),
             getProjectStatus(proj.status).join(','),
         ],
-        selected: oldRows?.find((r) => r.cells[0].id === proj.id)?.selected || false,
+        selected: false,
     }));
 }
 
 function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: string }>): JSX.Element {
-    const ctx = useContext(ApplicationContext);
+    const {
+        currentWorkspace,
+        switchWorkspace,
+        workspaces,
+        currentProject,
+        switchProject,
+        projects,
+        listProjects,
+        deleteProject,
+        goToRoute,
+    } = useContext(ApplicationContext);
     const [toggle, setToggle] = useState(false);
     const [toggle2, setToggle2] = useState(false);
     const [rows, setRows] = useState<Array<ProjectsRowT>>([]);
     const [projErr, setProjErr] = useState<Error | null>(null);
+    const projectsJSON = JSON.stringify(projects);
 
     console.log('inside Projects props.match', props.match);
 
     useEffect(() => {
         console.log('inside useEffect 1 of Projects');
-        ctx.listProjects()
+        listProjects()
             .then(() => setProjErr(null))
             .catch((e) => {
                 setProjErr(e);
-                if (e instanceof ErrHTTP401) ctx.goToRoute('/login');
+                if (e instanceof ErrHTTP401) goToRoute('/login');
             });
-    }, [toggle]);
+    }, [toggle, listProjects, goToRoute]);
     useEffect(() => {
         console.log('inside useEffect 2 of Projects');
-        setRows(getRowsFromProjects(ctx.currentWorkspace.id, Object.values(ctx.projects), rows));
-    }, [ctx.currentWorkspace.id, JSON.stringify(ctx.projects)]);
+        setRows(getRowsFromProjects(currentWorkspace.id, Object.values(projects)));
+    }, [currentWorkspace.id, projectsJSON]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => {
         console.log('inside useEffect 3 of Projects');
         if (props.match.params.workspaceId) {
-            ctx.switchWorkspace(props.match.params.workspaceId)
+            switchWorkspace(props.match.params.workspaceId)
                 .then(() => setProjErr(null))
                 .catch((e) => {
                     setProjErr(e);
-                    if (e instanceof ErrHTTP401) ctx.goToRoute('/login');
+                    if (e instanceof ErrHTTP401) goToRoute('/login');
                 });
         }
         if (props.match.params.projectId) {
-            ctx.switchProject(props.match.params.projectId)
+            switchProject(props.match.params.projectId)
                 .then(() => setProjErr(null))
                 .catch((e) => {
                     setProjErr(e);
-                    if (e instanceof ErrHTTP401) ctx.goToRoute('/login');
+                    if (e instanceof ErrHTTP401) goToRoute('/login');
                 });
         }
-    }, [props.match.params.workspaceId, props.match.params.projectId, toggle, toggle2]);
+    }, [
+        props.match.params.workspaceId,
+        props.match.params.projectId,
+        toggle,
+        toggle2,
+        switchWorkspace,
+        switchProject,
+        goToRoute,
+    ]);
 
     if (props.match.params.workspaceId === DEFAULT_WORKSPACE_ID) {
         return (
@@ -192,9 +207,9 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
         return (
             <Project
                 refreshToggle={toggle2}
-                show={ctx.currentProject.id === props.match.params.projectId}
-                workspace={ctx.currentWorkspace}
-                project={ctx.currentProject}
+                show={currentProject.id === props.match.params.projectId}
+                workspace={currentWorkspace}
+                project={currentProject}
                 error={projErr}
                 refresh={() => setToggle2(!toggle2)}
             ></Project>
@@ -207,9 +222,7 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
             /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
-                ctx.goToRoute(
-                    `/workspaces/${ctx.currentWorkspace.id}/projects/${(rowData as ProjectsRowT).cells[0].id}`,
-                );
+                goToRoute(`/workspaces/${currentWorkspace.id}/projects/${(rowData as ProjectsRowT).cells[0].id}`);
             },
         },
         {
@@ -217,7 +230,7 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
             /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
-                ctx.deleteProject((rowData as ProjectsRowT).cells[0].id);
+                deleteProject((rowData as ProjectsRowT).cells[0].id);
             },
         },
     ];
@@ -234,23 +247,21 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
         return setRows(newRows);
     };
     const deleteSelectedRows = () => {
-        rows.filter((r) => r.selected).forEach((r) => ctx.deleteProject(r.cells[0].id));
+        rows.filter((r) => r.selected).forEach((r) => deleteProject(r.cells[0].id));
     };
     return (
         <PageSection className="project-page-section">
-            {ctx.currentWorkspace.id === props.match.params.workspaceId && (
-                <Workspace workspace={ctx.currentWorkspace} />
-            )}
+            {currentWorkspace.id === props.match.params.workspaceId && <Workspace workspace={currentWorkspace} />}
             <ProjectsToolbar
                 error={projErr}
-                workspaces={ctx.workspaces}
-                currentWorkspace={ctx.currentWorkspace}
-                switchWorkspace={(id) => ctx.goToRoute(`/workspaces/${id}/projects`)}
+                workspaces={workspaces}
+                currentWorkspace={currentWorkspace}
+                switchWorkspace={(id) => goToRoute(`/workspaces/${id}/projects`)}
                 refresh={() => setToggle(!toggle)}
                 showDeleteButton={rows.some((r) => r.selected)}
                 deleteSelectedRows={deleteSelectedRows}
             />
-            {ctx.currentWorkspace.id === props.match.params.workspaceId &&
+            {currentWorkspace.id === props.match.params.workspaceId &&
                 (rows.length === 0 ? (
                     <Bullseye className="flex-direction-column">
                         <CubesIcon size="xl" />

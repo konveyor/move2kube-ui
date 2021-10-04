@@ -30,10 +30,10 @@ import {
     ProgressMeasureLocation,
 } from '@patternfly/react-core';
 import React, { useContext, useState } from 'react';
-import { IProjectInput, SUPPORTED_ARCHIVE_FORMATS, XHRListener } from '@app/common/types';
 import { ApplicationContext } from '@app/common/ApplicationContext';
-import { createProjectInput, deleteProjectInput, readProjectInputURL } from '@app/networking/api';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
+import { IProjectInput, SUPPORTED_ARCHIVE_FORMATS, XHRListener } from '@app/common/types';
+import { createProjectInput, deleteProjectInput, readProjectInputURL } from '@app/networking/api';
 
 type ProjectInputsRowT = {
     cells: [{ title: JSX.Element; id: string }, string];

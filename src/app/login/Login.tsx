@@ -44,11 +44,11 @@ const LoginContext = React.createContext<ILoginContext>({
 LoginContext.displayName = 'LoginContext';
 
 function SimpleLoginPage(): JSX.Element {
-    const ctx = useContext(LoginContext);
+    const { useAuth, isLoggedIn } = useContext(LoginContext);
     useEffect(() => {
-        if (ctx.useAuth && !ctx.isLoggedIn) window.location.href = '/auth/login';
-    }, []);
-    return !ctx.useAuth || ctx.isLoggedIn ? (
+        if (useAuth && !isLoggedIn) window.location.href = '/auth/login';
+    }, [useAuth, isLoggedIn]);
+    return !useAuth || isLoggedIn ? (
         <Redirect to="/" />
     ) : (
         <LoginPage

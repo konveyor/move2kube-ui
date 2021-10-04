@@ -21,10 +21,13 @@ WORKDIR /app
 # install yarn
 RUN npm install -g yarn
 ENV PATH="${PATH}:${HOME}/.npm-global/bin/"
-# copy sources
+# install dependencies
+COPY .yarn/ .yarn/
+COPY package.json yarn.lock .yarnrc.yml ./
+RUN yarn install
+# copy sources and build the project
 COPY . .
-# install dependencies and build the project
-RUN yarn install && yarn run build
+RUN yarn run build
 
 ### Runner Image ###
 FROM quay.io/konveyor/move2kube-api:${VERSION}

@@ -162,12 +162,12 @@ type ProblemT = {
 };
 
 type ProjectsRowT = {
-    cells: [{ title: JSX.Element; id: string }, string, string];
+    cells: [{ title: JSX.Element; id: string; name: string }, string, string];
     selected?: boolean;
 };
 
 type WorkspacesRowT = {
-    cells: [{ title: JSX.Element; id: string }, string, string];
+    cells: [{ title: JSX.Element; id: string; name: string }, string, string];
     selected?: boolean;
 };
 

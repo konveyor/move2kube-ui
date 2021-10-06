@@ -62,7 +62,7 @@ install: ## Install dependencies
 
 .PHONY: build
 build: ## Build application
-	@yarn run build
+	@yarn run lint && yarn run build
 
 .PHONY: dev
 dev: install ## Start Development server

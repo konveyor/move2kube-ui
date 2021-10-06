@@ -81,7 +81,7 @@ function WorkspacesToolbar(props: IWorkspacesToolbarProps): JSX.Element {
     );
 }
 
-function getRowsFromWorkspaces(workspaces: Array<IWorkspace>, oldRows?: Array<WorkspacesRowT>): Array<WorkspacesRowT> {
+function getRowsFromWorkspaces(workspaces: Array<IWorkspace>): Array<WorkspacesRowT> {
     return sortByTimeStamp(workspaces).map((work) => ({
         cells: [
             {
@@ -95,31 +95,32 @@ function getRowsFromWorkspaces(workspaces: Array<IWorkspace>, oldRows?: Array<Wo
             new Date(work.timestamp).toString(),
             getWorkspaceStatus(work),
         ],
-        selected: oldRows?.find((r) => r.cells[0].id === work.id)?.selected || false,
+        selected: false,
     }));
 }
 
 function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.Element {
-    const ctx = useContext(ApplicationContext);
+    const { workspaces, listWorkspaces, deleteWorkspace, goToRoute } = useContext(ApplicationContext);
     const [toggle, setToggle] = useState(false);
     const [rows, setRows] = useState<Array<WorkspacesRowT>>([]);
     const [workErr, setWorkErr] = useState<Error | null>(null);
+    const workspacesJSON = JSON.stringify(workspaces);
 
     console.log('inside Workspaces props.match', props.match);
 
     useEffect(() => {
         console.log('inside useEffect 1 of Workspaces');
-        ctx.listWorkspaces()
+        listWorkspaces()
             .then(() => setWorkErr(null))
             .catch((e) => {
                 setWorkErr(e);
-                if (e instanceof ErrHTTP401) ctx.goToRoute('/login');
+                if (e instanceof ErrHTTP401) goToRoute('/login');
             });
-    }, [toggle]);
+    }, [toggle, listWorkspaces, goToRoute]);
     useEffect(() => {
         console.log('inside useEffect 2 of Workspaces');
-        setRows(getRowsFromWorkspaces(Object.values(ctx.workspaces), rows));
-    }, [ctx.workspaces]);
+        setRows(getRowsFromWorkspaces(Object.values(workspaces)));
+    }, [workspacesJSON]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (props.match.params.workspaceId) {
         return <Redirect to={`/workspaces/${props.match.params.workspaceId}/projects`} />;
@@ -128,18 +129,16 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
     const actions: Array<IAction> = [
         {
             title: 'Details',
-            /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
-                ctx.goToRoute('/workspaces/' + (rowData as WorkspacesRowT).cells[0].id);
+                goToRoute('/workspaces/' + (rowData as WorkspacesRowT).cells[0].id);
             },
         },
         {
             title: 'Delete',
-            /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
-                ctx.deleteWorkspace((rowData as WorkspacesRowT).cells[0].id);
+                deleteWorkspace((rowData as WorkspacesRowT).cells[0].id);
             },
         },
     ];
@@ -156,7 +155,7 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
         return setRows(newRows);
     };
     const deleteSelectedRows = () => {
-        rows.filter((r) => r.selected).forEach((r) => ctx.deleteWorkspace(r.cells[0].id));
+        rows.filter((r) => r.selected).forEach((r) => deleteWorkspace(r.cells[0].id));
     };
     return (
         <PageSection>

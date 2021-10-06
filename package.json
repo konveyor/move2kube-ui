@@ -7,7 +7,7 @@
     "repository": "https://github.com/konveyor/move2kube-ui.git",
     "scripts": {
         "start": "move2kube-api --log-level=trace --static-files-dir=dist",
-        "lint": "eslint '*/**/*.{js,ts,tsx}' --fix",
+        "lint": "eslint '*/**/*.{js,ts,tsx}' --fix --max-warnings 0",
         "build": "webpack --config webpack.prod.js && echo 'https://surge.sh/help/adding-a-200-page-for-client-side-routing' && cp dist/index.html dist/200.html"
     },
     "dependencies": {

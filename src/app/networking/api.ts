@@ -168,6 +168,10 @@ async function deleteProject(workspaceId: string, projectId: string): Promise<vo
     }
 }
 
+function createProjectInputURL(workspaceId: string, projectId: string): string {
+    return `${API_BASE}/workspaces/${workspaceId}/projects/${projectId}/inputs`;
+}
+
 async function createProjectInput(
     workspaceId: string,
     projectId: string,
@@ -179,7 +183,7 @@ async function createProjectInput(
     loadListener: XHRListener,
 ): Promise<IMetadata> {
     if (!file) throw new Error('The file is empty. Please upload a valid file.');
-    const url = `${API_BASE}/workspaces/${workspaceId}/projects/${projectId}/inputs`;
+    const url = createProjectInputURL(workspaceId, projectId);
     const formdata = new FormData();
     formdata.set('file', file);
     formdata.set('type', projInput.type);
@@ -371,6 +375,7 @@ export {
     readProject,
     updateProject,
     deleteProject,
+    createProjectInputURL,
     createProjectInput,
     readProjectInputURL,
     deleteProjectInput,

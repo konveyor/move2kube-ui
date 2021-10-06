@@ -82,6 +82,25 @@ interface IPlan {
     metadata: { name: string };
 }
 
+enum FileUploadStatus {
+    Uploading = 'UPLOADING',
+    DoneSuccess = 'SUCCESS',
+    DoneError = 'ERROR',
+}
+
+interface IFiles {
+    [projectId: string]: {
+        [fileId: string]: {
+            file: File;
+            filename: string;
+            xhr: XMLHttpRequest;
+            status: FileUploadStatus;
+            statusMsg: string;
+            percent: number;
+        };
+    };
+}
+
 interface IApplicationContext {
     isGuidedFlow: boolean;
     setGuidedFlow: (guided: boolean) => Promise<void>;
@@ -107,6 +126,16 @@ interface IApplicationContext {
     deleteProject: (id: string) => Promise<void>;
 
     goToRoute: (route: string, message?: string) => void;
+
+    files: IFiles;
+    uploadFile: (
+        workspaceId: string,
+        projectId: string,
+        projInput: IProjectInput,
+        file: File,
+        callback: () => void,
+    ) => void;
+    cancelUpload: (projectId: string, fileId: string) => void;
 }
 
 // https://github.com/konveyor/move2kube/blob/main/types/qaengine/problem.go#L52-L67
@@ -173,6 +202,7 @@ export {
     WorkspacesRowT,
     XHRListener,
     PlanProgressT,
+    FileUploadStatus,
     DEFAULT_WORKSPACE_ID,
     PROJECT_OUTPUT_STATUS_IN_PROGRESS,
     PROJECT_OUTPUT_STATUS_DONE,

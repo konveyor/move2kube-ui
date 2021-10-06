@@ -15,9 +15,9 @@ limitations under the License.
 */
 
 import React from 'react';
-import { IProject, IWorkspace } from '@app/common/types';
 import { getProjectStatus } from '@app/networking/api';
 import { ProjectPlan } from '@app/projects/ProjectPlan';
+import { IProject, IWorkspace } from '@app/common/types';
 import { Table, TableBody } from '@patternfly/react-table';
 import { ProjectInputs } from '@app/projects/ProjectInputs';
 import { ProjectOutputs } from '@app/projects/ProjectOutputs';

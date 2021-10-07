@@ -12,19 +12,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-/node_modules/
-dist
-yarn-error.log
-stats.json
-coverage
-storybook-static
 .DS_Store
 .idea
 .env
-wksps/
+coverage
+stats.json
 /data/
-/sessions/
-/secrets/
+/dist/
+/node_modules/
 
 # https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 .yarn/*

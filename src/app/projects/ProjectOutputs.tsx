@@ -17,6 +17,7 @@ limitations under the License.
 import {
     Card,
     Alert,
+    Modal,
     Button,
     Toolbar,
     CardBody,
@@ -35,7 +36,7 @@ import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-
 import { deleteProjectOutput, readProjectOutputURL, startTransformation } from '@app/networking/api';
 
 type ProjectOutputsRowT = {
-    cells: [{ title: JSX.Element; id: string }, string, string];
+    cells: [{ title: JSX.Element; id: string; name: string }, string, string];
     selected?: boolean;
 };
 
@@ -51,10 +52,14 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
     const ctx = useContext(ApplicationContext);
     const [qaOutputId, setQAOutputId] = useState('');
     const [transformErr, setTransformErr] = useState<Error | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
     const rows: Array<ProjectOutputsRowT> = sortByTimeStamp(Object.values(ctx.currentProject.outputs || {})).map(
         (output) => ({
             cells: [
                 {
+                    id: output.id,
+                    name: output.id,
                     title:
                         output.status === PROJECT_OUTPUT_STATUS_DONE ? (
                             <a
@@ -70,7 +75,6 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                         ) : (
                             <a onClick={() => setQAOutputId(output.id)}>{output.id}</a>
                         ),
-                    id: output.id,
                 },
                 new Date(output.timestamp).toString(),
                 output.status,
@@ -82,12 +86,8 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
             title: 'Delete',
             onClick: async (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
-                await deleteProjectOutput(
-                    ctx.currentWorkspace.id,
-                    ctx.currentProject.id,
-                    (rowData as ProjectOutputsRowT).cells[0].id,
-                );
-                props.refresh();
+                const t1 = rowData as ProjectOutputsRowT;
+                setDeleteTarget({ id: t1.cells[0].id, name: t1.cells[0].name });
             },
         },
     ];
@@ -130,7 +130,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                 </TextContent>
                 <Table
                     aria-label="Project outputs"
-                    cells={['ID', 'Time of starting', 'Status']}
+                    cells={['Id', 'Time of starting', 'Status']}
                     rows={rows}
                     actionResolver={() => actions}
                 >
@@ -155,6 +155,32 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                     />
                 )}
             </CardBody>
+            <Modal
+                variant="small"
+                showClose={true}
+                isOpen={deleteTarget !== null}
+                onClose={() => setDeleteTarget(null)}
+                actions={[
+                    <Button
+                        key="1"
+                        variant="danger"
+                        onClick={() => {
+                            deleteProjectOutput(ctx.currentWorkspace.id, ctx.currentProject.id, deleteTarget?.id || '');
+                            setDeleteTarget(null);
+                            props.refresh();
+                        }}
+                    >
+                        Confirm
+                    </Button>,
+                    <Button key="2" variant="plain" onClick={() => setDeleteTarget(null)}>
+                        Cancel
+                    </Button>,
+                ]}
+            >
+                The following output will be deleted:
+                <pre>{deleteTarget?.name}</pre>
+                Proceed?
+            </Modal>
         </Card>
     );
 }

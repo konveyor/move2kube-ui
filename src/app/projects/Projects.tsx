@@ -112,6 +112,7 @@ function getRowsFromProjects(workspaceId: string, projects: Array<IProject>): Ar
         cells: [
             {
                 id: proj.id,
+                name: proj.name || `id: <${proj.id}>`,
                 title: (
                     <Link key={proj.id} to={`/workspaces/${workspaceId}/projects/${proj.id}`}>
                         {proj.name || `id: <${proj.id}>`}
@@ -139,6 +140,7 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
     } = useContext(ApplicationContext);
     const [toggle, setToggle] = useState(false);
     const [toggle2, setToggle2] = useState(false);
+    const [deleteTargets, setDeleteTargets] = useState<Array<{ id: string; name: string }>>([]);
     const [rows, setRows] = useState<Array<ProjectsRowT>>([]);
     const [projErr, setProjErr] = useState<Error | null>(null);
     const projectsJSON = JSON.stringify(projects);
@@ -228,7 +230,8 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
             title: 'Delete',
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
-                deleteProject((rowData as ProjectsRowT).cells[0].id);
+                const t1 = rowData as ProjectsRowT;
+                setDeleteTargets([{ id: t1.cells[0].id, name: t1.cells[0].name }]);
             },
         },
     ];
@@ -244,9 +247,6 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
         console.log('inside onRowSelect, outside if block, newRows', newRows);
         return setRows(newRows);
     };
-    const deleteSelectedRows = () => {
-        rows.filter((r) => r.selected).forEach((r) => deleteProject(r.cells[0].id));
-    };
     return (
         <PageSection className="project-page-section">
             {currentWorkspace.id === props.match.params.workspaceId && <Workspace workspace={currentWorkspace} />}
@@ -257,7 +257,11 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
                 switchWorkspace={(id) => goToRoute(`/workspaces/${id}/projects`)}
                 refresh={() => setToggle(!toggle)}
                 showDeleteButton={rows.some((r) => r.selected)}
-                deleteSelectedRows={deleteSelectedRows}
+                deleteSelectedRows={() =>
+                    setDeleteTargets(
+                        rows.filter((r) => r.selected).map((r) => ({ id: r.cells[0].id, name: r.cells[0].name })),
+                    )
+                }
             />
             {currentWorkspace.id === props.match.params.workspaceId &&
                 (rows.length === 0 ? (
@@ -277,6 +281,31 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
                         <TableBody />
                     </Table>
                 ))}
+            <Modal
+                variant="small"
+                showClose={true}
+                isOpen={deleteTargets.length > 0}
+                onClose={() => setDeleteTargets([])}
+                actions={[
+                    <Button
+                        key="1"
+                        variant="danger"
+                        onClick={() => {
+                            deleteTargets.forEach((d) => deleteProject(d.id));
+                            setDeleteTargets([]);
+                        }}
+                    >
+                        Confirm
+                    </Button>,
+                    <Button key="2" variant="plain" onClick={() => setDeleteTargets([])}>
+                        Cancel
+                    </Button>,
+                ]}
+            >
+                The following projects will be deleted:
+                <pre>{deleteTargets.map((d) => d.name).join('\n')}</pre>
+                Proceed?
+            </Modal>
         </PageSection>
     );
 }

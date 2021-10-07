@@ -86,6 +86,7 @@ function getRowsFromWorkspaces(workspaces: Array<IWorkspace>): Array<WorkspacesR
         cells: [
             {
                 id: work.id,
+                name: work.name || `id: <${work.id}>`,
                 title: (
                     <Link key={work.id} to={'/workspaces/' + work.id}>
                         {work.name || `id: <${work.id}>`}
@@ -102,6 +103,7 @@ function getRowsFromWorkspaces(workspaces: Array<IWorkspace>): Array<WorkspacesR
 function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.Element {
     const { workspaces, listWorkspaces, deleteWorkspace, goToRoute } = useContext(ApplicationContext);
     const [toggle, setToggle] = useState(false);
+    const [deleteTargets, setDeleteTargets] = useState<Array<{ id: string; name: string }>>([]);
     const [rows, setRows] = useState<Array<WorkspacesRowT>>([]);
     const [workErr, setWorkErr] = useState<Error | null>(null);
     const workspacesJSON = JSON.stringify(workspaces);
@@ -138,7 +140,8 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
             title: 'Delete',
             onClick: (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
-                deleteWorkspace((rowData as WorkspacesRowT).cells[0].id);
+                const t1 = rowData as WorkspacesRowT;
+                setDeleteTargets([{ id: t1.cells[0].id, name: t1.cells[0].name }]);
             },
         },
     ];
@@ -154,16 +157,17 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
         console.log('inside onRowSelect, outside if block, newRows', newRows);
         return setRows(newRows);
     };
-    const deleteSelectedRows = () => {
-        rows.filter((r) => r.selected).forEach((r) => deleteWorkspace(r.cells[0].id));
-    };
     return (
         <PageSection>
             <WorkspacesToolbar
                 error={workErr}
                 refresh={() => setToggle(!toggle)}
                 showDeleteButton={rows.some((r) => r.selected)}
-                deleteSelectedRows={deleteSelectedRows}
+                deleteSelectedRows={() =>
+                    setDeleteTargets(
+                        rows.filter((r) => r.selected).map((r) => ({ id: r.cells[0].id, name: r.cells[0].name })),
+                    )
+                }
             />
             {rows.length === 0 && (
                 <Bullseye className="flex-direction-column">
@@ -189,6 +193,31 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
                     <TableBody />
                 </Table>
             )}
+            <Modal
+                variant="small"
+                showClose={true}
+                isOpen={deleteTargets.length > 0}
+                onClose={() => setDeleteTargets([])}
+                actions={[
+                    <Button
+                        key="1"
+                        variant="danger"
+                        onClick={() => {
+                            deleteTargets.forEach((d) => deleteWorkspace(d.id));
+                            setDeleteTargets([]);
+                        }}
+                    >
+                        Confirm
+                    </Button>,
+                    <Button key="2" variant="plain" onClick={() => setDeleteTargets([])}>
+                        Cancel
+                    </Button>,
+                ]}
+            >
+                The following workspaces will be deleted:
+                <pre>{deleteTargets.map((d) => d.name).join('\n')}</pre>
+                Proceed?
+            </Modal>
         </PageSection>
     );
 }

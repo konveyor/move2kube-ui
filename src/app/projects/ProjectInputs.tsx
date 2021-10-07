@@ -18,6 +18,9 @@ import {
     Card,
     Form,
     Title,
+    Alert,
+    Modal,
+    Button,
     CardBody,
     Progress,
     CardTitle,
@@ -28,7 +31,6 @@ import {
     ProgressVariant,
     FormSelectOption,
     ProgressMeasureLocation,
-    Alert,
 } from '@patternfly/react-core';
 import React, { useContext, useState } from 'react';
 import { ApplicationContext } from '@app/common/ApplicationContext';
@@ -37,7 +39,7 @@ import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-
 import { FileUploadStatus, IProjectInput, SUPPORTED_ARCHIVE_FORMATS } from '@app/common/types';
 
 type ProjectInputsRowT = {
-    cells: [{ title: JSX.Element; id: string }, string];
+    cells: [{ title: JSX.Element; id: string; name: string }, string];
     selected?: boolean;
 };
 
@@ -48,8 +50,9 @@ interface IProjectInputsProps {
 function ProjectInputs(props: IProjectInputsProps): JSX.Element {
     const ctx = useContext(ApplicationContext);
     const [isRejected, setIsRejected] = useState(false);
-    const [inputType, setInputType] = useState('sources');
     const [uploadStatus, setUploadStatus] = useState('');
+    const [inputType, setInputType] = useState('sources');
+    const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
     const handleFileChange = async (newFile: string | File, newFilename: string): Promise<void> => {
         if (!newFile) return console.log('Invalid file type. Actual:', typeof newFile, newFile);
@@ -94,12 +97,13 @@ function ProjectInputs(props: IProjectInputsProps): JSX.Element {
     const rows: Array<ProjectInputsRowT> = Object.values(ctx.currentProject.inputs || {}).map((input) => ({
         cells: [
             {
+                id: input.id,
+                name: input.name || `id: <${input.id}>`,
                 title: (
                     <a download href={readProjectInputURL(ctx.currentWorkspace.id, ctx.currentProject.id, input.id)}>
                         {input.name || `id: <${input.id}>`}
                     </a>
                 ),
-                id: input.id,
             },
             input.type,
         ],
@@ -109,6 +113,8 @@ function ProjectInputs(props: IProjectInputsProps): JSX.Element {
         .map(([k, v]) => ({
             cells: [
                 {
+                    id: k,
+                    name: v.filename,
                     title: (
                         <>
                             {v.filename}
@@ -128,7 +134,6 @@ function ProjectInputs(props: IProjectInputsProps): JSX.Element {
                             />
                         </>
                     ),
-                    id: k,
                 },
                 'uploading',
             ],
@@ -139,12 +144,8 @@ function ProjectInputs(props: IProjectInputsProps): JSX.Element {
             title: 'Delete',
             onClick: async (_: React.MouseEvent, __: number, rowData: IRow) => {
                 if (!rowData || !rowData.cells || rowData.cells.length !== 2) return;
-                await deleteProjectInput(
-                    ctx.currentWorkspace.id,
-                    ctx.currentProject.id,
-                    (rowData as ProjectInputsRowT).cells[0].id,
-                );
-                props.refresh();
+                const t1 = rowData as ProjectInputsRowT;
+                setDeleteTarget({ id: t1.cells[0].id, name: t1.cells[0].name });
             },
         },
     ];
@@ -211,6 +212,32 @@ function ProjectInputs(props: IProjectInputsProps): JSX.Element {
                     </FormGroup>
                 </Form>
             </CardBody>
+            <Modal
+                variant="small"
+                showClose={true}
+                isOpen={deleteTarget !== null}
+                onClose={() => setDeleteTarget(null)}
+                actions={[
+                    <Button
+                        key="1"
+                        variant="danger"
+                        onClick={() => {
+                            deleteProjectInput(ctx.currentWorkspace.id, ctx.currentProject.id, deleteTarget?.id || '');
+                            setDeleteTarget(null);
+                            props.refresh();
+                        }}
+                    >
+                        Confirm
+                    </Button>,
+                    <Button key="2" variant="plain" onClick={() => setDeleteTarget(null)}>
+                        Cancel
+                    </Button>,
+                ]}
+            >
+                The following input will be deleted:
+                <pre>{deleteTarget?.name}</pre>
+                Proceed?
+            </Modal>
         </Card>
     );
 }

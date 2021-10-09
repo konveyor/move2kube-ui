@@ -39,7 +39,13 @@ async function wait(seconds: number): Promise<void> {
 }
 
 async function checkCommonErrors(res: Response) {
-    if (res.status === 400) throw new ErrHTTP400(`HTTP 400 Bad Request. ${JSON.stringify(await res.json())}`);
+    if (res.status === 400) {
+        const d = await res.json();
+        if (d.error?.description) {
+            throw new ErrHTTP400(`HTTP 400 Bad Request. ${d.error.description}`);
+        }
+        throw new ErrHTTP400(`HTTP 400 Bad Request. ${JSON.stringify(d)}`);
+    }
     if (res.status === 401) throw new ErrHTTP401();
     if (res.status === 403) throw new ErrHTTP403();
     if (res.status === 404) throw new ErrHTTP404(`HTTP 404 Not Found. ${res.url}`);

@@ -16,7 +16,6 @@ limitations under the License.
 
 import Yaml from 'js-yaml';
 import {
-    Text,
     Card,
     Alert,
     Button,
@@ -30,8 +29,8 @@ import {
     ToolbarContent,
 } from '@patternfly/react-core';
 import React, { useEffect, useState } from 'react';
-import { startPlanning, readPlan, updatePlan, waitForPlan } from '@app/networking/api';
 import { ErrHTTP401, IProject, IWorkspace, PlanProgressT } from '@app/common/types';
+import { startPlanning, readPlan, updatePlan, waitForPlan } from '@app/networking/api';
 
 interface IProjectPlanProps {
     refreshToggle: boolean;
@@ -51,8 +50,11 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
         setActualPlan('');
         setPlan('');
         setPlanErr(null);
-        if (props.project.status?.plan) {
-            console.log('inside useEffect ProjectPlan, if block');
+        if (props.project.status?.plan_error) {
+            console.log('inside useEffect ProjectPlan, if plan error block');
+            setPlanErr('planning was either cancelled or the timeout was exceeded');
+        } else if (props.project.status?.plan) {
+            console.log('inside useEffect ProjectPlan, if plan block');
             readPlan(props.workspace.id, props.project.id)
                 .then((p) => {
                     console.log('inside useEffect ProjectPlan, if then block, plan:', p);
@@ -61,7 +63,14 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                 })
                 .catch(setPlanErr);
         }
-    }, [props.refreshToggle, props.workspace.id, props.project.id, props.project.status?.plan]);
+    }, [
+        props.refreshToggle,
+        props.workspace.id,
+        props.project.id,
+        props.project.status?.plan,
+        props.project.status?.plan_error,
+    ]);
+    const disableThisSection = !props.project.status?.sources || isPlanning;
     return (
         <Card>
             <CardTitle>Plan</CardTitle>
@@ -70,7 +79,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                     <ToolbarContent>
                         <ToolbarItem>
                             <Button
-                                isDisabled={!props.project.status?.sources || isPlanning}
+                                isDisabled={disableThisSection}
                                 onClick={() => {
                                     setIsPlanning(true);
                                     startPlanning(props.workspace.id, props.project.id)
@@ -103,7 +112,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                         </ToolbarItem>
                         <ToolbarItem>
                             <Button
-                                isDisabled={!props.project.status?.plan || isPlanning}
+                                isDisabled={disableThisSection || !props.project.status?.plan}
                                 onClick={() => {
                                     try {
                                         console.log('save button clicked for plan:', Yaml.load(plan));
@@ -123,9 +132,17 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                             </Button>
                         </ToolbarItem>
                         {isPlanning && <Spinner />}
-                        {plan !== actualPlan && (
+                        {!isPlanning && plan !== actualPlan && (
                             <ToolbarItem>
-                                <Text className="plan-unsaved-warning">*unsaved changes*</Text>
+                                <Alert variant="warning" title="*unsaved changes*" />
+                            </ToolbarItem>
+                        )}
+                        {!isPlanning && props.project.status?.plan && props.project.status?.stale_plan && (
+                            <ToolbarItem>
+                                <Alert
+                                    variant="warning"
+                                    title="The inputs have changed since the last time the plan was generated. Please generate the plan again."
+                                />
                             </ToolbarItem>
                         )}
                         {planErr && (
@@ -140,7 +157,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                     name="plan"
                     aria-label="plan"
                     resizeOrientation="vertical"
-                    isDisabled={!props.project.status?.plan}
+                    isDisabled={disableThisSection || !props.project.status?.plan}
                     validated={planErr ? 'error' : 'default'}
                     value={plan}
                     onChange={setPlan}

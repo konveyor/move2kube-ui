@@ -221,8 +221,12 @@ function ProjectInputs(props: IProjectInputsProps): JSX.Element {
                     <Button
                         key="1"
                         variant="danger"
-                        onClick={() => {
-                            deleteProjectInput(ctx.currentWorkspace.id, ctx.currentProject.id, deleteTarget?.id || '');
+                        onClick={async () => {
+                            await deleteProjectInput(
+                                ctx.currentWorkspace.id,
+                                ctx.currentProject.id,
+                                deleteTarget?.id || '',
+                            );
                             setDeleteTarget(null);
                             props.refresh();
                         }}

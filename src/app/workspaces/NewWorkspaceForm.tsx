@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { ErrHTTP401 } from '@app/common/types';
 import React, { useContext, useState } from 'react';
 import { ApplicationContext } from '@app/common/ApplicationContext';
 import { Button, Form, FormGroup, TextInput, ActionGroup, Alert } from '@patternfly/react-core';
-import { ErrHTTP401 } from '@app/common/types';
 
 interface INewWorkspaceFormProps {
     refresh: () => void;

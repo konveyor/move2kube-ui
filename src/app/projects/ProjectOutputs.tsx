@@ -91,6 +91,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
             },
         },
     ];
+    const disableThisSection = !ctx.currentProject.status?.sources || !ctx.currentProject.status?.plan;
     return (
         <Card>
             <CardTitle>Outputs</CardTitle>
@@ -99,7 +100,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                     <ToolbarContent>
                         <ToolbarItem>
                             <Button
-                                isDisabled={!ctx.currentProject.status?.plan}
+                                isDisabled={disableThisSection}
                                 onClick={() => {
                                     startTransformation(ctx.currentWorkspace.id, ctx.currentProject.id, false)
                                         .then((meta) => {
@@ -164,8 +165,12 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                     <Button
                         key="1"
                         variant="danger"
-                        onClick={() => {
-                            deleteProjectOutput(ctx.currentWorkspace.id, ctx.currentProject.id, deleteTarget?.id || '');
+                        onClick={async () => {
+                            await deleteProjectOutput(
+                                ctx.currentWorkspace.id,
+                                ctx.currentProject.id,
+                                deleteTarget?.id || '',
+                            );
                             setDeleteTarget(null);
                             props.refresh();
                         }}

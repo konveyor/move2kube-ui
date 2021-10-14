@@ -1,0 +1,11 @@
+version: "3"
+services:
+  move2kubeui:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: quay.io/konveyor/move2kube-ui:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./data:/move2kube-api/data:z"

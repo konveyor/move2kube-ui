@@ -108,5 +108,5 @@ endif
 ifdef DOCKER_CMD
 	${CONTAINER_TOOL} run --rm -it -p 8080:8080 -v ${PWD}/data:/move2kube-api/data -v /var/run/docker.sock:/var/run/docker.sock quay.io/konveyor/move2kube-ui:latest
 else
-	${CONTAINER_TOOL} run --rm -it -p 8080:8080 --network=bridge quay.io/konveyor/move2kube-ui:latest
+	${CONTAINER_TOOL} run --rm -it -p 8080:8080 -v ${PWD}/data:/move2kube-api/data:z --network=bridge quay.io/konveyor/move2kube-ui:latest
 endif

@@ -138,23 +138,22 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                     <TableHeader />
                     <TableBody />
                 </Table>
-                {qaOutputId !== '' && (
-                    <QAWizard
-                        workspace={ctx.currentWorkspace}
-                        project={ctx.currentProject}
-                        projectOutputId={qaOutputId}
-                        onClose={() => {
-                            console.log('qa closed');
-                            setQAOutputId('');
-                            props.refresh();
-                        }}
-                        onCancel={() => {
-                            console.log('qa cancelled');
-                            setQAOutputId('');
-                            props.refresh();
-                        }}
-                    />
-                )}
+                <QAWizard
+                    isDisabled={qaOutputId === ''}
+                    workspace={ctx.currentWorkspace}
+                    project={ctx.currentProject}
+                    projectOutputId={qaOutputId}
+                    onClose={() => {
+                        console.log('qa closed');
+                        setQAOutputId('');
+                        props.refresh();
+                    }}
+                    onCancel={() => {
+                        console.log('qa cancelled');
+                        setQAOutputId('');
+                        props.refresh();
+                    }}
+                />
             </CardBody>
             <Modal
                 variant="small"

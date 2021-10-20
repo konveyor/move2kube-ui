@@ -68,6 +68,7 @@ interface IQAWizardStep extends WizardStep {
 }
 
 interface IQAWizardProps {
+    isDisabled: boolean;
     workspace: IWorkspace;
     project: IProject;
     projectOutputId: string;
@@ -224,7 +225,9 @@ function QAWizard(props: IQAWizardProps): JSX.Element {
             </WizardContextConsumer>
         </WizardFooter>
     );
-    return (
+    return props.isDisabled ? (
+        <></>
+    ) : (
         <QAContext.Provider
             value={{
                 problems: state.steps.map((s) => s.problem),

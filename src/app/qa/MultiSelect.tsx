@@ -14,45 +14,49 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { copy } from '@app/common/utils';
+import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
 import { Checkbox, TextContent } from '@patternfly/react-core';
 
 type IMultiSelectProps = IQAComponentProps;
 
 function MultiSelect(props: IMultiSelectProps): JSX.Element {
+    const { problems, setResolvedProblem } = useContext(QAContext);
+    const problem = problems[props.idx];
     const onChange = (checked: boolean, event: React.FormEvent<HTMLInputElement>): void => {
-        console.log('inside onChange MultiSelect problem before', props.problem);
+        console.log('inside onChange MultiSelect problem before', problem);
         const target = event.target as HTMLInputElement;
-        const problem = copy(props.problem);
+        const newProblem = copy(problem);
         const option = target.name;
-        if (!problem.answer) return console.log('inside MultiSelect. problem', problem);
+        if (!newProblem.answer) return console.log('inside MultiSelect, the answer is falsy. newProblem', newProblem);
         if (checked) {
-            if (!(problem.answer as Array<string>).includes(option)) {
-                (problem.answer as Array<string>).push(option);
+            if (!(newProblem.answer as Array<string>).includes(option)) {
+                (newProblem.answer as Array<string>).push(option);
             }
         } else {
-            problem.answer = (problem.answer as Array<string>).filter((x: string) => x !== option);
+            newProblem.answer = (newProblem.answer as Array<string>).filter((x: string) => x !== option);
         }
-        props.setResolvedProblem(problem);
-        console.log('inside onChange MultiSelect problem after', problem);
+        setResolvedProblem(props.idx, newProblem);
+        console.log('inside onChange MultiSelect newProblem after', newProblem);
     };
     return (
         <div>
-            <TextContent>{props.problem.description}</TextContent>
-            {props.problem.options?.map((option: string, idx: number) => (
+            <TextContent>{problem.description}</TextContent>
+            {problem.options?.map((option: string, idx: number) => (
                 <Checkbox
+                    isDisabled={props.idx !== problems.length - 1}
                     aria-label={option}
-                    id={`${props.problem.id}-${option}-${idx}`}
-                    key={`${props.problem.id}-${option}-${idx}`}
+                    id={`${problem.id}-${option}-${idx}`}
+                    key={`${problem.id}-${option}-${idx}`}
                     name={option}
                     label={option}
                     onChange={onChange}
-                    isChecked={(props.problem.answer as Array<string> | undefined)?.includes(option)}
+                    isChecked={(problem.answer as Array<string> | undefined)?.includes(option)}
                 />
             ))}
-            {props.problem.hints?.length && <i>[Hint: {props.problem.hints}]</i>}
+            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
         </div>
     );
 }

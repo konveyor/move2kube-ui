@@ -14,42 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
-import { copy } from '@app/common/utils';
+import React, { useContext } from 'react';
+import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
 import { Radio, TextContent } from '@patternfly/react-core';
 
-type IConfirmProps = IQAComponentProps;
-
-function Confirm(props: IConfirmProps): JSX.Element {
+function Confirm(props: IQAComponentProps): JSX.Element {
+    const { problems, setResolvedProblem } = useContext(QAContext);
+    const problem = problems[props.idx];
     const onChange = (checked: boolean, event: React.FormEvent<HTMLInputElement>): void => {
         if (!checked) return;
-        const problem = copy(props.problem);
-        problem.answer = (event.target as HTMLInputElement).value === 'true';
-        props.setResolvedProblem(problem);
+        setResolvedProblem(props.idx, { ...problem, answer: (event.target as HTMLInputElement).value === 'true' });
     };
     return (
         <div>
-            <TextContent>{props.problem.description}</TextContent>
+            <TextContent>{problem.description}</TextContent>
             <Radio
+                isDisabled={props.idx !== problems.length - 1}
                 aria-label="Yes"
-                id={`${props.problem.id}-yes`}
-                name={props.problem.id}
+                id={`${problem.id}-yes`}
+                name={problem.id}
                 label="Yes"
                 value="true"
                 onChange={onChange}
-                isChecked={props.problem.answer as boolean}
+                isChecked={problem.answer as boolean}
             />
             <Radio
+                isDisabled={props.idx !== problems.length - 1}
                 aria-label="No"
-                id={`${props.problem.id}-no`}
-                name={props.problem.id}
+                id={`${problem.id}-no`}
+                name={problem.id}
                 label="No"
                 value="false"
                 onChange={onChange}
-                isChecked={!(props.problem.answer as boolean)}
+                isChecked={!(problem.answer as boolean)}
             />
-            {props.problem.hints?.length && <i>[Hint: {props.problem.hints}]</i>}
+            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
         </div>
     );
 }

@@ -138,6 +138,11 @@ interface IApplicationContext {
     cancelUpload: (projectId: string, fileId: string) => void;
 }
 
+interface IQAContext {
+    problems: Array<ProblemT>;
+    setResolvedProblem: (idx: number, p: ProblemT) => void;
+}
+
 // https://github.com/konveyor/move2kube/blob/main/types/qaengine/problem.go#L52-L67
 /*
 // Problem defines the QA problem
@@ -197,6 +202,7 @@ export {
     IProjectOutput,
     IPlan,
     IApplicationContext,
+    IQAContext,
     ProblemT,
     ProjectsRowT,
     WorkspacesRowT,

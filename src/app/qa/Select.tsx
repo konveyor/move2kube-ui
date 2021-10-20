@@ -14,33 +14,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
+import React, { useContext } from 'react';
+import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
 import { Radio, TextContent } from '@patternfly/react-core';
 
-type ISelectProps = IQAComponentProps;
-
-function Select(props: ISelectProps): JSX.Element {
+function Select(props: IQAComponentProps): JSX.Element {
+    const { problems, setResolvedProblem } = useContext(QAContext);
+    const problem = problems[props.idx];
     const onChange = (checked: boolean, event: React.FormEvent<HTMLInputElement>): void => {
         if (!checked) return;
-        props.setResolvedProblem({ ...props.problem, answer: (event.target as HTMLInputElement).value });
+        setResolvedProblem(props.idx, { ...problem, answer: (event.target as HTMLInputElement).value });
     };
     return (
         <div>
-            <TextContent>{props.problem.description}</TextContent>
-            {props.problem.options?.map((option: string, idx: number) => (
+            <TextContent>{problem.description}</TextContent>
+            {problem.options?.map((option: string, idx: number) => (
                 <Radio
+                    isDisabled={props.idx !== problems.length - 1}
                     aria-label={option}
-                    id={`${props.problem.id}-${option}-${idx}`}
-                    key={`${props.problem.id}-${option}-${idx}`}
-                    name={props.problem.id}
+                    id={`${problem.id}-${option}-${idx}`}
+                    key={`${problem.id}-${option}-${idx}`}
+                    name={problem.id}
                     label={option}
                     value={option}
                     onChange={onChange}
-                    isChecked={props.problem.answer === option}
+                    isChecked={problem.answer === option}
                 />
             ))}
-            {props.problem.hints?.length && <i>[Hint: {props.problem.hints}]</i>}
+            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
         </div>
     );
 }

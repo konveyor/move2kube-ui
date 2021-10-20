@@ -46,6 +46,7 @@ function MultiSelect(props: IMultiSelectProps): JSX.Element {
             <TextContent>{problem.description}</TextContent>
             {problem.options?.map((option: string, idx: number) => (
                 <Checkbox
+                    isDisabled={props.idx !== problems.length - 1}
                     aria-label={option}
                     id={`${problem.id}-${option}-${idx}`}
                     key={`${problem.id}-${option}-${idx}`}

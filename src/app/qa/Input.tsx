@@ -28,7 +28,13 @@ function Input(props: IQAComponentProps): JSX.Element {
     return (
         <div>
             <TextContent>{problem.description}</TextContent>
-            <TextInput type="text" aria-label="answer input" value={problem.answer as string} onChange={onChange} />
+            <TextInput
+                isDisabled={props.idx !== problems.length - 1}
+                type="text"
+                aria-label="answer input"
+                value={problem.answer as string}
+                onChange={onChange}
+            />
             {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
         </div>
     );

@@ -102,7 +102,8 @@ function reducer(state: IQAWizardState, action: IAction): IQAWizardState {
         const act = action as IActionNewStep;
         const QuesComponent = getQuestCompAndSetDefault(act.problem);
         const newStep = {
-            canJumpTo: false,
+            id: state.steps.length,
+            canJumpTo: true,
             name: act.problem.id,
             problem: act.problem,
             component: <QuesComponent idx={state.steps.length} />,
@@ -181,8 +182,9 @@ function QAWizard(props: IQAWizardProps): JSX.Element {
         solErr: null,
         steps: [
             {
+                id: 0,
                 name: 'Get Started!',
-                canJumpTo: false,
+                canJumpTo: true,
                 problem: { id: '', type: '', description: '' },
                 component: (
                     <p>Move2Kube will ask you a few questions if it requires any assistance. Click Next to start.</p>
@@ -195,10 +197,11 @@ function QAWizard(props: IQAWizardProps): JSX.Element {
         <WizardFooter>
             {state.solErr && <Alert variant="danger" title={`${state.solErr}`} />}
             <WizardContextConsumer>
-                {({ onNext, onClose }) => (
+                {({ onNext, onClose, activeStep }) => (
                     <>
                         <Button
                             onClick={() => {
+                                if (activeStep.id !== state.steps.length - 1) return onNext();
                                 const act: IActionSetDisabled = { type: ActionType.SET_DISABLED, disabled: true };
                                 dispatch(act);
                                 getNextStep(onNext, onClose, props, state, dispatch);

@@ -144,7 +144,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                         project={ctx.currentProject}
                         projectOutputId={qaOutputId}
                         onClose={() => {
-                            console.log('qa is done');
+                            console.log('qa closed');
                             setQAOutputId('');
                             props.refresh();
                         }}

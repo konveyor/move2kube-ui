@@ -14,26 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
+import React, { useContext } from 'react';
+import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
 import { TextContent, TextInput } from '@patternfly/react-core';
 
-type IPasswordProps = IQAComponentProps;
-
-function Password(props: IPasswordProps): JSX.Element {
+function Password(props: IQAComponentProps): JSX.Element {
+    const { problems, setResolvedProblem } = useContext(QAContext);
+    const problem = problems[props.idx];
     const onChange = (value: string): void => {
-        props.setResolvedProblem({ ...props.problem, answer: value });
+        setResolvedProblem(props.idx, { ...problem, answer: value });
     };
     return (
         <div>
-            <TextContent>{props.problem.description}</TextContent>
-            <TextInput
-                type="password"
-                aria-label="password input"
-                value={props.problem.answer as string}
-                onChange={onChange}
-            />
-            {props.problem.hints?.length && <i>[Hint: {props.problem.hints}]</i>}
+            <TextContent>{problem.description}</TextContent>
+            <TextInput type="password" aria-label="answer input" value={problem.answer as string} onChange={onChange} />
+            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
         </div>
     );
 }

@@ -15,25 +15,36 @@ limitations under the License.
 */
 
 class ErrHTTP400 extends Error {
-    constructor(message = 'HTTP 400 Bad Request') {
+    constructor(message?: string) {
+        message = 'HTTP 400 Bad Request ' + (message || '');
         super(message);
     }
 }
 
 class ErrHTTP401 extends Error {
-    constructor(message = 'HTTP 401 Unauthorized') {
+    constructor(message?: string) {
+        message = 'HTTP 401 Unauthorized ' + (message || '');
         super(message);
     }
 }
 
 class ErrHTTP403 extends Error {
-    constructor(message = 'HTTP 403 Forbidden') {
+    constructor(message?: string) {
+        message = 'HTTP 403 Forbidden ' + (message || '');
         super(message);
     }
 }
 
 class ErrHTTP404 extends Error {
-    constructor(message = 'HTTP 404 Not Found') {
+    constructor(message?: string) {
+        message = 'HTTP 404 Not Found ' + (message || '');
+        super(message);
+    }
+}
+
+class ErrHTTP409 extends Error {
+    constructor(message?: string) {
+        message = 'HTTP 409 Conflict ' + (message || '');
         super(message);
     }
 }
@@ -193,6 +204,7 @@ export {
     ErrHTTP401,
     ErrHTTP403,
     ErrHTTP404,
+    ErrHTTP409,
     ISupportInfo,
     IUserInfo,
     IMetadata,

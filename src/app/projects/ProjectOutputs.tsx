@@ -164,14 +164,16 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                     <Button
                         key="1"
                         variant="danger"
-                        onClick={async () => {
-                            await deleteProjectOutput(
-                                ctx.currentWorkspace.id,
-                                ctx.currentProject.id,
-                                deleteTarget?.id || '',
-                            );
-                            setDeleteTarget(null);
-                            props.refresh();
+                        onClick={() => {
+                            deleteProjectOutput(ctx.currentWorkspace.id, ctx.currentProject.id, deleteTarget?.id || '')
+                                .then(() => {
+                                    setDeleteTarget(null);
+                                    props.refresh();
+                                })
+                                .catch((e) => {
+                                    setTransformErr(e);
+                                    if (e instanceof ErrHTTP401) props.refresh();
+                                });
                         }}
                     >
                         Confirm

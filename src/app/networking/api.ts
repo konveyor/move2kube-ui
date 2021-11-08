@@ -18,16 +18,13 @@ import {
     IProject,
     ProblemT,
     IMetadata,
-    ErrHTTP400,
-    ErrHTTP401,
-    ErrHTTP403,
-    ErrHTTP404,
     IWorkspace,
     XHRListener,
     ISupportInfo,
     IProjectInput,
     PlanProgressT,
 } from '@app/common/types';
+import { checkCommonErrors } from '@app/common/utils';
 
 const API_BASE = '/api/v1';
 const ACCEPT_HEADER = 'Accept';
@@ -36,19 +33,6 @@ const CONTENT_TYPE_JSON = 'application/json';
 
 async function wait(seconds: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-}
-
-async function checkCommonErrors(res: Response) {
-    if (res.status === 400) {
-        const d = await res.json();
-        if (d.error?.description) {
-            throw new ErrHTTP400(`HTTP 400 Bad Request. ${d.error.description}`);
-        }
-        throw new ErrHTTP400(`HTTP 400 Bad Request. ${JSON.stringify(d)}`);
-    }
-    if (res.status === 401) throw new ErrHTTP401();
-    if (res.status === 403) throw new ErrHTTP403();
-    if (res.status === 404) throw new ErrHTTP404(`HTTP 404 Not Found. ${res.url}`);
 }
 
 function getProjectStatus(status: IProject['status']): Array<string> {

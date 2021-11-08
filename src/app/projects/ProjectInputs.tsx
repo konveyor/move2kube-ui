@@ -36,7 +36,7 @@ import React, { useContext, useState } from 'react';
 import { ApplicationContext } from '@app/common/ApplicationContext';
 import { deleteProjectInput, readProjectInputURL } from '@app/networking/api';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
-import { FileUploadStatus, IProjectInput, SUPPORTED_ARCHIVE_FORMATS } from '@app/common/types';
+import { ErrHTTP401, FileUploadStatus, IProjectInput, SUPPORTED_ARCHIVE_FORMATS } from '@app/common/types';
 
 type ProjectInputsRowT = {
     cells: [{ title: JSX.Element; id: string; name: string }, string];
@@ -221,14 +221,16 @@ function ProjectInputs(props: IProjectInputsProps): JSX.Element {
                     <Button
                         key="1"
                         variant="danger"
-                        onClick={async () => {
-                            await deleteProjectInput(
-                                ctx.currentWorkspace.id,
-                                ctx.currentProject.id,
-                                deleteTarget?.id || '',
-                            );
-                            setDeleteTarget(null);
-                            props.refresh();
+                        onClick={() => {
+                            deleteProjectInput(ctx.currentWorkspace.id, ctx.currentProject.id, deleteTarget?.id || '')
+                                .then(() => {
+                                    setDeleteTarget(null);
+                                    props.refresh();
+                                })
+                                .catch((e) => {
+                                    setUploadStatus(`failed to delete project input. ${e}`);
+                                    if (e instanceof ErrHTTP401) props.refresh();
+                                });
                         }}
                     >
                         Confirm

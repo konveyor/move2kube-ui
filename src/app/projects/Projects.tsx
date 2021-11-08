@@ -291,8 +291,13 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
                         key="1"
                         variant="danger"
                         onClick={() => {
-                            deleteTargets.forEach((d) => deleteProject(d.id));
-                            setDeleteTargets([]);
+                            const pr = Promise.all(deleteTargets.map((d) => deleteProject(d.id)));
+                            pr.then(() => {
+                                setDeleteTargets([]);
+                            }).catch((e) => {
+                                setProjErr(new Error(`Some projects were not deleted. ${e}`));
+                                setDeleteTargets([]);
+                            });
                         }}
                     >
                         Confirm

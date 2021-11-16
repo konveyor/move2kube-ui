@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { IMetadata, IPlan } from './types';
+import { IPlan, IMetadata, ErrHTTP400, ErrHTTP401, ErrHTTP403, ErrHTTP404, ErrHTTP409 } from '@app/common/types';
 
 function newPlan(): IPlan {
     return {
@@ -60,4 +60,27 @@ function sortByTimeStamp<T extends IMetadata>(xs: Array<T>): Array<T> {
     });
 }
 
-export { newPlan, validatePlan, accessibleRouteChangeHandler, copy, useDocumentTitle, sortByTimeStamp };
+async function checkCommonErrors(res: Response): Promise<void> {
+    let desc = '';
+    try {
+        const d = await res.json();
+        desc = d?.error?.description;
+    } catch (e) {
+        console.log('response body is empty or not valid json. error: ', e);
+    }
+    if (res.status === 400) throw new ErrHTTP400(desc);
+    if (res.status === 401) throw new ErrHTTP401(desc);
+    if (res.status === 403) throw new ErrHTTP403(desc);
+    if (res.status === 404) throw new ErrHTTP404(desc);
+    if (res.status === 409) throw new ErrHTTP409(desc);
+}
+
+export {
+    copy,
+    newPlan,
+    validatePlan,
+    sortByTimeStamp,
+    useDocumentTitle,
+    checkCommonErrors,
+    accessibleRouteChangeHandler,
+};

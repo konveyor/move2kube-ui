@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ErrHTTP401, ErrHTTP403, ErrHTTP404, IUserInfo } from '@app/common/types';
+import { IUserInfo } from '@app/common/types';
+import { checkCommonErrors } from '@app/common/utils';
 
 async function getUserProfile(): Promise<IUserInfo> {
     const res = await fetch('/auth/user-profile', { headers: { Accept: 'application/json' } });
     if (!res.ok) {
-        if (res.status === 401) throw new ErrHTTP401();
-        if (res.status === 403) throw new ErrHTTP403();
-        if (res.status === 404) throw new ErrHTTP404();
+        await checkCommonErrors(res);
         throw new Error(`failed to get the user profile. Status: ${res.status}`);
     }
     return await res.json();
@@ -30,9 +29,7 @@ async function getUserProfile(): Promise<IUserInfo> {
 async function logout(): Promise<void> {
     const res = await fetch('/auth/logout', { method: 'POST' });
     if (!res.ok) {
-        if (res.status === 401) throw new ErrHTTP401();
-        if (res.status === 403) throw new ErrHTTP403();
-        if (res.status === 404) throw new ErrHTTP404();
+        await checkCommonErrors(res);
         throw new Error(`failed to logout. Status: ${res.status}`);
     }
 }

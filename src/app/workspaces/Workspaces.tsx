@@ -203,8 +203,13 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
                         key="1"
                         variant="danger"
                         onClick={() => {
-                            deleteTargets.forEach((d) => deleteWorkspace(d.id));
-                            setDeleteTargets([]);
+                            const pr = Promise.all(deleteTargets.map((d) => deleteWorkspace(d.id)));
+                            pr.then(() => {
+                                setDeleteTargets([]);
+                            }).catch((e) => {
+                                setWorkErr(new Error(`Some workspaces were not deleted. ${e}`));
+                                setDeleteTargets([]);
+                            });
                         }}
                     >
                         Confirm

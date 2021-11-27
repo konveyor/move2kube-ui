@@ -28,6 +28,7 @@ import {
     updateWorkspace,
     deleteWorkspace,
     createProjectInputURL,
+    createWorkspaceInputURL,
 } from '@app/networking/api';
 import {
     IProject,
@@ -36,6 +37,7 @@ import {
     IProjectInput,
     FileUploadStatus,
     SUPPORTED_ARCHIVE_FORMATS,
+    IWorkspaceInput,
 } from '@app/common/types';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { ErrHTTP404, IApplicationContext } from '@app/common/types';
@@ -68,6 +70,8 @@ class _AppContextProvider extends React.Component<IAppContextProviderProps, IApp
         this.goToRoute = this.goToRoute.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.cancelUpload = this.cancelUpload.bind(this);
+        this.uploadWorkspaceFile = this.uploadWorkspaceFile.bind(this);
+        this.cancelWorkspaceUpload = this.cancelWorkspaceUpload.bind(this);
 
         this.state = {
             isLoading: true,
@@ -100,6 +104,10 @@ class _AppContextProvider extends React.Component<IAppContextProviderProps, IApp
             files: {},
             uploadFile: this.uploadFile,
             cancelUpload: this.cancelUpload,
+
+            workspaceFiles: {},
+            uploadWorkspaceFile: this.uploadWorkspaceFile,
+            cancelWorkspaceUpload: this.cancelWorkspaceUpload,
         };
     }
 
@@ -508,6 +516,151 @@ If network is the problem, you can use the command line tool to accomplish the t
         }
     }
 
+    async uploadWorkspaceFile(workspaceId: string, workInput: IWorkspaceInput, file: File, callback: () => void) {
+        const fileId = uuidv4();
+        const url = createWorkspaceInputURL(workspaceId);
+        const formdata = new FormData();
+        formdata.set('type', workInput.type);
+        if (workInput.description) formdata.set('description', workInput.description);
+        formdata.set('file', file);
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+        const tf1 = (prev: IAppContextProviderState) => ({
+            workspaceFiles: {
+                ...prev.workspaceFiles,
+                [workspaceId]: {
+                    ...prev.workspaceFiles[workspaceId],
+                    [fileId]: {
+                        xhr,
+                        file,
+                        filename: workInput.name || 'filename unknown',
+                        percent: 0,
+                        status: FileUploadStatus.Uploading,
+                        statusMsg: '',
+                    },
+                },
+            },
+        });
+        await new Promise<void>((resolve) => this.setState(tf1, resolve));
+        const progressListener = (event: ProgressEvent<XMLHttpRequestEventTarget>) => {
+            console.log(`Uploaded ${event.loaded} bytes out of ${event.total}`);
+            const newUploadPercent = Math.round((event.loaded / event.total) * 100);
+            this.setState((prev) => ({
+                workspaceFiles: {
+                    ...prev.workspaceFiles,
+                    [workspaceId]: {
+                        ...prev.workspaceFiles[workspaceId],
+                        [fileId]: { ...prev.workspaceFiles[workspaceId][fileId], percent: newUploadPercent },
+                    },
+                },
+            }));
+        };
+
+        const abortListener = () => {
+            const err = `File upload aborted. Status: ${xhr.status}`;
+            this.setState((prev) => {
+                const t1 = {
+                    workspaceFiles: { ...prev.workspaceFiles, [workspaceId]: { ...prev.workspaceFiles[workspaceId] } },
+                };
+                delete t1.workspaceFiles[workspaceId][fileId];
+                return t1;
+            });
+            console.error(err);
+        };
+
+        const errorListener = () => {
+            const err = `Failed to upload the file for the workspace ${workspaceId}. Status: ${xhr.status}
+Supported file formats are ${SUPPORTED_ARCHIVE_FORMATS} .
+If the file size is huge, try removing large files, which are not needed.
+If network is the problem, you can use the command line tool to accomplish the transformation. Check out https://move2kube.konveyor.io/installation/cli/`;
+            this.setState((prev) => ({
+                workspaceFiles: {
+                    ...prev.workspaceFiles,
+                    [workspaceId]: {
+                        ...prev.workspaceFiles[workspaceId],
+                        [fileId]: {
+                            ...prev.workspaceFiles[workspaceId][fileId],
+                            percent: 0,
+                            status: FileUploadStatus.DoneError,
+                            statusMsg: err,
+                        },
+                    },
+                },
+            }));
+            console.error(err);
+        };
+
+        const loadListener = () => {
+            if (xhr.status < 200 || xhr.status > 299) {
+                let reason = 'Please check the input type and try again.';
+                if (xhr.response && typeof xhr.response === 'object') {
+                    reason = 'Error: ' + xhr.response.error.description;
+                }
+                const err = `failed to upload the file. Status: ${xhr.status} . ${reason}`;
+                this.setState((prev) => ({
+                    workspaceFiles: {
+                        ...prev.workspaceFiles,
+                        [workspaceId]: {
+                            ...prev.workspaceFiles[workspaceId],
+                            [fileId]: {
+                                ...prev.workspaceFiles[workspaceId][fileId],
+                                percent: 0,
+                                status: FileUploadStatus.DoneError,
+                                statusMsg: err,
+                            },
+                        },
+                    },
+                }));
+                console.error(err);
+                return callback();
+            }
+            console.log(`File upload complete. Status: ${xhr.status}`);
+            this.setState((prev) => ({
+                workspaceFiles: {
+                    ...prev.workspaceFiles,
+                    [workspaceId]: {
+                        ...prev.workspaceFiles[workspaceId],
+                        [fileId]: {
+                            ...prev.workspaceFiles[workspaceId][fileId],
+                            percent: 100,
+                            status: FileUploadStatus.DoneSuccess,
+                            statusMsg: 'File upload complete.',
+                        },
+                    },
+                },
+            }));
+            console.log(`upload complete for file ${fileId} of workspace ${workspaceId}`);
+            console.log('xhr.response', xhr.response);
+            return callback();
+        };
+        xhr.upload.addEventListener('progress', progressListener);
+        xhr.addEventListener('abort', abortListener);
+        xhr.addEventListener('error', errorListener);
+        xhr.addEventListener('load', loadListener);
+        xhr.open('POST', url);
+        xhr.send(formdata);
+    }
+
+    cancelWorkspaceUpload(workspaceId: string, fileId: string) {
+        if (!this.state.workspaceFiles[workspaceId] || !this.state.workspaceFiles[workspaceId][fileId])
+            throw new Error(`cannot cancel. there is no file with id ${fileId} for the workspace ${workspaceId}`);
+        if (this.state.workspaceFiles[workspaceId][fileId].status === FileUploadStatus.Uploading) {
+            return this.state.workspaceFiles[workspaceId][fileId].xhr.abort();
+        } else if (this.state.workspaceFiles[workspaceId][fileId].status === FileUploadStatus.DoneError) {
+            this.setState((prev) => {
+                const t1 = {
+                    workspaceFiles: { ...prev.workspaceFiles, [workspaceId]: { ...prev.workspaceFiles[workspaceId] } },
+                };
+                delete t1.workspaceFiles[workspaceId][fileId];
+                return t1;
+            });
+        } else {
+            console.log(
+                'cancelWorkspaceUpload called while status is',
+                this.state.workspaceFiles[workspaceId][fileId].status,
+            );
+        }
+    }
     render(): JSX.Element {
         return <ApplicationContext.Provider value={this.state}>{this.props.children}</ApplicationContext.Provider>;
     }

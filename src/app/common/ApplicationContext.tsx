@@ -66,7 +66,16 @@ const ApplicationContext: React.Context<IApplicationContext> = React.createConte
     cancelUpload: () => {
         /*By default does nothing*/
     },
+
+    workspaceFiles: {},
+    uploadWorkspaceFile: () => {
+        /*By default does nothing*/
+    },
+    cancelWorkspaceUpload: () => {
+        /*By default does nothing*/
+    },
 });
+
 ApplicationContext.displayName = 'ApplicationContext';
 
 export { ApplicationContext };

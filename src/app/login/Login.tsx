@@ -73,4 +73,6 @@ function SimpleLoginPage(): JSX.Element {
     );
 }
 
+SimpleLoginPage.displayName = 'SimpleLoginPage';
+
 export { SimpleLoginPage, LoginContext, ILoginContext };

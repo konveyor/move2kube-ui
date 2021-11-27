@@ -89,4 +89,6 @@ function NewWorkspaceForm(props: INewWorkspaceFormProps): JSX.Element {
     );
 }
 
+NewWorkspaceForm.displayName = 'NewWorkspaceForm';
+
 export { NewWorkspaceForm };

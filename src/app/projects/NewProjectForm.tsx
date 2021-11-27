@@ -89,4 +89,6 @@ function NewProjectForm(props: INewProjectFormProps): JSX.Element {
     );
 }
 
+NewProjectForm.displayName = 'NewProjectForm';
+
 export { NewProjectForm };

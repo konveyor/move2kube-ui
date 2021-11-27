@@ -29,7 +29,7 @@ import {
     ToolbarContent,
 } from '@patternfly/react-core';
 import React, { useEffect, useState } from 'react';
-import { ErrHTTP401, IProject, IWorkspace, PlanProgressT } from '@app/common/types';
+import { ErrHTTP401, IProject, IWorkspace, PlanProgressT, ProjectInputType } from '@app/common/types';
 import { startPlanning, readPlan, updatePlan, waitForPlan } from '@app/networking/api';
 
 interface IProjectPlanProps {
@@ -70,7 +70,17 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
         props.project.status?.plan,
         props.project.status?.plan_error,
     ]);
-    const disableThisSection = !props.project.status?.sources || isPlanning;
+    let disableThisSection = !props.project.status?.[ProjectInputType.Sources] || isPlanning;
+    if (disableThisSection && !isPlanning && props.project.status?.[ProjectInputType.Reference]) {
+        if (
+            Object.values(props.project.inputs || {})
+                .filter((x) => x.type === ProjectInputType.Reference)
+                .map((x) => props.workspace.inputs?.[x.id])
+                .some((x) => x?.type === ProjectInputType.Sources)
+        ) {
+            disableThisSection = false;
+        }
+    }
     return (
         <Card>
             <CardTitle>Plan</CardTitle>
@@ -167,5 +177,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
         </Card>
     );
 }
+
+ProjectPlan.displayName = 'ProjectPlan';
 
 export { ProjectPlan };

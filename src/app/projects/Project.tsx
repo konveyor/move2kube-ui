@@ -94,4 +94,6 @@ function Project(props: IProjectProps): JSX.Element {
     );
 }
 
+Project.displayName = 'Project';
+
 export { Project };

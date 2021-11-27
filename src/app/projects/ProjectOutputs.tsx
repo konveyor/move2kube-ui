@@ -31,7 +31,7 @@ import { QAWizard } from '@app/qa/QAWizard';
 import { sortByTimeStamp } from '@app/common/utils';
 import React, { useContext, useState } from 'react';
 import { ApplicationContext } from '@app/common/ApplicationContext';
-import { ErrHTTP401, PROJECT_OUTPUT_STATUS_DONE } from '@app/common/types';
+import { ErrHTTP401, ProjectInputType, PROJECT_OUTPUT_STATUS_DONE } from '@app/common/types';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
 import { deleteProjectOutput, readProjectOutputURL, startTransformation } from '@app/networking/api';
 
@@ -91,7 +91,21 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
             },
         },
     ];
-    const disableThisSection = !ctx.currentProject.status?.sources || !ctx.currentProject.status?.plan;
+    let disableThisSection = !ctx.currentProject.status?.[ProjectInputType.Sources] || !ctx.currentProject.status?.plan;
+    if (
+        disableThisSection &&
+        ctx.currentProject.status?.plan &&
+        ctx.currentProject.status?.[ProjectInputType.Reference]
+    ) {
+        if (
+            Object.values(ctx.currentProject.inputs || {})
+                .filter((x) => x.type === ProjectInputType.Reference)
+                .map((x) => ctx.currentWorkspace.inputs?.[x.id])
+                .some((x) => x?.type === ProjectInputType.Sources)
+        ) {
+            disableThisSection = false;
+        }
+    }
     return (
         <Card>
             <CardTitle>Outputs</CardTitle>
@@ -156,6 +170,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                 />
             </CardBody>
             <Modal
+                aria-labelledby="delete-project-output-modal"
                 variant="small"
                 showClose={true}
                 isOpen={deleteTarget !== null}
@@ -190,5 +205,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
         </Card>
     );
 }
+
+ProjectOutputs.displayName = 'ProjectOutputs';
 
 export { ProjectOutputs };

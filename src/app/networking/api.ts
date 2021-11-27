@@ -23,6 +23,7 @@ import {
     ISupportInfo,
     IProjectInput,
     PlanProgressT,
+    ProjectInputType,
 } from '@app/common/types';
 import { checkCommonErrors } from '@app/common/utils';
 
@@ -64,6 +65,10 @@ async function listWorkspaces(): Promise<Array<IWorkspace>> {
         throw new Error(`Failed to list the workspaces. Status: ${res.status}`);
     }
     return await res.json();
+}
+
+function createWorkspaceInputURL(workspaceId: string): string {
+    return `${API_BASE}/workspaces/${workspaceId}/inputs`;
 }
 
 async function createWorkspace(workspace: IWorkspace): Promise<IMetadata> {
@@ -158,6 +163,21 @@ async function deleteProject(workspaceId: string, projectId: string): Promise<vo
     }
 }
 
+function readWorkspaceInputURL(workspaceId: string, projInputId: string): string {
+    return `${API_BASE}/workspaces/${workspaceId}/inputs/${projInputId}`;
+}
+
+async function deleteWorkspaceInput(workspaceId: string, projInputId: string): Promise<void> {
+    const url = `${API_BASE}/workspaces/${workspaceId}/inputs/${projInputId}`;
+    const res = await fetch(url, { method: 'DELETE', headers: { [ACCEPT_HEADER]: CONTENT_TYPE_JSON } });
+    if (!res.ok) {
+        await checkCommonErrors(res);
+        throw new Error(
+            `failed to delete the common workspace level input ${projInputId} of the workspace ${workspaceId}. Status: ${res.status}`,
+        );
+    }
+}
+
 function createProjectInputURL(workspaceId: string, projectId: string): string {
     return `${API_BASE}/workspaces/${workspaceId}/projects/${projectId}/inputs`;
 }
@@ -190,12 +210,30 @@ async function createProjectInput(
     });
 }
 
+async function createProjectInputReference(
+    workspaceId: string,
+    projectId: string,
+    projInput: IProjectInput,
+): Promise<IMetadata> {
+    if (projInput.type !== ProjectInputType.Reference) throw new Error('only meant for reference type project input');
+    const url = createProjectInputURL(workspaceId, projectId);
+    const body = new FormData();
+    body.set('id', projInput.id);
+    body.set('type', projInput.type);
+    const res = await fetch(url, { method: 'POST', body });
+    if (!res.ok) {
+        await checkCommonErrors(res);
+        throw new Error(`Failed to create a new reference type project input ${body}. Status: ${res.status}`);
+    }
+    return await res.json();
+}
+
 function readProjectInputURL(workspaceId: string, projectId: string, projInputId: string): string {
     return `${API_BASE}/workspaces/${workspaceId}/projects/${projectId}/inputs/${projInputId}`;
 }
 
 async function deleteProjectInput(workspaceId: string, projectId: string, projInputId: string): Promise<void> {
-    const url = `${API_BASE}/workspaces/${workspaceId}/projects/${projectId}/inputs/${projInputId}`;
+    const url = readProjectInputURL(workspaceId, projectId, projInputId);
     const res = await fetch(url, { method: 'DELETE', headers: { [ACCEPT_HEADER]: CONTENT_TYPE_JSON } });
     if (!res.ok) {
         await checkCommonErrors(res);
@@ -365,8 +403,12 @@ export {
     readProject,
     updateProject,
     deleteProject,
+    createWorkspaceInputURL,
+    readWorkspaceInputURL,
+    deleteWorkspaceInput,
     createProjectInputURL,
     createProjectInput,
+    createProjectInputReference,
     readProjectInputURL,
     deleteProjectInput,
     startPlanning,

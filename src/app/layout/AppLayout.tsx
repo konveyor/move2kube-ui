@@ -132,4 +132,6 @@ const AppLayout: React.FunctionComponent<IAppLayoutProps> = (props: IAppLayoutPr
     );
 };
 
+AppLayout.displayName = 'AppLayout';
+
 export { AppLayout };

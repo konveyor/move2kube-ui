@@ -71,6 +71,7 @@ interface IMetadata {
 
 interface IWorkspace extends IMetadata {
     project_ids?: Array<string>;
+    inputs?: { [id: string]: IProjectInput };
 }
 
 interface IProject extends IMetadata {
@@ -80,8 +81,17 @@ interface IProject extends IMetadata {
 }
 
 interface IProjectInput extends IMetadata {
-    type: string;
+    type: ProjectInputType;
 }
+
+enum ProjectInputType {
+    Sources = 'sources',
+    Customizations = 'customizations',
+    Configs = 'configs',
+    Reference = 'reference',
+}
+
+type IWorkspaceInput = IProjectInput;
 
 interface IProjectOutput extends IMetadata {
     status: string;
@@ -111,6 +121,8 @@ interface IFiles {
         };
     };
 }
+
+type IWorkspaceFiles = IFiles;
 
 interface IApplicationContext {
     isGuidedFlow: boolean;
@@ -147,6 +159,10 @@ interface IApplicationContext {
         callback: () => void,
     ) => void;
     cancelUpload: (projectId: string, fileId: string) => void;
+
+    workspaceFiles: IWorkspaceFiles;
+    uploadWorkspaceFile: (workspaceId: string, workInput: IWorkspaceInput, file: File, callback: () => void) => void;
+    cancelWorkspaceUpload: (workspaceId: string, fileId: string) => void;
 }
 
 interface IQAContext {
@@ -209,8 +225,10 @@ export {
     IUserInfo,
     IMetadata,
     IWorkspace,
+    IWorkspaceInput,
     IProject,
     IProjectInput,
+    ProjectInputType,
     IProjectOutput,
     IPlan,
     IApplicationContext,

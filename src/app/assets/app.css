@@ -30,7 +30,7 @@ body,
     flex-direction: column;
     row-gap: 1.5em;
 }
-.project-page-inputs-section {
+.workspace-page-inputs-section,.project-page-inputs-section {
     display: flex;
     flex-direction: column;
     row-gap: 1.5em;

@@ -105,4 +105,6 @@ function App(): JSX.Element {
     );
 }
 
+App.displayName = 'App';
+
 export { App };

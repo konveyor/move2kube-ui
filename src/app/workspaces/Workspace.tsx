@@ -19,9 +19,11 @@ import { Title } from '@patternfly/react-core';
 import { IWorkspace } from '@app/common/types';
 import { getWorkspaceStatus } from '@app/networking/api';
 import { Table, TableBody } from '@patternfly/react-table';
+import { WorkspaceInputs } from '@app/workspaces/WorkspaceInputs';
 
 interface IWorkspaceProps {
     workspace: IWorkspace;
+    refresh: () => void;
 }
 
 function Workspace(props: IWorkspaceProps): JSX.Element {
@@ -48,19 +50,24 @@ function Workspace(props: IWorkspaceProps): JSX.Element {
           ]
         : [];
     return (
-        <Table
-            caption={
-                <Title headingLevel="h4" size="xl">
-                    Workspace: {props.workspace.name || `id: <${props.workspace.id}>`}
-                </Title>
-            }
-            aria-label="Workspace details"
-            cells={['Key', 'Value']}
-            rows={rows}
-        >
-            <TableBody />
-        </Table>
+        <>
+            <Table
+                caption={
+                    <Title headingLevel="h4" size="xl">
+                        Workspace: {props.workspace.name || `id: <${props.workspace.id}>`}
+                    </Title>
+                }
+                aria-label="Workspace details"
+                cells={['Key', 'Value']}
+                rows={rows}
+            >
+                <TableBody />
+            </Table>
+            <WorkspaceInputs refresh={props.refresh} />
+        </>
     );
 }
+
+Workspace.displayName = 'Workspace';
 
 export { Workspace };

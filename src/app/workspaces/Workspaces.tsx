@@ -194,6 +194,7 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
                 </Table>
             )}
             <Modal
+                aria-labelledby="delete-workspaces-modal"
                 variant="small"
                 showClose={true}
                 isOpen={deleteTargets.length > 0}
@@ -226,5 +227,7 @@ function Workspaces(props: RouteComponentProps<{ workspaceId: string }>): JSX.El
         </PageSection>
     );
 }
+
+Workspaces.displayName = 'Workspaces';
 
 export { Workspaces };

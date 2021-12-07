@@ -249,9 +249,6 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
     };
     return (
         <PageSection className="project-page-section">
-            {currentWorkspace.id === props.match.params.workspaceId && (
-                <Workspace workspace={currentWorkspace} refresh={() => setToggle(!toggle)} />
-            )}
             <ProjectsToolbar
                 error={projErr}
                 workspaces={workspaces}
@@ -283,6 +280,9 @@ function Projects(props: RouteComponentProps<{ workspaceId: string; projectId: s
                         <TableBody />
                     </Table>
                 ))}
+            {currentWorkspace.id === props.match.params.workspaceId && (
+                <Workspace workspace={currentWorkspace} refresh={() => setToggle(!toggle)} />
+            )}
             <Modal
                 aria-labelledby="delete-projects-modal"
                 variant="small"

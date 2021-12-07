@@ -31,8 +31,8 @@ import { QAWizard } from '@app/qa/QAWizard';
 import { sortByTimeStamp } from '@app/common/utils';
 import React, { useContext, useState } from 'react';
 import { ApplicationContext } from '@app/common/ApplicationContext';
-import { ErrHTTP401, ProjectInputType, PROJECT_OUTPUT_STATUS_DONE } from '@app/common/types';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
+import { ErrHTTP401, ProjectInputType, PROJECT_OUTPUT_STATUS_DONE } from '@app/common/types';
 import { deleteProjectOutput, readProjectOutputURL, startTransformation } from '@app/networking/api';
 
 type ProjectOutputsRowT = {

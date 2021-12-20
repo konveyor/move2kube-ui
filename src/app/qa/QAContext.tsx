@@ -22,6 +22,9 @@ const QAContext: React.Context<IQAContext> = React.createContext<IQAContext>({
     setResolvedProblem: () => {
         /*By default does nothing*/
     },
+    getOnNext: () => () => {
+        /*By default does nothing*/
+    },
 });
 QAContext.displayName = 'QAContext';
 

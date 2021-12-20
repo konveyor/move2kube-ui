@@ -16,12 +16,12 @@ limitations under the License.
 
 import { Input } from '@app/qa/Input';
 import { Select } from '@app/qa/Select';
-import React, { useEffect, useReducer } from 'react';
 import { Confirm } from '@app/qa/Confirm';
 import { Password } from '@app/qa/Password';
 import { Multiline } from '@app/qa/Multiline';
 import { QAContext } from '@app/qa/QAContext';
 import { MultiSelect } from '@app/qa/MultiSelect';
+import React, { useEffect, useReducer } from 'react';
 import { getQuestion, postSolution, wait } from '@app/networking/api';
 import { ErrHTTP401, IProject, IWorkspace, ProblemT } from '@app/common/types';
 import { Alert, Button, Wizard, WizardStep, WizardFooter, WizardContextConsumer } from '@patternfly/react-core';
@@ -278,6 +278,16 @@ function QAWizard(props: IQAWizardProps): JSX.Element {
     }, [props.projectOutputId]);
     if (props.isDisabled) return <></>;
     const currState = state.stateForOutputId[props.projectOutputId] || initStateForOutputId();
+    const getOnNext = (onNext: () => void, onClose: () => void, activeStep: WizardStep) => () => {
+        if (activeStep.id !== currState.steps.length - 1) return onNext();
+        const act: IActionSetNextDisabled = {
+            type: ActionType.SET_DISABLED,
+            projectOutputId: props.projectOutputId,
+            disabled: true,
+        };
+        dispatch(act);
+        getNextStep(onNext, onClose, props, state, dispatch);
+    };
     const CustomFooter = (
         <WizardFooter>
             {currState.solErr && <Alert variant="danger" title={`${currState.solErr}`} />}
@@ -285,16 +295,7 @@ function QAWizard(props: IQAWizardProps): JSX.Element {
                 {({ onNext, onClose, activeStep }) => (
                     <>
                         <Button
-                            onClick={() => {
-                                if (activeStep.id !== currState.steps.length - 1) return onNext();
-                                const act: IActionSetNextDisabled = {
-                                    type: ActionType.SET_DISABLED,
-                                    projectOutputId: props.projectOutputId,
-                                    disabled: true,
-                                };
-                                dispatch(act);
-                                getNextStep(onNext, onClose, props, state, dispatch);
-                            }}
+                            onClick={getOnNext(onNext, onClose, activeStep)}
                             isDisabled={currState.disableNextButton}
                         >
                             {currState.disableNextButton ? 'Processing...' : 'Next'}
@@ -326,6 +327,7 @@ function QAWizard(props: IQAWizardProps): JSX.Element {
                     };
                     dispatch(act);
                 },
+                getOnNext,
             }}
         >
             <Wizard

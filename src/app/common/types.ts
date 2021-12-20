@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { WizardStep } from '@patternfly/react-core';
+
 class ErrHTTP400 extends Error {
     constructor(message?: string) {
         message = 'HTTP 400 Bad Request ' + (message || '');
@@ -168,6 +170,7 @@ interface IApplicationContext {
 interface IQAContext {
     problems: Array<ProblemT>;
     setResolvedProblem: (idx: number, p: ProblemT) => void;
+    getOnNext: (onNext: () => void, onClose: () => void, activeStep: WizardStep) => () => void;
 }
 
 // https://github.com/konveyor/move2kube/blob/main/types/qaengine/problem.go#L52-L67

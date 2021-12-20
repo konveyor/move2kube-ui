@@ -17,10 +17,12 @@ limitations under the License.
 import React, { useContext } from 'react';
 import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
+import { WizardContext } from '@patternfly/react-core';
 import { TextContent, TextInput } from '@patternfly/react-core';
 
 function Input(props: IQAComponentProps): JSX.Element {
-    const { problems, setResolvedProblem } = useContext(QAContext);
+    const { problems, setResolvedProblem, getOnNext } = useContext(QAContext);
+    const { onNext, onClose, activeStep } = useContext(WizardContext);
     const problem = problems[props.idx];
     const onChange = (value: string): void => {
         setResolvedProblem(props.idx, { ...problem, answer: value });
@@ -34,6 +36,7 @@ function Input(props: IQAComponentProps): JSX.Element {
                 aria-label="answer input"
                 value={problem.answer as string}
                 onChange={onChange}
+                onKeyUp={(e) => e.key === 'Enter' && getOnNext(onNext, onClose, activeStep)()}
             />
             {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
         </div>

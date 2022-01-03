@@ -114,6 +114,20 @@ jobs:
           tag: ${{ github.event.inputs.tag }}
           prev_tag: ${{ github.event.inputs.prev_tag }}
           config: releasenotes-config.js
+      - uses: azure/setup-helm@v1
+      - run: IMAGE_TAG='${{ github.event.inputs.tag }}' make prepare-for-release
+      - run: helm package helm-charts/move2kube
+      - run: mkdir temp/
+      - run: mv *.tgz temp/
+      - run: curl -L -o oldindex.yaml https://move2kube.konveyor.io/index.yaml
+      - run: helm repo index --merge oldindex.yaml --url https://github.com/konveyor/move2kube-ui/releases/download/${{ github.event.inputs.tag }} temp/
+      - uses: HarikrishnanBalagopal/upload-release-action@v3
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event.inputs.tag }}
+          file: temp/*
+          file_glob: true
+          overwrite: true
       - name: slack notification
         uses: rtCamp/action-slack-notify@v2
         env:

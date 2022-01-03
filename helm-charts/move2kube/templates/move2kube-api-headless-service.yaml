@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-move2kubeapiheadless"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"

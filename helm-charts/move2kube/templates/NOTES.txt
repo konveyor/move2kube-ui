@@ -1,0 +1,13 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }} and is accessible at:
+{{- if or (.Values.ingress.tlsSecret) (.Values.ingress.preferRoute) }}
+https://{{ .Values.ingress.host }}
+{{- else }}
+http://{{ .Values.ingress.host }}
+{{- end }}
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}

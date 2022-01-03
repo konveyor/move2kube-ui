@@ -1,0 +1,266 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/ValuesYAML",
+    "definitions": {
+        "ValuesYAML": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "deployment": {
+                    "$ref": "#/definitions/Deployment"
+                },
+                "ingress": {
+                    "$ref": "#/definitions/Ingress"
+                },
+                "persistentVolumeClaim": {
+                    "$ref": "#/definitions/PersistentVolumeClaim"
+                },
+                "secret": {
+                    "$ref": "#/definitions/Secret"
+                },
+                "securityContextContraints": {
+                    "$ref": "#/definitions/SecurityContextContraints"
+                },
+                "serviceAccount": {
+                    "$ref": "#/definitions/ServiceAccount"
+                }
+            },
+            "required": [
+                "deployment",
+                "ingress",
+                "persistentVolumeClaim",
+                "secret",
+                "securityContextContraints",
+                "serviceAccount"
+            ],
+            "title": "ValuesYAML"
+        },
+        "Deployment": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "api": {
+                    "$ref": "#/definitions/API"
+                },
+                "authServer": {
+                    "$ref": "#/definitions/AuthServer"
+                },
+                "database": {
+                    "$ref": "#/definitions/AuthServer"
+                }
+            },
+            "required": [
+                "api",
+                "authServer",
+                "database"
+            ],
+            "title": "Deployment"
+        },
+        "API": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "replicas": {
+                    "type": "integer"
+                },
+                "privilegedPods": {
+                    "type": "boolean"
+                },
+                "imageTag": {
+                    "type": "string"
+                },
+                "memory": {
+                    "type": "string"
+                },
+                "cpu": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "cpu",
+                "imageTag",
+                "memory",
+                "privilegedPods",
+                "replicas"
+            ],
+            "title": "API"
+        },
+        "AuthServer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                },
+                "replicas": {
+                    "type": "integer"
+                },
+                "memory": {
+                    "type": "string"
+                },
+                "cpu": {
+                    "type": "string"
+                },
+                "startEmpty": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "cpu",
+                "enable",
+                "memory",
+                "replicas"
+            ],
+            "title": "AuthServer"
+        },
+        "Ingress": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                },
+                "preferRoute": {
+                    "type": "boolean"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "tlsSecretName": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "enable",
+                "host",
+                "preferRoute",
+                "tlsSecretName"
+            ],
+            "title": "Ingress"
+        },
+        "PersistentVolumeClaim": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                },
+                "createNew": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "storageClassName": {
+                    "type": "string"
+                },
+                "storageSize": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "createNew",
+                "enable",
+                "name",
+                "storageClassName",
+                "storageSize"
+            ],
+            "title": "PersistentVolumeClaim"
+        },
+        "Secret": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "api": {
+                    "$ref": "#/definitions/ServiceAccount"
+                },
+                "authServer": {
+                    "$ref": "#/definitions/SecretAuthServer"
+                }
+            },
+            "required": [
+                "api",
+                "authServer"
+            ],
+            "title": "Secret"
+        },
+        "ServiceAccount": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                },
+                "createNew": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "configYAML": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "createNew",
+                "enable",
+                "name"
+            ],
+            "title": "ServiceAccount"
+        },
+        "SecretAuthServer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "createNew": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "adminUsername": {
+                    "type": "string"
+                },
+                "adminPassword": {
+                    "type": "string"
+                },
+                "databaseUsername": {
+                    "type": "string"
+                },
+                "databasePassword": {
+                    "type": "string"
+                },
+                "realmJSON": {
+                    "type": "string"
+                },
+                "standaloneHAXML": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "adminPassword",
+                "adminUsername",
+                "createNew",
+                "databasePassword",
+                "databaseUsername",
+                "name",
+                "realmJSON",
+                "standaloneHAXML"
+            ],
+            "title": "SecretAuthServer"
+        },
+        "SecurityContextContraints": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "enable"
+            ],
+            "title": "SecurityContextContraints"
+        }
+    }
+}

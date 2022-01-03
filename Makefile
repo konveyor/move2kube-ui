@@ -110,3 +110,9 @@ ifdef DOCKER_CMD
 else
 	${CONTAINER_TOOL} run --rm -it -p 8080:8080 -v ${PWD}/data:/move2kube-api/data:z --network=bridge quay.io/konveyor/move2kube-ui:latest
 endif
+
+.PHONY: prepare-for-release
+prepare-for-release:
+	mv helm-charts/move2kube/Chart.yaml old
+	cat old | sed -E s/version:\ v0.1.0-unreleased/version:\ ${IMAGE_TAG}/ | sed -E s/appVersion:\ latest/appVersion:\ ${IMAGE_TAG}/ > helm-charts/move2kube/Chart.yaml
+	rm old

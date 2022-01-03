@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Release.Name }}-move2kubeapi"
+  labels:
+    move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"
+spec:
+  replicas: {{ .Values.deployment.api.replicas }}
+  selector:
+    matchLabels:
+      move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"
+  serviceName: "{{ .Release.Name }}-move2kubeapiheadless"
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-move2kubeapi"
+      labels:
+        move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"
+    spec:
+      initContainers:
+        - name: change-perms
+          image: quay.io/konveyor/busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - chown -R 12345:root /move2kube-api/data && chmod -R 770 /move2kube-api/data
+          volumeMounts:
+            - name: common-volume
+              mountPath: /move2kube-api/data
+              subPath: move2kube-api/data
+      containers:
+        - image: "quay.io/konveyor/move2kube-ui:{{ .Values.deployment.api.imageTag | default .Chart.AppVersion }}"
+          command:
+            - move2kube-api
+          args:
+            - --config=config.yaml
+          imagePullPolicy: Always
+          name: move2kubeapi
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          {{- if .Values.deployment.api.privilegedPods }}
+          securityContext:
+            privileged: true
+          {{- end }}
+          volumeMounts:
+            - name: api-config
+              mountPath: /move2kube-api/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: common-volume
+              mountPath: /move2kube-api/data
+              subPath: move2kube-api/data
+            {{- if .Values.deployment.api.privilegedPods }}
+            - mountPath: /var/lib/containers
+              name: container-storage
+            {{- end }}
+          resources:
+            limits:
+              memory: "{{ .Values.deployment.api.memory }}"
+              cpu: "{{ .Values.deployment.api.cpu }}"
+      restartPolicy: Always
+      volumes:
+        {{- if .Values.secret.api.enable }}
+        - name: api-config
+          secret:
+            secretName: '{{ .Values.secret.api.name | default (print .Release.Name "-move2kubeapi") }}'
+        {{- end }}
+        - name: common-volume
+          {{- if .Values.persistentVolumeClaim.enable }}
+          persistentVolumeClaim:
+            claimName: '{{ .Values.persistentVolumeClaim.name | default (print .Release.Name "-move2kubeapi") }}'
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- if .Values.deployment.api.privilegedPods }}
+        - name: container-storage
+          emptyDir: {}
+        {{- end }}

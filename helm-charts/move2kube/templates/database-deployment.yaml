@@ -1,0 +1,64 @@
+{{- if .Values.deployment.database.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-database"
+  labels:
+    move2kube.konveyor.io/service: "{{ .Release.Name }}-database"
+spec:
+  replicas: {{ .Values.deployment.database.replicas }}
+  selector:
+    matchLabels:
+      move2kube.konveyor.io/service: "{{ .Release.Name }}-database"
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-database"
+      labels:
+        move2kube.konveyor.io/service: "{{ .Release.Name }}-database"
+    spec:
+      {{- if .Values.deployment.database.startEmpty }}
+      initContainers:
+        - name: clear-data
+          image: quay.io/konveyor/busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - rm -rf /var/lib/postgresql/data/*
+          volumeMounts:
+            - name: common-volume
+              mountPath: /var/lib/postgresql/data
+              subPath: database/data
+      {{- end }}
+      containers:
+        - image: postgres:13.4
+          imagePullPolicy: Always
+          name: database
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/auth-server
+            - name: POSTGRES_DB
+              value: auth-server
+            - name: POSTGRES_USER
+              value: "{{ .Values.secret.authServer.databaseUsername }}"
+            - name: POSTGRES_PASSWORD
+              value: "{{ .Values.secret.authServer.databasePassword }}"
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          resources:
+            limits:
+              memory: "{{ .Values.deployment.database.memory }}"
+              cpu: "{{ .Values.deployment.database.cpu }}"
+          volumeMounts:
+            - name: common-volume
+              mountPath: /var/lib/postgresql/data
+              subPath: database/data
+      restartPolicy: Always
+      volumes:
+        - name: common-volume
+          {{- if .Values.persistentVolumeClaim.enable }}
+          persistentVolumeClaim:
+            claimName: '{{ .Values.persistentVolumeClaim.name | default (print .Release.Name "-move2kubeapi") }}'
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

@@ -1,0 +1,18 @@
+{{- if and (.Values.ingress.enable) (.Values.ingress.preferRoute) }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: "{{ .Release.Name }}-move2kubeapi"
+  labels:
+    move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"
+spec:
+  tls:
+    termination: edge
+  host: "{{ .Values.ingress.host }}"
+  path: /
+  to:
+    kind: Service
+    name: "{{ .Release.Name }}-move2kubeapi"
+  port:
+    targetPort: 8080
+{{- end }}

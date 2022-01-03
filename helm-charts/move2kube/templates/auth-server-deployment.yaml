@@ -1,0 +1,65 @@
+{{- if .Values.deployment.authServer.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-auth-server"
+  labels:
+    move2kube.konveyor.io/service: "{{ .Release.Name }}-auth-server"
+spec:
+  replicas: {{ .Values.deployment.authServer.replicas }}
+  selector:
+    matchLabels:
+      move2kube.konveyor.io/service: "{{ .Release.Name }}-auth-server"
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-auth-server"
+      labels:
+        move2kube.konveyor.io/service: "{{ .Release.Name }}-auth-server"
+    spec:
+      containers:
+        - image: quay.io/keycloak/keycloak:15.0.2
+          args:
+            - "-Dnashorn.args=--language=es6"
+            - "-Dkeycloak.profile.feature.upload_scripts=enabled"
+            - "-Dkeycloak.frontendUrl=https://{{ .Values.ingress.host }}/auth-server"
+            - "-Dkeycloak.adminUrl=http://{{ .Release.Name }}-auth-server:8081/auth-server"
+            - "-Dkeycloak.myDatabaseUsername={{ .Values.secret.authServer.databaseUsername }}"
+            - "-Dkeycloak.myDatabasePassword={{ .Values.secret.authServer.databasePassword }}"
+            - "-Dkeycloak.myDatabaseHost={{ .Release.Name }}-database"
+          imagePullPolicy: Always
+          name: auth-server
+          env:
+            - name: KEYCLOAK_IMPORT
+              value: /tmp/realm.json
+            - name: KEYCLOAK_USER
+              value: "{{ .Values.secret.authServer.adminUsername }}"
+            - name: KEYCLOAK_PASSWORD
+              value: "{{ .Values.secret.authServer.adminPassword }}"
+            - name: DB_VENDOR
+              value: postgres
+            - name: DB_ADDR
+              value: "{{ .Release.Name }}-database"
+            - name: DB_PORT
+              value: "5432"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: auth-server-config
+              mountPath: /tmp/realm.json
+              subPath: realm.json
+              readOnly: true
+            - name: auth-server-config
+              mountPath: /opt/jboss/keycloak/standalone/configuration/standalone-ha.xml
+              subPath: standalone-ha.xml
+              readOnly: true
+          resources:
+            limits:
+              memory: "{{ .Values.deployment.authServer.memory }}"
+              cpu: "{{ .Values.deployment.authServer.cpu }}"
+      restartPolicy: Always
+      volumes:
+        - name: auth-server-config
+          secret:
+            secretName: '{{ .Values.secret.authServer.name | default (print .Release.Name "-auth-server") }}'
+{{- end }}

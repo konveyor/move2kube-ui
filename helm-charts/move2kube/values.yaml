@@ -1,0 +1,50 @@
+deployment:
+  api:
+    replicas: 1
+    privilegedPods: false # some optional features of Move2Kube require privileged pods
+    imageTag: "" # if empty we will use AppVersion from the Chart.yaml as the tag
+    memory: "1Gi"
+    cpu: "300m"
+  authServer:
+    enable: false
+    replicas: 1
+    memory: "1Gi"
+    cpu: "300m"
+  database:
+    enable: false
+    replicas: 1
+    startEmpty: true
+    memory: "1Gi"
+    cpu: "300m"
+ingress:
+  enable: true
+  preferRoute: false # if true we will use an Openshift Route instead of an K8s Ingress
+  host: mydomain.com
+  tlsSecretName: myTLSSecret # not necessary when using Openshift Route
+persistentVolumeClaim:
+  enable: false # set this to true to get persistent storage
+  createNew: true
+  name: "" # if createNew is false this MUST contain the name of an existing persistent volume claim
+  storageClassName: ""
+  storageSize: 1Gi
+secret:
+  api:
+    enable: false
+    createNew: true
+    name: "" # if createNew is false this MUST contain the name of an existing secret
+    configYAML: ""
+  authServer: # required if deployment.authServer.enable is true
+    createNew: true
+    name: "" # if createNew is false this MUST contain the name of an existing secret
+    adminUsername: admin # TODO: Change this before deploying
+    adminPassword: password # TODO: Change this before deploying
+    databaseUsername: auth-server # TODO: Change this before deploying
+    databasePassword: password # TODO: Change this before deploying
+    realmJSON: ""
+    standaloneHAXML: ""
+securityContextContraints:
+  enable: false
+serviceAccount:
+  enable: false
+  createNew: true
+  name: "" # if createNew is false this MUST contain the name of an existing service account

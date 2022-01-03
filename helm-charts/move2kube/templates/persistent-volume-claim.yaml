@@ -1,0 +1,16 @@
+{{- if and (.Values.persistentVolumeClaim.enable) (.Values.persistentVolumeClaim.createNew) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: '{{ .Values.persistentVolumeClaim.name | default (print .Release.Name "-move2kubeapi") }}'
+  labels:
+    move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"
+spec:
+  storageClassName: "{{ .Values.persistentVolumeClaim.storageClassName }}"
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: "{{ .Values.persistentVolumeClaim.storageSize }}"
+{{- end }}

@@ -1,0 +1,9 @@
+apiVersion: v2
+description: A generated Helm Chart for move2kube
+keywords:
+- move2kube
+name: move2kube
+version: v0.1.0-unreleased
+appVersion: latest
+type: application
+icon: https://raw.githubusercontent.com/konveyor/community/main/brand/logo/konveyor-logo-move2kube.svg

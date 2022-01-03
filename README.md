@@ -15,7 +15,8 @@ An UI for interacting with [Move2Kube API](https://github.com/konveyor/move2kube
 3. This uses `docker` or `podman` and runs everything inside a single container using the UI image: `make crun`
 4. Access the UI at http://localhost:8080
 
-For Helm chart and Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
+For the Helm chart checkout [Move2Kube UI Helm chart](https://github.com/konveyor/move2kube-ui/blob/main/helm-charts/move2kube/README.md).
+For Operator checkout [Move2Kube Operator](https://github.com/konveyor/move2kube-operator).
 
 There is other alternative using `docker-compose`:
 

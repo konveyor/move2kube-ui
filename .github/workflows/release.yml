@@ -121,7 +121,7 @@ jobs:
       - run: mv *.tgz temp/
       - run: curl -L -o oldindex.yaml https://move2kube.konveyor.io/index.yaml
       - run: helm repo index --merge oldindex.yaml --url https://github.com/konveyor/move2kube-ui/releases/download/${{ github.event.inputs.tag }} temp/
-      - uses: HarikrishnanBalagopal/upload-release-action@v3
+      - uses: konveyor/upload-release-action@v3
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.event.inputs.tag }}

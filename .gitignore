@@ -20,6 +20,7 @@ stats.json
 /data/
 /dist/
 /node_modules/
+.vscode/
 
 # https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 .yarn/*

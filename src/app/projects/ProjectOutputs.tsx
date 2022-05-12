@@ -29,11 +29,17 @@ import {
 } from '@patternfly/react-core';
 import { QAWizard } from '@app/qa/QAWizard';
 import { sortByTimeStamp } from '@app/common/utils';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ApplicationContext } from '@app/common/ApplicationContext';
+import { ProjectOutputGraph, Graph } from '@app/projects/ProjectOutputGraph';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
 import { ErrHTTP401, ProjectInputType, PROJECT_OUTPUT_STATUS_DONE } from '@app/common/types';
-import { deleteProjectOutput, readProjectOutputURL, startTransformation } from '@app/networking/api';
+import {
+    deleteProjectOutput,
+    readProjectOutputURL,
+    readProjectOutputGraphURL,
+    startTransformation,
+} from '@app/networking/api';
 
 type ProjectOutputsRowT = {
     cells: [{ title: JSX.Element; id: string; name: string }, string, string];
@@ -53,6 +59,19 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
     const [qaOutputId, setQAOutputId] = useState('');
     const [transformErr, setTransformErr] = useState<Error | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+    const [showGraph, setShowGraph] = useState<string>('');
+    const [graph, setGraph] = useState<Graph | undefined>();
+
+    useEffect(() => {
+        (async () => {
+            if (!ctx.currentWorkspace.id || !ctx.currentProject.id || !showGraph) return;
+            const graphURL = readProjectOutputGraphURL(ctx.currentWorkspace.id, ctx.currentProject.id, showGraph);
+            const res = await fetch(graphURL);
+            const graph: Graph = await res.json();
+            console.log('got the graph', graph);
+            setGraph(graph);
+        })().catch((e) => console.error('failed to fetch the graph. Error:', e));
+    }, [ctx.currentWorkspace.id, ctx.currentProject.id, showGraph]);
 
     const rows: Array<ProjectOutputsRowT> = sortByTimeStamp(Object.values(ctx.currentProject.outputs || {})).map(
         (output) => ({
@@ -82,6 +101,16 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
         }),
     );
     const actions: Array<IAction> = [
+        {
+            title: 'Show graph',
+            onClick: async (_: React.MouseEvent, __: number, rowData: IRow) => {
+                if (!rowData || !rowData.cells || rowData.cells.length === 0) return;
+                const t1 = rowData as ProjectOutputsRowT;
+                const outputId = t1.cells[0].id;
+                console.log('show the graph for the output', outputId);
+                setShowGraph(outputId);
+            },
+        },
         {
             title: 'Delete',
             onClick: async (_: React.MouseEvent, __: number, rowData: IRow) => {
@@ -201,6 +230,17 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
                 The following output will be deleted:
                 <pre>{deleteTarget?.name}</pre>
                 Proceed?
+            </Modal>
+            <Modal
+                className="project-output-graph-modal"
+                aria-labelledby="show-project-output-graph-modal"
+                variant="large"
+                showClose={true}
+                isOpen={showGraph !== ''}
+                onClose={() => setShowGraph('')}
+            >
+                {!graph && <h1>Please wait while we fetch the graph</h1>}
+                {graph && <ProjectOutputGraph graph={graph} />}
             </Modal>
         </Card>
     );

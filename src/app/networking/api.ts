@@ -334,6 +334,10 @@ function readProjectOutputURL(workspaceId: string, projectId: string, projOutput
     return `${API_BASE}/workspaces/${workspaceId}/projects/${projectId}/outputs/${projOutputId}`;
 }
 
+function readProjectOutputGraphURL(workspaceId: string, projectId: string, projOutputId: string): string {
+    return `${readProjectOutputURL(workspaceId, projectId, projOutputId)}/graph`;
+}
+
 async function readProjectOutput(workspaceId: string, projectId: string, projOutputId: string): Promise<Blob> {
     const url = readProjectOutputURL(workspaceId, projectId, projOutputId);
     const res = await fetch(url, { headers: { [ACCEPT_HEADER]: CONTENT_TYPE_JSON } });
@@ -418,6 +422,7 @@ export {
     startTransformation,
     startTransformationWithPlan,
     readProjectOutputURL,
+    readProjectOutputGraphURL,
     readProjectOutput,
     deleteProjectOutput,
     getQuestion,

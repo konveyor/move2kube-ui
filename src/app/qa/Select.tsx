@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React, { useContext } from 'react';
+import { Hints } from '@app/qa/Hints';
 import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
 import { Radio, TextContent } from '@patternfly/react-core';
@@ -42,7 +43,7 @@ function Select(props: IQAComponentProps): JSX.Element {
                     isChecked={problem.answer === option}
                 />
             ))}
-            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
+            {problem.hints?.length && <Hints hints={problem.hints} />}
         </div>
     );
 }

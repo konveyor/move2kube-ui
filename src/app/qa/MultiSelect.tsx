@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React, { useContext } from 'react';
+import { Hints } from '@app/qa/Hints';
 import { copy } from '@app/common/utils';
 import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
@@ -56,7 +57,7 @@ function MultiSelect(props: IMultiSelectProps): JSX.Element {
                     isChecked={(problem.answer as Array<string> | undefined)?.includes(option)}
                 />
             ))}
-            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
+            {problem.hints?.length && <Hints hints={problem.hints} />}
         </div>
     );
 }

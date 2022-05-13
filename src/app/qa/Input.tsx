@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React, { useContext } from 'react';
+import { Hints } from '@app/qa/Hints';
 import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
 import { WizardContext } from '@patternfly/react-core';
@@ -38,7 +39,7 @@ function Input(props: IQAComponentProps): JSX.Element {
                 onChange={onChange}
                 onKeyUp={(e) => e.key === 'Enter' && getOnNext(onNext, onClose, activeStep)()}
             />
-            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
+            {problem.hints?.length && <Hints hints={problem.hints} />}
         </div>
     );
 }

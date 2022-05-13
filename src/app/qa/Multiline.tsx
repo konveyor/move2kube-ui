@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import React, { useContext } from 'react';
+import { Hints } from '@app/qa/Hints';
 import { QAContext } from '@app/qa/QAContext';
 import { IQAComponentProps } from '@app/qa/QAWizard';
 import { TextContent, TextArea } from '@patternfly/react-core';
@@ -34,7 +35,7 @@ function Multiline(props: IQAComponentProps): JSX.Element {
                 value={problem.answer as string}
                 onChange={onChange}
             />
-            {problem.hints?.length && <i>[Hint: {problem.hints}]</i>}
+            {problem.hints?.length && <Hints hints={problem.hints} />}
         </div>
     );
 }

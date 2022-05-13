@@ -17,21 +17,47 @@ limitations under the License.
 html,
 body,
 #root {
+    width: 100%;
     height: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
 }
-.plan-unsaved-warning{
-    color:brown;
+
+.plan-unsaved-warning {
+    color: brown;
 }
+
 .flex-direction-column {
     flex-direction: column;
 }
+
 .project-page-section {
     display: flex;
     flex-direction: column;
     row-gap: 1.5em;
 }
-.workspace-page-inputs-section,.project-page-inputs-section {
+
+.workspace-page-inputs-section,
+.project-page-inputs-section {
     display: flex;
     flex-direction: column;
     row-gap: 1.5em;
+}
+
+.on-hover {
+    overflow-wrap: break-word;
+}
+
+.on-hover-child {
+    display: none;
+}
+
+.on-hover:hover .on-hover-child {
+    display: block;
+}
+
+.project-output-graph-modal {
+    height: 90vh;
 }

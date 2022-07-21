@@ -51,10 +51,13 @@ jobs:
           docker pull quay.io/konveyor/move2kube-ui:latest || true
           docker pull quay.io/konveyor/move2kube-ui-builder:latest || true
       - run: echo "${{ secrets.QUAY_BOT_PASSWORD }}" | docker login --username "${{ secrets.QUAY_BOT_USERNAME }}" --password-stdin quay.io
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
       - name: build image
-        run: VERSION='${{ steps.image_tag.outputs.tag }}' make cbuild
-      - name: push image to quay
-        run: VERSION='${{ steps.image_tag.outputs.tag }}' make cpush
+        run: VERSION='${{ steps.image_tag.outputs.tag }}' make cmultibuildpush
       - name: success slack notification
         uses: rtCamp/action-slack-notify@v2
         env:

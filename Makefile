@@ -21,6 +21,8 @@ GIT_SHA    = $(shell git rev-parse --short HEAD)
 GIT_TAG    = $(shell git tag --points-at | tail -n 1)
 GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
 
+MULTI_ARCH_TARGET_PLATFORMS := linux/arm64,linux/amd64
+
 ifdef VERSION
 	BINARY_VERSION = $(VERSION)
 endif
@@ -116,3 +118,19 @@ prepare-for-release:
 	mv helm-charts/move2kube/Chart.yaml old
 	cat old | sed -E s/version:\ v0.1.0-unreleased/version:\ ${IMAGE_TAG}/ | sed -E s/appVersion:\ latest/appVersion:\ ${IMAGE_TAG}/ > helm-charts/move2kube/Chart.yaml
 	rm old
+
+.PHONY: cmultibuildpush
+cmultibuildpush: ## Build and push multi arch container image
+ifndef DOCKER_CMD
+	$(error Docker wasn't detected. Please install docker and try again.)
+endif
+	@echo "Building image for multiple architectures with $(CONTAINER_TOOL)"
+
+	## TODO: When docker exporter supports exporting manifest lists we can separate out this into two steps: build and push
+
+	${CONTAINER_TOOL} buildx create --name m2k-builder --driver-opt network=host --use --platform ${MULTI_ARCH_TARGET_PLATFORMS}
+
+	${CONTAINER_TOOL} buildx build --platform ${MULTI_ARCH_TARGET_PLATFORMS} --tag ${REGISTRYNS}/${BINNAME}-builder:${VERSION} --tag ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --target build_base --build-arg VERSION=${VERSION} --push .;
+	${CONTAINER_TOOL} buildx build --platform ${MULTI_ARCH_TARGET_PLATFORMS} --tag ${REGISTRYNS}/${BINNAME}:${VERSION} --tag ${REGISTRYNS}/${BINNAME}:latest --cache-from ${REGISTRYNS}/${BINNAME}-builder:latest --cache-from ${REGISTRYNS}/${BINNAME}:latest --build-arg VERSION=${VERSION} --build-arg "MOVE2KUBE_UI_GIT_COMMIT_HASH=${GIT_COMMIT}" --build-arg "MOVE2KUBE_UI_GIT_TREE_STATUS=${GIT_DIRTY}" --push .;
+
+	${CONTAINER_TOOL} buildx rm m2k-builder

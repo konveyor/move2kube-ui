@@ -25,7 +25,7 @@
         "jose": "^3.14.3",
         "js-yaml": "^4.0.0",
         "jsonschema": "^1.4.0",
-        "node-fetch": "^2.6.1",
+        "node-fetch": "^2.6.7",
         "passport": "^0.4.1",
         "passport-oauth2": "^1.6.0",
         "passport-saml": "^3.1.0",

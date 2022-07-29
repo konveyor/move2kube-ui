@@ -15,19 +15,16 @@
 ARG VERSION=latest
 
 ### Builder Image ###
-FROM registry.access.redhat.com/ubi8/nodejs-14-minimal:1-11 as build_base
+FROM registry.access.redhat.com/ubi8/nodejs-16-minimal:1-48 as build_base
 USER root:root
 WORKDIR /app
-# install yarn
-RUN npm install -g yarn
-ENV PATH="${PATH}:${HOME}/.npm-global/bin/"
+RUN corepack enable
 # install dependencies
-COPY .yarn/ .yarn/
-COPY package.json yarn.lock .yarnrc.yml ./
-RUN yarn install
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
 # copy sources and build the project
 COPY . .
-RUN yarn run build
+RUN pnpm run build
 
 ### Runner Image ###
 FROM quay.io/konveyor/move2kube-api:${VERSION}

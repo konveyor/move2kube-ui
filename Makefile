@@ -60,23 +60,23 @@ clean:
 
 .PHONY: install
 install: ## Install dependencies
-	@yarn install
+	@pnpm install
 
 .PHONY: build
 build: ## Build application
-	@yarn run lint && yarn run build
+	@pnpm run lint && pnpm run build
 
 .PHONY: dev
 dev: install ## Start Development server
-	@yarn run dev
+	@pnpm run dev
 
 .PHONY: prod
 prod: ## Start Production server
-	@yarn run prod
+	@pnpm run prod
 
 .PHONY: start
 start: install build ## Start server
-	@yarn run start
+	@pnpm run start
 
 # -- Container Runtime --
 

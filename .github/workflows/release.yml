@@ -30,7 +30,7 @@ jobs:
           ref: ${{ github.event.inputs.commit_ref }}
       - uses: actions/setup-node@v2-beta
         with:
-          node-version: "14"
+          node-version: "16.16.0"
       - run: make install
       - run: make build
       - if: failure()

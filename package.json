@@ -5,6 +5,9 @@
     "license": "Apache-2.0",
     "repository": "https://github.com/konveyor/move2kube-ui.git",
     "packageManager": "pnpm@6.11.0",
+    "engines": {
+        "node": "16.16.0"
+    },
     "scripts": {
         "start": "move2kube-api --log-level=trace --static-files-dir=dist",
         "start:image": "docker run --rm -it -p 8080:8080 quay.io/konveyor/move2kube-ui move2kube-api --port 8080 --log-level trace --static-files-dir dist",

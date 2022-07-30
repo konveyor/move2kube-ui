@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
 import { Title } from '@patternfly/react-core';
-import { IWorkspace } from '@app/common/types';
-import { getWorkspaceStatus } from '@app/networking/api';
+import { IWorkspace } from '../common/types';
+import { getWorkspaceStatus } from '../networking/api';
 import { Table, TableBody } from '@patternfly/react-table';
-import { WorkspaceInputs } from '@app/workspaces/WorkspaceInputs';
+import { WorkspaceInputs } from './WorkspaceInputs';
 
 interface IWorkspaceProps {
     workspace: IWorkspace;

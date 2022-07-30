@@ -19,7 +19,7 @@ import {
     FileUploadStatus,
     ProjectInputType,
     SUPPORTED_ARCHIVE_FORMATS,
-} from '@app/common/types';
+} from '../common/types';
 import {
     Card,
     Form,
@@ -40,15 +40,15 @@ import {
     Bullseye,
 } from '@patternfly/react-core';
 import React, { useContext, useState } from 'react';
-import { ApplicationContext } from '@app/common/ApplicationContext';
+import { ApplicationContext } from '../common/ApplicationContext';
 import {
     createProjectInputReference,
     deleteProjectInput,
     readProjectInputURL,
     readWorkspaceInputURL,
-} from '@app/networking/api';
-import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
+} from '../networking/api';
 import { CubesIcon } from '@patternfly/react-icons';
+import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
 
 type ProjectInputsRowT = {
     cells: [{ title: JSX.Element; id: string; name: string }, string];

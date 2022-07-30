@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Input } from '@app/qa/Input';
-import { Select } from '@app/qa/Select';
-import { Confirm } from '@app/qa/Confirm';
-import { Password } from '@app/qa/Password';
-import { Multiline } from '@app/qa/Multiline';
-import { QAContext } from '@app/qa/QAContext';
-import { MultiSelect } from '@app/qa/MultiSelect';
+import { Input } from './Input';
+import { Select } from './Select';
+import { Confirm } from './Confirm';
+import { Password } from './Password';
+import { Multiline } from './Multiline';
+import { QAContext } from './QAContext';
+import { MultiSelect } from './MultiSelect';
 import React, { useEffect, useReducer } from 'react';
-import { getQuestion, postSolution, wait } from '@app/networking/api';
-import { ErrHTTP401, IProject, IWorkspace, ProblemT } from '@app/common/types';
+import { getQuestion, postSolution, wait } from '../networking/api';
+import { ErrHTTP401, IProject, IWorkspace, ProblemT } from '../common/types';
 import { Alert, Button, Wizard, WizardStep, WizardFooter, WizardContextConsumer } from '@patternfly/react-core';
 
 enum ActionType {

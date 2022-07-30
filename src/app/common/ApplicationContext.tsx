@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import { IApplicationContext } from '@app/common/types';
+import { IApplicationContext } from './types';
 
 const ApplicationContext: React.Context<IApplicationContext> = React.createContext<IApplicationContext>({
     isGuidedFlow: false,

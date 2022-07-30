@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import React from 'react';
-import { IQAContext } from '@app/common/types';
+import { IQAContext } from '../common/types';
 
 const QAContext: React.Context<IQAContext> = React.createContext<IQAContext>({
     problems: [{ id: '', type: '', description: '' }],

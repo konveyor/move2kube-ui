@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React, { useContext } from 'react';
-import { Hints } from '@app/qa/Hints';
-import { QAContext } from '@app/qa/QAContext';
-import { IQAComponentProps } from '@app/qa/QAWizard';
+import { useContext } from 'react';
+import { Hints } from './Hints';
+import { QAContext } from './QAContext';
+import { IQAComponentProps } from './QAWizard';
 import { TextContent, TextArea } from '@patternfly/react-core';
 
 function Multiline(props: IQAComponentProps): JSX.Element {

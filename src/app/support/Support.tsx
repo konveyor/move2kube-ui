@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ISupportInfo } from '@app/common/types';
-import React, { useEffect, useState } from 'react';
-import { getSupportInfo } from '@app/networking/api';
+import { ISupportInfo } from '../common/types';
+import { useEffect, useState } from 'react';
+import { getSupportInfo } from '../networking/api';
 import { Table, TableBody } from '@patternfly/react-table';
 import { Alert, Spinner, PageSection } from '@patternfly/react-core';
 

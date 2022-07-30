@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import brandImg from '@app/assets/move2kube-logo.svg';
-import backgroundImg from '@app/assets/login-background.svg';
+import brandImg from '../assets/move2kube-logo.svg';
+import backgroundImg from '../assets/login-background.svg';
 
 import { Redirect, Link } from 'react-router-dom';
 import React, { useContext, useEffect } from 'react';

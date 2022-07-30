@@ -29,17 +29,17 @@ import {
     DropdownToggle,
     ToolbarContent,
 } from '@patternfly/react-core';
-import { Project } from '@app/projects/Project';
+import { Project } from './Project';
 import { CubesIcon } from '@patternfly/react-icons';
-import { sortByTimeStamp } from '@app/common/utils';
-import { Workspace } from '@app/workspaces/Workspace';
-import { getProjectStatus } from '@app/networking/api';
+import { sortByTimeStamp } from '../common/utils';
+import { Workspace } from '../workspaces/Workspace';
+import { getProjectStatus } from '../networking/api';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { NewProjectForm } from '@app/projects/NewProjectForm';
+import { NewProjectForm } from './NewProjectForm';
 import React, { useContext, useEffect, useState } from 'react';
-import { ApplicationContext } from '@app/common/ApplicationContext';
+import { ApplicationContext } from '../common/ApplicationContext';
 import { Table, TableHeader, TableBody, IRow, IAction } from '@patternfly/react-table';
-import { IProject, ProjectsRowT, DEFAULT_WORKSPACE_ID, IWorkspace, ErrHTTP401 } from '@app/common/types';
+import { IProject, ProjectsRowT, DEFAULT_WORKSPACE_ID, IWorkspace, ErrHTTP401 } from '../common/types';
 
 interface IProjectsToolbarProps {
     workspaces: { [id: string]: IWorkspace };

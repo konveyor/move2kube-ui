@@ -27,19 +27,19 @@ import {
     TextContent,
     ToolbarContent,
 } from '@patternfly/react-core';
-import { QAWizard } from '@app/qa/QAWizard';
-import { sortByTimeStamp } from '@app/common/utils';
+import { QAWizard } from '../qa/QAWizard';
+import { sortByTimeStamp } from '../common/utils';
 import React, { useContext, useEffect, useState } from 'react';
-import { ApplicationContext } from '@app/common/ApplicationContext';
-import { ProjectOutputGraph, Graph } from '@app/projects/ProjectOutputGraph';
+import { ApplicationContext } from '../common/ApplicationContext';
+import { ProjectOutputGraph, Graph } from './ProjectOutputGraph';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
-import { ErrHTTP401, ProjectInputType, PROJECT_OUTPUT_STATUS_DONE } from '@app/common/types';
+import { ErrHTTP401, ProjectInputType, PROJECT_OUTPUT_STATUS_DONE } from '../common/types';
 import {
     deleteProjectOutput,
     readProjectOutputURL,
     readProjectOutputGraphURL,
     startTransformation,
-} from '@app/networking/api';
+} from '../networking/api';
 
 type ProjectOutputsRowT = {
     cells: [{ title: JSX.Element; id: string; name: string }, string, string];

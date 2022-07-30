@@ -27,13 +27,13 @@ import {
     ToolbarContent,
 } from '@patternfly/react-core';
 import { CubesIcon } from '@patternfly/react-icons';
-import { sortByTimeStamp } from '@app/common/utils';
-import { getWorkspaceStatus } from '@app/networking/api';
+import { sortByTimeStamp } from '../common/utils';
+import { getWorkspaceStatus } from '../networking/api';
 import React, { useContext, useEffect, useState } from 'react';
-import { NewWorkspaceForm } from '@app/workspaces/NewWorkspaceForm';
-import { ApplicationContext } from '@app/common/ApplicationContext';
+import { NewWorkspaceForm } from './NewWorkspaceForm';
+import { ApplicationContext } from '../common/ApplicationContext';
 import { Link, Redirect, RouteComponentProps } from 'react-router-dom';
-import { ErrHTTP401, IWorkspace, WorkspacesRowT } from '@app/common/types';
+import { ErrHTTP401, IWorkspace, WorkspacesRowT } from '../common/types';
 import { Table, TableHeader, TableBody, IRow, IAction } from '@patternfly/react-table';
 
 interface IWorkspacesToolbarProps {

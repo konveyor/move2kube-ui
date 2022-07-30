@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import defaultProfileImage from '../assets/user-picture.svg';
+
 import * as React from 'react';
 import {
     Nav,
@@ -29,12 +31,11 @@ import {
     PageHeaderTools,
 } from '@patternfly/react-core';
 import { Location } from 'history';
-import { AppRoutes, routes } from '@app/routes/AppRoutes';
+import { AppRoutes, routes } from '../routes/AppRoutes';
 import { NavLink, Link, Redirect } from 'react-router-dom';
-import defaultProfileImage from '@app/assets/user-picture.svg';
-import { ILoginContext, LoginContext } from '@app/login/Login';
-import { AppContextProvider } from '@app/common/AppContextProvider';
-import { ApplicationContext } from '@app/common/ApplicationContext';
+import { ILoginContext, LoginContext } from '../login/Login';
+import { AppContextProvider } from '../common/AppContextProvider';
+import { ApplicationContext } from '../common/ApplicationContext';
 
 interface IAppLayoutProps {
     location: Location;

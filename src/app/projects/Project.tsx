@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
-import { getProjectStatus } from '@app/networking/api';
-import { ProjectPlan } from '@app/projects/ProjectPlan';
-import { IProject, IWorkspace } from '@app/common/types';
+import { ProjectPlan } from './ProjectPlan';
+import { ProjectInputs } from './ProjectInputs';
+import { ProjectOutputs } from './ProjectOutputs';
+import { getProjectStatus } from '../networking/api';
+import { IProject, IWorkspace } from '../common/types';
 import { Table, TableBody } from '@patternfly/react-table';
-import { ProjectInputs } from '@app/projects/ProjectInputs';
-import { ProjectOutputs } from '@app/projects/ProjectOutputs';
 import { Alert, Button, PageSection, Title, Toolbar, ToolbarContent, ToolbarItem } from '@patternfly/react-core';
 
 interface IProjectProps {

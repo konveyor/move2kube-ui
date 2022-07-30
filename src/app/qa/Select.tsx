@@ -15,9 +15,9 @@ limitations under the License.
 */
 
 import React, { useContext } from 'react';
-import { Hints } from '@app/qa/Hints';
-import { QAContext } from '@app/qa/QAContext';
-import { IQAComponentProps } from '@app/qa/QAWizard';
+import { Hints } from './Hints';
+import { QAContext } from './QAContext';
+import { IQAComponentProps } from './QAWizard';
 import { Radio, TextContent } from '@patternfly/react-core';
 
 function Select(props: IQAComponentProps): JSX.Element {

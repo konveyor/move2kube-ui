@@ -28,9 +28,9 @@ import {
     ToolbarItem,
     ToolbarContent,
 } from '@patternfly/react-core';
-import React, { useEffect, useState } from 'react';
-import { ErrHTTP401, IProject, IWorkspace, PlanProgressT, ProjectInputType } from '@app/common/types';
-import { startPlanning, readPlan, updatePlan, waitForPlan } from '@app/networking/api';
+import { useEffect, useState } from 'react';
+import { ErrHTTP401, IProject, IWorkspace, PlanProgressT, ProjectInputType } from '../common/types';
+import { startPlanning, readPlan, updatePlan, waitForPlan } from '../networking/api';
 
 interface IProjectPlanProps {
     refreshToggle: boolean;

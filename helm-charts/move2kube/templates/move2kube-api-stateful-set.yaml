@@ -32,16 +32,14 @@ spec:
           command:
             - move2kube-api
           args:
-            - --config=config.yaml
+            - '--config=config.yaml --host="${HOSTNAME}.${MY_SERVICE}"'
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
               protocol: TCP
           env:
-            - name: M2K_HOST
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
+            - name: MY_SERVICE
+              value: "{{ .Release.Name }}-move2kubeapiheadless"
           {{- if .Values.deployment.api.privilegedPods }}
           securityContext:
             privileged: true

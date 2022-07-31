@@ -49,7 +49,10 @@ module.exports = () => {
             path: path.resolve(__dirname, 'dist'),
         },
         plugins: [
-            new HtmlWebpackPlugin({ template: path.resolve(__dirname, 'src', 'index.html') }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, 'src', 'index.html'),
+                favicon: path.resolve(__dirname, 'src', 'app', 'assets', 'favicon.ico'),
+            }),
             new Dotenv({ systemvars: true, silent: true }),
         ],
         resolve: {

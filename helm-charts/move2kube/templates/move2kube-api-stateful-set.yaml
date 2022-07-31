@@ -32,15 +32,21 @@ spec:
           command:
             - move2kube-api
           args:
+            - '--log-level=trace'
+            - '--static-files-dir=dist'
             {{- if .Values.secret.api.enable }}
             - '--config=config.yaml'
             {{- end }}
-            - '--host="${HOSTNAME}.${MY_SERVICE}"'
+            - '--host=$(MY_POD).$(MY_SERVICE)'
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
               protocol: TCP
           env:
+            - name: MY_POD
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: MY_SERVICE
               value: "{{ .Release.Name }}-move2kubeapiheadless"
           {{- if .Values.deployment.api.privilegedPods }}

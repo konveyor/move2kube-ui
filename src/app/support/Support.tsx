@@ -65,7 +65,7 @@ function Support(): JSX.Element {
             {infoErr !== null ? (
                 <Alert variant="danger" title={`${infoErr}`} />
             ) : info === null ? (
-                <Spinner />
+                <Spinner isSVG />
             ) : (
                 <Table aria-label="Simple Table" cells={['Key', 'Value']} rows={rows}>
                     <TableBody />

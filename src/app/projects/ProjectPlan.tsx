@@ -141,7 +141,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                                 Save
                             </Button>
                         </ToolbarItem>
-                        {isPlanning && <Spinner />}
+                        {isPlanning && <Spinner isSVG />}
                         {!isPlanning && plan !== actualPlan && (
                             <ToolbarItem>
                                 <Alert variant="warning" title="*unsaved changes*" />

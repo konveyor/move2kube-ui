@@ -16,7 +16,7 @@ limitations under the License.
 
 import defaultProfileImage from '../assets/user-picture.svg';
 
-import * as React from 'react';
+import React from 'react';
 import {
     Nav,
     Page,
@@ -30,7 +30,6 @@ import {
     SkipToContent,
     PageHeaderTools,
 } from '@patternfly/react-core';
-import { Location } from 'history';
 import { AppRoutes, routes } from '../routes/AppRoutes';
 import { NavLink, Link, Redirect } from 'react-router-dom';
 import { ILoginContext, LoginContext } from '../login/Login';

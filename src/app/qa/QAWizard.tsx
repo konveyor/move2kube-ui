@@ -24,7 +24,15 @@ import { MultiSelect } from './MultiSelect';
 import React, { useEffect, useReducer } from 'react';
 import { getQuestion, postSolution, wait } from '../networking/api';
 import { ErrHTTP401, IProject, IWorkspace, ProblemT } from '../common/types';
-import { Alert, Button, Wizard, WizardStep, WizardFooter, WizardContextConsumer } from '@patternfly/react-core';
+import {
+    Alert,
+    Button,
+    Wizard,
+    WizardStep,
+    WizardFooter,
+    WizardContextConsumer,
+    Spinner,
+} from '@patternfly/react-core';
 
 enum ActionType {
     NEW_STEP = 'new-step',
@@ -299,6 +307,7 @@ function QAWizard(props: IQAWizardProps): JSX.Element {
                             isDisabled={currState.disableNextButton}
                         >
                             {currState.disableNextButton ? 'Processing...' : 'Next'}
+                            {currState.disableNextButton && <Spinner isSVG size="md" />}
                         </Button>
                         <Button
                             variant="link"

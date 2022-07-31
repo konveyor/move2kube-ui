@@ -20,7 +20,7 @@ ingress:
   enable: true
   preferRoute: false # if true we will use an Openshift Route instead of an K8s Ingress
   host: mydomain.com
-  tlsSecretName: myTLSSecret # not necessary when using Openshift Route
+  tlsSecretName: "" # not necessary when using Openshift Route
 persistentVolumeClaim:
   enable: false # set this to true to get persistent storage
   createNew: true

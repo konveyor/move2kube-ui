@@ -31,6 +31,7 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: "16.16.0"
+      - run: corepack enable
       - run: make install
       - run: make build
       - if: failure()

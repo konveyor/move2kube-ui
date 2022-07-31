@@ -32,7 +32,10 @@ spec:
           command:
             - move2kube-api
           args:
-            - '--config=config.yaml --host="${HOSTNAME}.${MY_SERVICE}"'
+            {{- if .Values.secret.api.enable }}
+            - '--config=config.yaml'
+            {{- end }}
+            - '--host="${HOSTNAME}.${MY_SERVICE}"'
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -45,10 +48,12 @@ spec:
             privileged: true
           {{- end }}
           volumeMounts:
+            {{- if .Values.secret.api.enable }}
             - name: api-config
               mountPath: /move2kube-api/config.yaml
               subPath: config.yaml
               readOnly: true
+            {{- end }}
             - name: common-volume
               mountPath: /move2kube-api/data
               subPath: move2kube-api/data

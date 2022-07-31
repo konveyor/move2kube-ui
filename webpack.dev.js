@@ -45,6 +45,7 @@ module.exports = merge(common('development'), {
         rules: [
             {
                 test: /\.css$/,
+                include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
                 use: ['style-loader', 'css-loader'],
             },
         ],

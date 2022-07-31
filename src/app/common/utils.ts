@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { IPlan, IMetadata, ErrHTTP400, ErrHTTP401, ErrHTTP403, ErrHTTP404, ErrHTTP409 } from '@app/common/types';
+import { IPlan, IMetadata, ErrHTTP400, ErrHTTP401, ErrHTTP403, ErrHTTP404, ErrHTTP409 } from './types';
 
 function newPlan(): IPlan {
     return {

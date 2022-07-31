@@ -29,7 +29,7 @@ import {
     deleteWorkspace,
     createProjectInputURL,
     createWorkspaceInputURL,
-} from '@app/networking/api';
+} from '../networking/api';
 import {
     IProject,
     IMetadata,
@@ -38,10 +38,11 @@ import {
     FileUploadStatus,
     SUPPORTED_ARCHIVE_FORMATS,
     IWorkspaceInput,
-} from '@app/common/types';
+    ErrHTTP404,
+    IApplicationContext,
+} from './types';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { ErrHTTP404, IApplicationContext } from '@app/common/types';
-import { ApplicationContext } from '@app/common/ApplicationContext';
+import { ApplicationContext } from './ApplicationContext';
 
 type IAppContextProviderProps = RouteComponentProps;
 

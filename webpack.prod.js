@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,17 +16,17 @@ limitations under the License.
 */
 
 const path = require('path');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 
 module.exports = merge(common('production'), {
     mode: 'production',
     devtool: 'source-map',
     optimization: {
-        minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+        minimizer: [new TerserJSPlugin(), new CssMinimizerPlugin()],
     },
     plugins: [
         new MiniCssExtractPlugin({
@@ -38,6 +38,7 @@ module.exports = merge(common('production'), {
         rules: [
             {
                 test: /\.css$/,
+                include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
                 use: [MiniCssExtractPlugin.loader, 'css-loader'],
             },
         ],

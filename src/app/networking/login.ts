@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { IUserInfo } from '@app/common/types';
-import { checkCommonErrors } from '@app/common/utils';
+import { IUserInfo } from '../common/types';
+import { checkCommonErrors } from '../common/utils';
 
 async function getUserProfile(): Promise<IUserInfo> {
     const res = await fetch('/auth/user-profile', { headers: { Accept: 'application/json' } });

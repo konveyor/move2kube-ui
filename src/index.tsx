@@ -14,13 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React from 'react';
-import { App } from '@app/App';
+import { App } from './app/App';
 import ReactDOM from 'react-dom';
-
-// if (process.env.NODE_ENV !== 'production') {
-//     const config = { rules: [{ id: 'color-contrast', enabled: false }] };
-//     import('@axe-core/react').then((axe) => axe.default(React, ReactDOM, 1000, config)).catch((e) => console.error('uhoh!!!', e));
-// }
 
 ReactDOM.render(<App />, document.getElementById('root') as HTMLElement);

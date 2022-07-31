@@ -27,16 +27,19 @@ spec:
               mountPath: /move2kube-api/data
               subPath: move2kube-api/data
       containers:
-        - image: "quay.io/konveyor/move2kube-ui:{{ .Values.deployment.api.imageTag | default .Chart.AppVersion }}"
+        - name: move2kubeapi
+          image: "quay.io/konveyor/move2kube-ui:{{ .Values.deployment.api.imageTag | default .Chart.AppVersion }}"
           command:
             - move2kube-api
           args:
-            - --config=config.yaml
+            - '--config=config.yaml --host="${HOSTNAME}.${MY_SERVICE}"'
           imagePullPolicy: Always
-          name: move2kubeapi
           ports:
             - containerPort: 8080
               protocol: TCP
+          env:
+            - name: MY_SERVICE
+              value: "{{ .Release.Name }}-move2kubeapiheadless"
           {{- if .Values.deployment.api.privilegedPods }}
           securityContext:
             privileged: true

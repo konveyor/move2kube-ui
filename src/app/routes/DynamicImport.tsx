@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import * as React from 'react';
-import { accessibleRouteChangeHandler } from '@app/common/utils';
+import { accessibleRouteChangeHandler } from '../common/utils';
 
 interface IDynamicImportProps {
     /* eslint-disable @typescript-eslint/no-explicit-any */

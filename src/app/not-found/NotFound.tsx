@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Alert, PageSection } from '@patternfly/react-core';
 

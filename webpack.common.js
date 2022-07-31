@@ -16,7 +16,6 @@ limitations under the License.
 */
 
 const path = require('path');
-const BG_IMAGES_DIRNAME = 'bgimages';
 const Dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
@@ -30,80 +29,18 @@ module.exports = () => {
             rules: [
                 {
                     test: /\.(tsx|ts|jsx)?$/,
+                    include: [path.resolve(__dirname, 'src')],
                     use: [
                         {
                             loader: 'ts-loader',
-                            options: {
-                                // transpileOnly: true,
-                                experimentalWatchApi: true,
-                            },
+                            options: { experimentalWatchApi: true },
                         },
                     ],
                 },
                 {
-                    test: /\.(svg|ttf|eot|woff|woff2)$/,
-                    // only process modules with this loader
-                    // if they live under a 'fonts' or 'pficon' directory
-                    use: {
-                        loader: 'file-loader',
-                        options: {
-                            // Limit at 50k. larger files emited into separate files
-                            limit: 5000,
-                            outputPath: 'fonts',
-                            name: '[name].[ext]',
-                        },
-                    },
-                },
-                {
-                    test: /\.svg$/,
-                    include: (input) => input.indexOf('background-filter.svg') > 1, // TODO: can this be replaced by .includes() ?
-                    use: [
-                        {
-                            loader: 'url-loader',
-                            options: {
-                                limit: 5000,
-                                outputPath: 'svgs',
-                                name: '[name].[ext]',
-                            },
-                        },
-                    ],
-                },
-                {
-                    test: /\.svg$/,
-                    // only process SVG modules with this loader if they live under a 'bgimages' directory
-                    // this is primarily useful when applying a CSS background using an SVG
-                    include: (input) => input.includes(BG_IMAGES_DIRNAME),
-                    use: {
-                        loader: 'url-loader',
-                        options: {},
-                    },
-                },
-                {
-                    test: /\.svg$/,
-                    // only process SVG modules with this loader when they don't live under a 'bgimages',
-                    // 'fonts', or 'pficon' directory, those are handled with other loaders
-                    include: (input) =>
-                        !input.includes(BG_IMAGES_DIRNAME) &&
-                        !input.includes('fonts') &&
-                        !input.includes('background-filter') &&
-                        !input.includes('pficon'),
-                    use: {
-                        loader: 'url-loader',
-                        options: {},
-                    },
-                },
-                {
-                    test: /\.(jpg|jpeg|png|gif)$/i,
-                    use: [
-                        {
-                            loader: 'url-loader',
-                            options: {
-                                limit: 5000,
-                                outputPath: 'images',
-                                name: '[name].[ext]',
-                            },
-                        },
-                    ],
+                    test: /\.(svg|jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/i,
+                    include: [path.resolve(__dirname, 'src')],
+                    type: 'asset/resource',
                 },
             ],
         },
@@ -112,21 +49,15 @@ module.exports = () => {
             path: path.resolve(__dirname, 'dist'),
         },
         plugins: [
-            new HtmlWebpackPlugin({
-                template: path.resolve(__dirname, 'src', 'index.html'),
-            }),
-            new Dotenv({
-                systemvars: true,
-                silent: true,
-            }),
+            new HtmlWebpackPlugin({ template: path.resolve(__dirname, 'src', 'index.html') }),
+            new Dotenv({ systemvars: true, silent: true }),
         ],
         resolve: {
             extensions: ['.js', '.ts', '.tsx', '.jsx'],
             plugins: [
-                new TsconfigPathsPlugin({
-                    configFile: path.resolve(__dirname, './tsconfig.json'),
-                }),
+                new TsconfigPathsPlugin({ configFile: path.resolve(__dirname, 'tsconfig.json') }),
             ],
+            symlinks: true,
             cacheWithContext: false,
         },
     };

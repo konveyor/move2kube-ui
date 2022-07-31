@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import '@app/assets/app.css';
-import '@app/assets/fonts.css';
+import './assets/app.css';
+import './assets/fonts.css';
 import '@patternfly/react-core/dist/styles/base.css';
 
 import React from 'react';
-import { AppLayout } from '@app/layout/AppLayout';
-import { getUserProfile, logout } from '@app/networking/login';
-import { SimpleLoginPage, LoginContext, ILoginContext } from '@app/login/Login';
-import { ErrHTTP401, ErrHTTP403, ErrHTTP404, IUserInfo } from '@app/common/types';
+import { AppLayout } from './layout/AppLayout';
+import { getUserProfile, logout } from './networking/login';
+import { SimpleLoginPage, LoginContext, ILoginContext } from './login/Login';
+import { ErrHTTP401, ErrHTTP403, ErrHTTP404, IUserInfo } from './common/types';
 import { BrowserRouter as Router, Route, Switch, RouteComponentProps } from 'react-router-dom';
 
 type ILoginContextProviderProps = RouteComponentProps;

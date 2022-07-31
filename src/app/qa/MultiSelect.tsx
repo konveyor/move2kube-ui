@@ -15,10 +15,10 @@ limitations under the License.
 */
 
 import React, { useContext } from 'react';
-import { Hints } from '@app/qa/Hints';
-import { copy } from '@app/common/utils';
-import { QAContext } from '@app/qa/QAContext';
-import { IQAComponentProps } from '@app/qa/QAWizard';
+import { Hints } from './Hints';
+import { copy } from '../common/utils';
+import { QAContext } from './QAContext';
+import { IQAComponentProps } from './QAWizard';
 import { Checkbox, TextContent } from '@patternfly/react-core';
 
 type IMultiSelectProps = IQAComponentProps;

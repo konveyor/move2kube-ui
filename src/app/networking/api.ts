@@ -24,8 +24,8 @@ import {
     IProjectInput,
     PlanProgressT,
     ProjectInputType,
-} from '@app/common/types';
-import { checkCommonErrors } from '@app/common/utils';
+} from '../common/types';
+import { checkCommonErrors } from '../common/utils';
 
 const API_BASE = '/api/v1';
 const ACCEPT_HEADER = 'Accept';

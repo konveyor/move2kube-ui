@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ErrHTTP401 } from '@app/common/types';
-import React, { useContext, useState } from 'react';
-import { ApplicationContext } from '@app/common/ApplicationContext';
+import { ErrHTTP401 } from '../common/types';
+import { useContext, useState } from 'react';
+import { ApplicationContext } from '../common/ApplicationContext';
 import { Button, Form, FormGroup, TextInput, ActionGroup, Alert } from '@patternfly/react-core';
 
 interface INewWorkspaceFormProps {

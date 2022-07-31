@@ -20,7 +20,7 @@ import {
     FileUploadStatus,
     ProjectInputType,
     SUPPORTED_ARCHIVE_FORMATS,
-} from '@app/common/types';
+} from '../common/types';
 import {
     Card,
     Form,
@@ -41,8 +41,8 @@ import {
     Bullseye,
 } from '@patternfly/react-core';
 import React, { useContext, useState } from 'react';
-import { ApplicationContext } from '@app/common/ApplicationContext';
-import { deleteWorkspaceInput, readWorkspaceInputURL } from '@app/networking/api';
+import { ApplicationContext } from '../common/ApplicationContext';
+import { deleteWorkspaceInput, readWorkspaceInputURL } from '../networking/api';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
 import { CubesIcon } from '@patternfly/react-icons';
 

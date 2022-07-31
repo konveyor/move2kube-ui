@@ -16,14 +16,14 @@ limitations under the License.
 
 import React from 'react';
 import { Redirect } from 'react-router-dom';
-import { Support } from '@app/support/Support';
-import { Projects } from '@app/projects/Projects';
-import { NotFound } from '@app/not-found/NotFound';
-import { useDocumentTitle } from '@app/common/utils';
-import { Workspaces } from '@app/workspaces/Workspaces';
-import { accessibleRouteChangeHandler } from '@app/common/utils';
+import { Support } from '../support/Support';
+import { Projects } from '../projects/Projects';
+import { NotFound } from '../not-found/NotFound';
+import { useDocumentTitle } from '../common/utils';
+import { Workspaces } from '../workspaces/Workspaces';
+import { accessibleRouteChangeHandler } from '../common/utils';
 import { Route, RouteComponentProps, Switch } from 'react-router-dom';
-import { IApplicationContext, DEFAULT_WORKSPACE_ID } from '@app/common/types';
+import { IApplicationContext, DEFAULT_WORKSPACE_ID } from '../common/types';
 import { LastLocationProvider, useLastLocation } from 'react-router-last-location';
 
 let routeFocusTimer: number;

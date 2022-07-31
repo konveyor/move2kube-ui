@@ -36,7 +36,7 @@ Make sure you are logged into a Kubernetes/Openshift cluster
 
 ```shell
 $ cd helm-charts
-$ helm install m-m2k-instance ./move2kube/
+$ helm install my-m2k-instance ./move2kube/
 ```
 
 For more information and configuration options, see [Move2Kube UI Helm chart](https://github.com/konveyor/move2kube-ui/blob/main/helm-charts/move2kube/README.md)

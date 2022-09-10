@@ -1,4 +1,4 @@
-{{- if and (.Values.deployment.authServer.enable) }}
+{{- if .Values.deployment.authServer.enable }}
 apiVersion: v1
 kind: Service
 metadata:

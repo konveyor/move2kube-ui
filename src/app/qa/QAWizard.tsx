@@ -18,7 +18,7 @@ import { Input } from './Input';
 import { Select } from './Select';
 import { Confirm } from './Confirm';
 import { Password } from './Password';
-import { Multiline } from './Multiline';
+import { MultiLine } from './MultiLine';
 import { QAContext } from './QAContext';
 import { MultiSelect } from './MultiSelect';
 import React, { useEffect, useReducer } from 'react';
@@ -110,7 +110,7 @@ function getQuestCompAndSetDefault(question: ProblemT): React.FunctionComponent<
         Select: [Select, ''],
         Input: [Input, ''],
         Confirm: [Confirm, false],
-        Multiline: [Multiline, ''],
+        MultiLine: [MultiLine, ''],
         Password: [Password, ''],
     };
     if (!(question.type in componentsAndDefaults)) throw new Error(`unknown solution type: ${question.type}`);

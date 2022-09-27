@@ -29,7 +29,7 @@ import {
     ToolbarContent,
 } from '@patternfly/react-core';
 import { useEffect, useState } from 'react';
-import { ErrHTTP401, IProject, IWorkspace, PlanProgressT } from '../common/types';
+import { ErrHTTP401, IProject, IWorkspace, PlanProgressT, ProjectInputType } from '../common/types';
 import { startPlanning, readPlan, updatePlan, waitForPlan } from '../networking/api';
 
 interface IProjectPlanProps {
@@ -70,7 +70,20 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
         props.project.status?.plan,
         props.project.status?.plan_error,
     ]);
-
+    let disableThisSection =
+        (!props.project.status?.[ProjectInputType.Sources] &&
+            !props.project.status?.[ProjectInputType.Customizations]) ||
+        isPlanning;
+    if (disableThisSection && !isPlanning && props.project.status?.[ProjectInputType.Reference]) {
+        if (
+            Object.values(props.project.inputs || {})
+                .filter((x) => x.type === ProjectInputType.Reference)
+                .map((x) => props.workspace.inputs?.[x.id])
+                .some((x) => x?.type === ProjectInputType.Sources || x?.type === ProjectInputType.Customizations)
+        ) {
+            disableThisSection = false;
+        }
+    }
     return (
         <Card>
             <CardTitle>Plan</CardTitle>
@@ -79,7 +92,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                     <ToolbarContent>
                         <ToolbarItem>
                             <Button
-                                isDisabled={isPlanning}
+                                isDisabled={disableThisSection}
                                 onClick={() => {
                                     setIsPlanning(true);
                                     startPlanning(props.workspace.id, props.project.id)
@@ -112,7 +125,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                         </ToolbarItem>
                         <ToolbarItem>
                             <Button
-                                isDisabled={!props.project.status?.plan}
+                                isDisabled={disableThisSection || !props.project.status?.plan}
                                 onClick={() => {
                                     try {
                                         console.log('save button clicked for plan:', Yaml.load(plan));
@@ -157,7 +170,7 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
                     name="plan"
                     aria-label="plan"
                     resizeOrientation="vertical"
-                    isDisabled={!props.project.status?.plan}
+                    isDisabled={disableThisSection || !props.project.status?.plan}
                     validated={planErr ? 'error' : 'default'}
                     value={plan}
                     onChange={setPlan}

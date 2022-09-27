@@ -20,7 +20,7 @@ import { QAContext } from './QAContext';
 import { IQAComponentProps } from './QAWizard';
 import { TextContent, TextArea } from '@patternfly/react-core';
 
-function MultiLine(props: IQAComponentProps): JSX.Element {
+function Multiline(props: IQAComponentProps): JSX.Element {
     const { problems, setResolvedProblem } = useContext(QAContext);
     const problem = problems[props.idx];
     const onChange = (value: string): void => {
@@ -40,4 +40,4 @@ function MultiLine(props: IQAComponentProps): JSX.Element {
     );
 }
 
-export { MultiLine };
+export { Multiline };

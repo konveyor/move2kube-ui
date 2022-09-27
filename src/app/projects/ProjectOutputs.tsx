@@ -33,7 +33,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { ApplicationContext } from '../common/ApplicationContext';
 import { ProjectOutputGraph, Graph } from './ProjectOutputGraph';
 import { Table, TableHeader, TableBody, IAction, IRow } from '@patternfly/react-table';
-import { ErrHTTP401, ProjectInputType, PROJECT_OUTPUT_STATUS_DONE } from '../common/types';
+import { ErrHTTP401, PROJECT_OUTPUT_STATUS_DONE, ProjectInputType } from '../common/types';
 import {
     deleteProjectOutput,
     readProjectOutputURL,
@@ -120,7 +120,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
             },
         },
     ];
-    let disableThisSection = !ctx.currentProject.status?.[ProjectInputType.Sources] || !ctx.currentProject.status?.plan;
+    let disableThisSection = (!ctx.currentProject.status?.[ProjectInputType.Sources] && !ctx.currentProject.status?.[ProjectInputType.Customizations]) || !ctx.currentProject.status?.plan;
     if (
         disableThisSection &&
         ctx.currentProject.status?.plan &&
@@ -130,7 +130,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
             Object.values(ctx.currentProject.inputs || {})
                 .filter((x) => x.type === ProjectInputType.Reference)
                 .map((x) => ctx.currentWorkspace.inputs?.[x.id])
-                .some((x) => x?.type === ProjectInputType.Sources)
+                .some((x) => x?.type === ProjectInputType.Sources || x?.type === ProjectInputType.Customizations)
         ) {
             disableThisSection = false;
         }

@@ -110,7 +110,7 @@ function getQuestCompAndSetDefault(question: ProblemT): React.FunctionComponent<
         Select: [Select, ''],
         Input: [Input, ''],
         Confirm: [Confirm, false],
-        Multiline: [Multiline, ''],
+        MultiLineInput: [Multiline, ''],
         Password: [Password, ''],
     };
     if (!(question.type in componentsAndDefaults)) throw new Error(`unknown solution type: ${question.type}`);

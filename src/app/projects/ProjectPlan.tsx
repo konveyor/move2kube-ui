@@ -70,13 +70,16 @@ function ProjectPlan(props: IProjectPlanProps): JSX.Element {
         props.project.status?.plan,
         props.project.status?.plan_error,
     ]);
-    let disableThisSection = !props.project.status?.[ProjectInputType.Sources] || isPlanning;
+    let disableThisSection =
+        (!props.project.status?.[ProjectInputType.Sources] &&
+            !props.project.status?.[ProjectInputType.Customizations]) ||
+        isPlanning;
     if (disableThisSection && !isPlanning && props.project.status?.[ProjectInputType.Reference]) {
         if (
             Object.values(props.project.inputs || {})
                 .filter((x) => x.type === ProjectInputType.Reference)
                 .map((x) => props.workspace.inputs?.[x.id])
-                .some((x) => x?.type === ProjectInputType.Sources)
+                .some((x) => x?.type === ProjectInputType.Sources || x?.type === ProjectInputType.Customizations)
         ) {
             disableThisSection = false;
         }

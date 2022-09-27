@@ -120,7 +120,7 @@ function ProjectOutputs(props: IProjectOutputsProps): JSX.Element {
             },
         },
     ];
-    let disableThisSection = !ctx.currentProject.status?.plan;
+    let disableThisSection = (!ctx.currentProject.status?.[ProjectInputType.Sources] && !ctx.currentProject.status?.[ProjectInputType.Customizations]) || !ctx.currentProject.status?.plan;
     if (
         disableThisSection &&
         ctx.currentProject.status?.plan &&

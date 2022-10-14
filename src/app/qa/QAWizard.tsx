@@ -151,6 +151,7 @@ function reducer(state: IQAWizardState, action: IAction): IQAWizardState {
                 [act.projectOutputId]: {
                     ...state.stateForOutputId[act.projectOutputId],
                     solErr: act.err,
+                    disableNextButton: false,
                 },
             },
         };

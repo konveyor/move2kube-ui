@@ -1,4 +1,4 @@
-#   Copyright IBM Corporation 2020
+#   Copyright IBM Corporation 2023
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -37,5 +37,5 @@ ENV MOVE2KUBE_UI_GIT_COMMIT_HASH="${MOVE2KUBE_UI_GIT_COMMIT_HASH}"
 ENV MOVE2KUBE_UI_GIT_TREE_STATUS="${MOVE2KUBE_UI_GIT_TREE_STATUS}"
 
 # copy build output
-COPY --from=build_base /app/dist ./dist
-CMD ["move2kube-api", "--port", "8080", "--log-level", "info", "--static-files-dir", "dist"]
+COPY --from=build_base /app/build ./build
+CMD ["move2kube-api", "--port", "8080", "--log-level", "info", "--static-files-dir", "build"]

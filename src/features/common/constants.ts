@@ -15,3 +15,5 @@ limitations under the License.
 */
 
 export const API_BASE = '/api/v1';
+export const QA_MAX_GET_NEXT_ATTEMPTS = 5;
+export const QA_MILLISECONDS_BETWEEN_GET_NEXT_ATTEMPTS = 3 * 1000;

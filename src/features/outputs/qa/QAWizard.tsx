@@ -92,8 +92,15 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                             setIsNextDisabled(true);
                             dispatch(moveToNextQuestion())
                                 .then(({ done }) => {
-                                    if (done && props.refetch) props.refetch();
-                                    else setIsNextDisabled(false);
+                                    if (done) {
+                                        try {
+                                            if (props.refetch) props.refetch();
+                                        } catch (e) {
+                                            console.log('failed to refetch', e);
+                                        }
+                                    } else {
+                                        setIsNextDisabled(false);
+                                    }
                                 })
                                 .catch(console.error);
                         }}>Next</Button>
@@ -101,6 +108,11 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                     <SplitItem>
                         <Button variant="secondary" onClick={() => {
                             dispatch(setCurrentStatusId(''));
+                            try {
+                                if (props.refetch) props.refetch();
+                            } catch (e) {
+                                console.log('failed to refetch:', e);
+                            }
                         }}>Cancel</Button>
                     </SplitItem>
                     {isNextDisabled && (

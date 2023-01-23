@@ -16,7 +16,7 @@ limitations under the License.
 
 import { createApi, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import { AppThunk } from "../../app/store";
-import { API_BASE } from "../common/constants";
+import { API_BASE, QA_MAX_GET_NEXT_ATTEMPTS, QA_MILLISECONDS_BETWEEN_GET_NEXT_ATTEMPTS } from "../common/constants";
 import { sleep } from "../common/utils";
 import { addQAStep, selectCurrentStatus, setCurrentStatusId } from "./outputsSlice";
 import { IQAStep, IQuestion } from "./qa/types";
@@ -61,8 +61,7 @@ export const moveToNextQuestion = (): AppThunk<Promise<{ done: boolean }>> =>
         const url = `${API_BASE}/workspaces/${wid}/projects/${pid}/outputs/${outputId}/problems/current`;
         let res: Response | null = null;
         let attempt = 0;
-        const max_attempts = 3;
-        while (attempt < max_attempts && (!res || !res.ok)) {
+        while (attempt < QA_MAX_GET_NEXT_ATTEMPTS && (!res || !res.ok)) {
             attempt++;
             res = await fetch(url, {
                 headers: {
@@ -74,7 +73,7 @@ export const moveToNextQuestion = (): AppThunk<Promise<{ done: boolean }>> =>
                 break;
             }
             console.error(`got an error status code: ${res.status} ${res.statusText} trying again after a few seconds...`);
-            await sleep(3000);
+            await sleep(QA_MILLISECONDS_BETWEEN_GET_NEXT_ATTEMPTS);
         }
         if (!res) {
             throw new Error('did not even try to fetch');

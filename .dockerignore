@@ -1,4 +1,4 @@
-#   Copyright IBM Corporation 2020
+#   Copyright IBM Corporation 2023
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,22 +17,9 @@
 contributing.md
 code-of-conduct.md
 Dockerfile
-docker-compose.yml
 Makefile
 README.md
 /data/
-/dist/
+/build/
+/helm-charts/
 /node_modules/
-
-# https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
-.yarn/*
-!.yarn/patches
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
-# https://github.com/github/gitignore/blob/master/Node.gitignore
-yarn-debug.log*
-yarn-error.log*
-.yarn-integrity

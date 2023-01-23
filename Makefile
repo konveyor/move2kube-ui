@@ -1,4 +1,4 @@
-#   Copyright IBM Corporation 2020
+#   Copyright IBM Corporation 2023
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 BINNAME     ?= move2kube-ui
 REGISTRYNS  := quay.io/konveyor
-DISTDIR     := $(CURDIR)/dist
+DISTDIR     := $(CURDIR)/build
 
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_SHA    = $(shell git rev-parse --short HEAD)
@@ -64,15 +64,7 @@ install: ## Install dependencies
 
 .PHONY: build
 build: ## Build application
-	@pnpm run lint && pnpm run build
-
-.PHONY: dev
-dev: install ## Start Development server
-	@pnpm run dev
-
-.PHONY: prod
-prod: ## Start Production server
-	@pnpm run prod
+	@pnpm run build
 
 .PHONY: start
 start: install build ## Start server

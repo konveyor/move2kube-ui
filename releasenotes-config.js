@@ -9,4 +9,4 @@ module.exports = {
     header: `For more documentation and support please visit https://move2kube.konveyor.io/
   # Changelog`,
     line_template: x => `- ${x.title} [#${x.number}](${x.html_url})`,
-}
+};

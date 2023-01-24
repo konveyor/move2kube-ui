@@ -26,6 +26,7 @@ import { useAppDispatch } from "../../app/hooks";
 import { TrashIcon, SyncIcon, PlusIcon, CubesIcon, QuestionIcon } from '@patternfly/react-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { extractErrMsg } from "../common/utils";
+import { createToast } from "../toasts/toastsSlice";
 
 const columns: GridColumns = [
     {
@@ -73,15 +74,15 @@ const HelpText: FunctionComponent = () => (
 
 export const Workspaces: FunctionComponent = () => {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
     const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
     const [selectedRows, setSelectedRows] = useState<Array<string>>([]);
-    const { data, isLoading, error, refetch } = useListWorkspacesQuery();
+    const { data: workspaces, isLoading, error, refetch } = useListWorkspacesQuery();
     const [createWorkspace, { isLoading: isCreating, error: createError }] = useCreateWorkspaceMutation();
     const [updateWorkspace, { isLoading: isUpdating, error: updateError }] = useUpdateWorkspaceMutation();
     const [deleteWorkspaces, { isLoading: isDeleting, error: deleteError }] = useDeleteWorkspacesMutation();
-    const dispatch = useAppDispatch();
-    const rows = data || [];
+    const rows = workspaces ?? [];
     return (
         <PageSection>
             <Title headingLevel="h1">Workspaces</Title>
@@ -91,7 +92,7 @@ export const Workspaces: FunctionComponent = () => {
                     <Alert variant="danger" title={extractErrMsg(error)} />
                 ) : isLoading ? (
                     <Spinner />
-                ) : data ? (
+                ) : workspaces ? (
                     <Card>
                         <CardBody>
                             <Split hasGutter>
@@ -122,9 +123,16 @@ export const Workspaces: FunctionComponent = () => {
                                 selectionModel={selectedRows}
                                 onSelectionModelChange={xs => setSelectedRows(xs as Array<string>)}
                                 editMode='row'
-                                processRowUpdate={(w) => {
-                                    console.log('updated workspace:', w);
-                                    updateWorkspace(w);
+                                processRowUpdate={(w: IWorkspace) => {
+                                    updateWorkspace(w)
+                                        .unwrap()
+                                        .then(() => {
+                                            dispatch(createToast({ id: 0, variant: 'success', message: `Updated the workspace with id: ${w.id}` }));
+                                        })
+                                        .catch((...args) => {
+                                            console.error('failed to update the workspace:', ...args);
+                                            dispatch(createToast({ id: 0, variant: 'danger', message: `Failed to update the workspace with id: ${w.id}` }));
+                                        });
                                     return w;
                                 }}
                                 getRowClassName={({ indexRelativeToCurrentPage }) => indexRelativeToCurrentPage % 2 === 0 ? 'table-row-even' : 'table-row-odd'}
@@ -155,9 +163,14 @@ export const Workspaces: FunctionComponent = () => {
                 onClose={() => setIsDeleteOpen(false)}
                 actions={[
                     <Button key="confirm-button" variant="danger" onClick={() => {
-                        setIsDeleteOpen(false);
-                        deleteWorkspaces(selectedRows);
-                        setSelectedRows([]);
+                        deleteWorkspaces(selectedRows)
+                            .unwrap()
+                            .then(() => {
+                                setIsDeleteOpen(false);
+                                setSelectedRows([]);
+                                dispatch(createToast({ id: 0, variant: 'success', message: 'Deleted the selected workspaces.' }));
+                            })
+                            .catch((...args) => console.error('failed to delete the selected workspaces.', ...args));
                     }}>Confirm</Button>,
                     <Button key="cancel-button" variant="plain" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
                 ]}>
@@ -182,6 +195,7 @@ export const Workspaces: FunctionComponent = () => {
                         .then((payload) => {
                             setIsCreateOpen(false);
                             navigate(`/workspaces/${payload.id}/projects`);
+                            dispatch(createToast({ id: 0, variant: 'success', message: `Created a new workspace with the id: ${payload.id}` }));
                         })
                         .catch((...args) => console.error('failed to create a new workspace.', ...args));
                 }}>

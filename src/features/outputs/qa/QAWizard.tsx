@@ -17,6 +17,7 @@ limitations under the License.
 import { Alert, Button, Spinner, Split, SplitItem, TextContent, Wizard, WizardContextConsumer, WizardStep } from "@patternfly/react-core";
 import { FunctionComponent, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { createToast } from "../../toasts/toastsSlice";
 import { moveToNextQuestion } from "../outputsApi";
 import { updateQAStep, setCurrentStatusId, selectCurrentStatus, TransformationStatus } from "../outputsSlice";
 import { Confirm } from "./Confirm";
@@ -96,14 +97,16 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                                         try {
                                             if (props.refetch) props.refetch();
                                         } catch (e) {
-                                            console.log('failed to refetch', e);
+                                            console.log('failed to refetch:', e);
                                         }
-                                    } else {
-                                        setIsNextDisabled(false);
+                                        dispatch(createToast({ id: 0, variant: 'success', message: 'Transformation finished.' }));
                                     }
+                                    setIsNextDisabled(false);
                                 })
-                                .catch(console.error);
-                        }}>Next</Button>
+                                .catch((...args) => console.error('failed to move to the next question', ...args));
+                        }}>
+                            Next
+                        </Button>
                     </SplitItem>
                     <SplitItem>
                         <Button variant="secondary" onClick={() => {
@@ -113,7 +116,9 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                             } catch (e) {
                                 console.log('failed to refetch:', e);
                             }
-                        }}>Cancel</Button>
+                        }}>
+                            Cancel
+                        </Button>
                     </SplitItem>
                     {isNextDisabled && (
                         <SplitItem>

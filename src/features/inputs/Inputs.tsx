@@ -30,6 +30,7 @@ import { useCreateProjectInputMutation, useDeleteProjectInputsMutation } from '.
 import { deleteStatusesWithErrors, selectUploadStatuses } from "../inputs/inputsSlice";
 import { API_BASE } from '../common/constants';
 import { extractErrMsg } from '../common/utils';
+import { createToast } from '../toasts/toastsSlice';
 
 interface IInputsProps {
     isDisabled?: boolean;
@@ -67,10 +68,14 @@ export const Inputs: FunctionComponent<IInputsProps> = ({ workspaceId, projectId
             projectInput: { id: '', timestamp: '', type: inputType, name: file?.name },
             file,
             workspaceInputId,
-        }).then(() => {
-            if (projectId) refetchProject();
-            else refetchWorkspace();
-        }).catch(console.error);
+        })
+            .unwrap()
+            .then((payload) => {
+                if (projectId) refetchProject();
+                else refetchWorkspace();
+                dispatch(createToast({ id: 0, variant: 'success', message: `Created a new input with the id: ${payload.id}` }));
+            })
+            .catch((...args) => console.error('failed to create the input:', ...args));
     };
 
     const columns: GridColumns = [
@@ -181,7 +186,6 @@ export const Inputs: FunctionComponent<IInputsProps> = ({ workspaceId, projectId
                     {projectId && <li>Reference: Refer an input at the workspace level. Workspace level inputs are shared between all the projects in that workspace.</li>}
                 </ul>
                 {createError && (<Alert variant="danger" title={extractErrMsg(createError)} />)}
-                {deleteError && (<Alert variant="danger" title={extractErrMsg(deleteError)} />)}
                 <Form>
                     <FormGroup isRequired label="Project input type" fieldId="project-input-type">
                         <FormSelect
@@ -259,15 +263,20 @@ export const Inputs: FunctionComponent<IInputsProps> = ({ workspaceId, projectId
                 onClose={() => setIsDeleteOpen(false)}
                 actions={[
                     <Button key="confirm-button" variant="danger" onClick={() => {
-                        setIsDeleteOpen(false);
-                        deleteProjectInputs({ wid: workspaceId, pid: projectId, inpIds: selectedRows }).then(() => {
-                            if (projectId) refetchProject();
-                            else refetchWorkspace();
-                        });
-                        setSelectedRows([]);
+                        deleteProjectInputs({ wid: workspaceId, pid: projectId, inpIds: selectedRows })
+                            .unwrap()
+                            .then(() => {
+                                setIsDeleteOpen(false);
+                                setSelectedRows([]);
+                                if (projectId) refetchProject();
+                                else refetchWorkspace();
+                                dispatch(createToast({ id: 0, variant: 'success', message: 'Deleted the selected inputs.' }));
+                            })
+                            .catch((...args) => console.error('failed to delete the inputs', ...args));
                     }}>Confirm</Button>,
                     <Button key="cancel-button" variant="plain" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
                 ]}>
+                {!isDeleting && deleteError && (<Alert variant="danger" title={extractErrMsg(deleteError)} />)}
                 The following {selectedRows.length} inputs will be deleted.
                 This action cannot be reversed.
                 <pre>{'  ' + selectedRows.map(id => projectInputs.find(r => r.id === id)?.name || '').join('\n  ')}</pre>

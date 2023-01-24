@@ -26,6 +26,7 @@ import { createStatus } from './outputsSlice';
 import { QuestionIcon, TrashIcon } from "@patternfly/react-icons";
 import { extractErrMsg, normalizeFilename } from "../common/utils";
 import { Graph } from "./graph/Graph";
+import { createToast } from "../toasts/toastsSlice";
 
 export interface IOutputsProps {
     isDisabled?: boolean;
@@ -36,8 +37,15 @@ export interface IOutputsProps {
 }
 
 export const Outputs: FunctionComponent<IOutputsProps> = (props) => {
+    const isDisabled = props.isDisabled ?? false;
     const dispatch = useAppDispatch();
     const [graphOutputId, setGraphOutputId] = useState<string>('');
+    const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
+    const [selectedRows, setSelectedRows] = useState<Array<string>>([]);
+    const [startTransforming, { isLoading: isTransformStarting }] = useStartTransformingMutation();
+    const [deleteProjectOutputs, { isLoading: isDeleting, error: deleteError }] = useDeleteProjectOutputsMutation();
+
+    const rows: Array<IProjectOutput> = props.outputs ? Object.keys(props.outputs).sort().map(k => (props.outputs ?? {})[k]) : [];
     const columns: GridColumns = [
         {
             field: 'id',
@@ -81,12 +89,7 @@ export const Outputs: FunctionComponent<IOutputsProps> = (props) => {
             ] : [],
         },
     ];
-    const isDisabled = props.isDisabled ?? false;
-    const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
-    const [selectedRows, setSelectedRows] = useState<Array<string>>([]);
-    const [startTransforming, { isLoading: isTransformStarting }] = useStartTransformingMutation();
-    const [deleteProjectOutputs, { isLoading: isDeleting, error: deleteError }] = useDeleteProjectOutputsMutation();
-    const rows: Array<IProjectOutput> = props.outputs ? Object.keys(props.outputs).sort().map(k => (props.outputs ?? {})[k]) : [];
+
     return (
         <Card>
             <CardBody>
@@ -150,14 +153,18 @@ export const Outputs: FunctionComponent<IOutputsProps> = (props) => {
                 onClose={() => setIsDeleteOpen(false)}
                 actions={[
                     <Button key="confirm-button" variant="danger" onClick={() => {
-                        setIsDeleteOpen(false);
-                        deleteProjectOutputs({ wid: props.workspaceId, pid: props.projectId, outputIds: selectedRows }).then(
-                            () => props.refetch && props.refetch()
-                        ).catch(console.error);
-                        setSelectedRows([]);
+                        deleteProjectOutputs({ wid: props.workspaceId, pid: props.projectId, outputIds: selectedRows })
+                            .unwrap()
+                            .then(() => {
+                                setIsDeleteOpen(false);
+                                setSelectedRows([]);
+                                if (props.refetch) props.refetch();
+                                dispatch(createToast({ id: 0, variant: 'success', message: 'Deleted the selected outputs.' }));
+                            }).catch(console.error);
                     }}>Confirm</Button>,
                     <Button key="cancel-button" variant="plain" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
                 ]}>
+                {!isDeleting && deleteError && <Alert variant="danger" title={extractErrMsg(deleteError)} />}
                 The following {selectedRows.length} outputs will be deleted.
                 This action cannot be reversed.
                 <pre>{'  ' + selectedRows.join('\n  ')}</pre>

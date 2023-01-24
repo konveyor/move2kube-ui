@@ -25,6 +25,7 @@ import { loginApi } from '../features/login/loginApi';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import inputsReducer from '../features/inputs/inputsSlice';
 import outputsReducer from '../features/outputs/outputsSlice';
+import toastsReducer from '../features/toasts/toastsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -37,6 +38,7 @@ export const store = configureStore({
     [loginApi.reducerPath]: loginApi.reducer,
     inputs: inputsReducer,
     outputs: outputsReducer,
+    toasts: toastsReducer,
   },
   middleware: (getDef) =>
     getDef()

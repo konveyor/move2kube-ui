@@ -28,6 +28,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useReadWorkspaceQuery } from "../workspaces/workspacesApi";
 import { Inputs } from "../inputs/Inputs";
 import { extractErrMsg } from "../common/utils";
+import { createToast } from "../toasts/toastsSlice";
 
 const columns: GridColumns = [
     {
@@ -155,8 +156,15 @@ export const Projects: FunctionComponent = () => {
                                         onSelectionModelChange={xs => setSelectedRows(xs as Array<string>)}
                                         editMode='row'
                                         processRowUpdate={(p: IProject) => {
-                                            console.log('updated project:', p);
-                                            updateProject({ wid: currentWorkspaceId, project: p });
+                                            updateProject({ wid: currentWorkspaceId, project: p })
+                                                .unwrap()
+                                                .then(() => {
+                                                    dispatch(createToast({ id: 0, variant: 'success', message: `Updated the project with id: ${p.id}` }));
+                                                })
+                                                .catch((...args) => {
+                                                    console.error('failed to update the project:', ...args);
+                                                    dispatch(createToast({ id: 0, variant: 'danger', message: `Failed to update the project with id: ${p.id}` }));
+                                                });
                                             return p;
                                         }}
                                         getRowClassName={({ indexRelativeToCurrentPage }) => indexRelativeToCurrentPage % 2 === 0 ? 'table-row-even' : 'table-row-odd'}
@@ -193,12 +201,18 @@ export const Projects: FunctionComponent = () => {
                 onClose={() => setIsDeleteOpen(false)}
                 actions={[
                     <Button key="confirm-button" variant="danger" onClick={() => {
-                        setIsDeleteOpen(false);
-                        deleteProjects({ wid: currentWorkspaceId, pids: selectedRows });
-                        setSelectedRows([]);
+                        deleteProjects({ wid: currentWorkspaceId, pids: selectedRows })
+                            .unwrap()
+                            .then(() => {
+                                setIsDeleteOpen(false);
+                                setSelectedRows([]);
+                                dispatch(createToast({ id: 0, variant: 'success', message: 'Deleted the selected projects.' }));
+                            })
+                            .catch((...args) => console.error('failed to delete the selected projects.', ...args));
                     }}>Confirm</Button>,
                     <Button key="cancel-button" variant="plain" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
                 ]}>
+                {!isDeleting && deleteError && <Alert variant="danger" title={extractErrMsg(deleteError)} />}
                 The following {selectedRows.length} projects will be deleted.
                 This action cannot be reversed.
                 <pre>{'  ' + selectedRows.map(id => rows.find(r => r.id === id)?.name || '').join('\n  ')}</pre>
@@ -219,6 +233,7 @@ export const Projects: FunctionComponent = () => {
                         .then((payload) => {
                             setIsCreateOpen(false);
                             navigate(`/workspaces/${currentWorkspaceId}/projects/${payload.id}`);
+                            dispatch(createToast({ id: 0, variant: 'success', message: `Created a new project with the id: ${payload.id}` }));
                         })
                         .catch((...args) => console.error('failed to create a new project.', ...args));
                 }}>

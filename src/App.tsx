@@ -25,7 +25,7 @@ import {
   Page, PageSidebar, PageToggleButton, Masthead,
   MastheadToggle, MastheadMain, MastheadBrand, MastheadContent,
   Toolbar, ToolbarContent, ToolbarItem, Nav, NavList, NavItem, Alert,
-  Spinner, Dropdown, DropdownItem, DropdownToggle, Button,
+  Spinner, Dropdown, DropdownItem, DropdownToggle, Button, AlertGroup, AlertActionCloseButton,
 } from '@patternfly/react-core';
 import { BarsIcon } from '@patternfly/react-icons';
 import { FunctionComponent, useState } from 'react';
@@ -33,14 +33,18 @@ import { Login } from './features/login/Login';
 import { useGetUserProfileQuery, useLogoutMutation } from './features/login/loginApi';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query';
 import { extractErrMsg } from './features/common/utils';
+import { deleteToast, selectToasts } from './features/toasts/toastsSlice';
+import { useAppDispatch, useAppSelector } from './app/hooks';
+import { TOAST_TIMEOUT_MILLISECONDS } from './features/common/constants';
 
 export const App: FunctionComponent = () => {
   const { data: userProfile, isLoading: isLoadingUserProfile, error: getUserProfileErr } = useGetUserProfileQuery();
+  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const toasts = useAppSelector(selectToasts);
+  const dispatch = useAppDispatch();
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const isAuthDisabled = (getUserProfileErr as FetchBaseQueryError)?.status === 404;
   const isLoggedOut = (getUserProfileErr as FetchBaseQueryError)?.status === 401;
-  console.log('isAuthDisabled', isAuthDisabled);
-  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
-  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
 
   const header = (
     <Masthead>
@@ -108,6 +112,18 @@ export const App: FunctionComponent = () => {
         <Route path="login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <AlertGroup isToast isLiveRegion>
+        {toasts.map((toast) => (
+          <Alert
+            key={toast.id}
+            variant={toast.variant}
+            title={toast.message}
+            timeout={TOAST_TIMEOUT_MILLISECONDS}
+            onTimeout={() => dispatch(deleteToast(toast.id))}
+            actionClose={<AlertActionCloseButton onClose={() => dispatch(deleteToast(toast.id))} />}
+          />
+        ))}
+      </AlertGroup>
     </Page>
   );
 };

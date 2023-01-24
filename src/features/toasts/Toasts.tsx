@@ -14,7 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export const API_BASE = '/api/v1';
-export const QA_MAX_GET_NEXT_ATTEMPTS = 5;
-export const QA_MILLISECONDS_BETWEEN_GET_NEXT_ATTEMPTS = 3 * 1000;
-export const TOAST_TIMEOUT_MILLISECONDS = 8 * 1000;
+import { AlertGroup } from "@patternfly/react-core";
+import { FunctionComponent } from "react";
+
+export const Toasts: FunctionComponent = () => {
+    return (
+        <AlertGroup></AlertGroup>
+    );
+};

@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export const getUUID = (): string => crypto.randomUUID();
+import {v4 as uuidv4} from 'uuid';
+
+export const getUUID = (): string => uuidv4();
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(() => resolve(), ms));
 

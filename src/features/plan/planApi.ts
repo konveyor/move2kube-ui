@@ -49,7 +49,7 @@ export const planApi = createApi({
                     if (!res.ok) {
                         throw new Error(`got an error status code: ${res.status} ${res.statusText}`);
                     }
-                    while (res.status === 204) {
+                    while (res.status === 204 || res.status === 202) {
                         await sleep(PLAN_POLLING_INTERVAL_MS);
                         res = await fetch(url);
                         finalStatus = res.status;

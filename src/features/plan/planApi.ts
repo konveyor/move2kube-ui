@@ -17,6 +17,7 @@ limitations under the License.
 import { createApi, fetchBaseQuery, FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { API_BASE } from '../common/constants';
 import { sleep } from '../common/utils';
+import { deletePlanProgressStatus, setPlanProgressStatus } from './planSlice';
 
 const PLAN_POLLING_INTERVAL_MS = 3000;
 
@@ -40,9 +41,10 @@ export const planApi = createApi({
             invalidatesTags: (result, error, arg) => [{ type: 'plan', id: arg.pid }],
         }),
         readPlan: builder.query<{ plan: string }, { wid: string, pid: string }>({
-            queryFn: async ({ wid, pid }, _, __, _fetchWithBQ) => {
+            queryFn: async ({ wid, pid }, baseQueryApi, __, _fetchWithBQ) => {
                 const url = `${API_BASE}/workspaces/${wid}/projects/${pid}/plan`;
                 let finalStatus = 404;
+                baseQueryApi.dispatch(setPlanProgressStatus({ workspaceId: wid, projectId: pid, files: 0, transformers: 0 }));
                 try {
                     let res = await fetch(url);
                     finalStatus = res.status;
@@ -56,11 +58,22 @@ export const planApi = createApi({
                         if (!res.ok) {
                             throw new Error(`got an error status code: ${res.status} ${res.statusText}`);
                         }
+                        if (res.status === 202) {
+                            const data: { files: number, transformers: number } = await res.json();
+                            baseQueryApi.dispatch(setPlanProgressStatus({
+                                workspaceId: wid,
+                                projectId: pid,
+                                files: data.files,
+                                transformers: data.transformers,
+                            }));
+                        }
                     }
                     const data: { plan: string } = await res.json();
+                    baseQueryApi.dispatch(deletePlanProgressStatus({ workspaceId: wid, projectId: pid}));
                     return { data };
                 } catch (e) {
                     console.error(e);
+                    baseQueryApi.dispatch(deletePlanProgressStatus({ workspaceId: wid, projectId: pid}));
                     return { error: { status: finalStatus, data: `${e}` } as FetchBaseQueryError };
                 }
             },

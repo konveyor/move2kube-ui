@@ -23,6 +23,8 @@ import { Inputs } from '../inputs/Inputs';
 import { Plan } from "../plan/Plan";
 import { Outputs } from "../outputs/Outputs";
 import { extractErrMsg } from "../common/utils";
+import { selectPlanProgressStatus } from "../plan/planSlice";
+import { useAppSelector } from "../../app/hooks";
 
 export const Project: FunctionComponent = () => {
     const { workspaceId, projectId } = useParams();
@@ -34,6 +36,8 @@ export const Project: FunctionComponent = () => {
     const projectHasInputs = currentProject && Object.keys(currentProject.inputs ?? {}).length > 0;
     const projectHasPlan = currentProject && Object.entries(currentProject.status ?? {}).some(([k, v]) => v && k === 'plan');
     const projectHasStalePlan = currentProject && Object.entries(currentProject.status ?? {}).some(([k, v]) => v && k === 'stale_plan');
+    const planProgressStatus = useAppSelector(selectPlanProgressStatus(workspaceId ?? '', projectId ?? ''));
+    const isPlanning = Boolean(currentProject && planProgressStatus);
 
     return (
         <PageSection>
@@ -71,7 +75,7 @@ export const Project: FunctionComponent = () => {
                         refetch={refetchProject} />
                     <br />
                     <Outputs
-                        isDisabled={!projectHasInputs || !projectHasPlan || projectHasStalePlan}
+                        isDisabled={!projectHasInputs || !projectHasPlan || projectHasStalePlan || isPlanning}
                         workspaceId={currentWorkspaceId}
                         projectId={currentProjectId}
                         outputs={currentProject.outputs}

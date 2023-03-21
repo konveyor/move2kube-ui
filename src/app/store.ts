@@ -26,6 +26,7 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import inputsReducer from '../features/inputs/inputsSlice';
 import outputsReducer from '../features/outputs/outputsSlice';
 import toastsReducer from '../features/toasts/toastsSlice';
+import planReducer from '../features/plan/planSlice';
 
 export const store = configureStore({
   reducer: {
@@ -39,6 +40,7 @@ export const store = configureStore({
     inputs: inputsReducer,
     outputs: outputsReducer,
     toasts: toastsReducer,
+    plan: planReducer,
   },
   middleware: (getDef) =>
     getDef()

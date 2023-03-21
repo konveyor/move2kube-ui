@@ -73,6 +73,7 @@ interface IQAWizardProps {
 
 export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
     const [isNextDisabled, setIsNextDisabled] = useState(false);
+    const [qaError, setQAError] = useState('');
     const status: TransformationStatus = useAppSelector(selectCurrentStatus) || { workspaceId: '', projectId: '', outputId: '', steps: [] };
     const dispatch = useAppDispatch();
     const qaSteps: Array<IQAStep> = status?.steps || [];
@@ -91,6 +92,7 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                     <SplitItem>
                         <Button isDisabled={isNextDisabled} onClick={() => {
                             setIsNextDisabled(true);
+                            setQAError('');
                             dispatch(moveToNextQuestion())
                                 .then(({ done }) => {
                                     if (done) {
@@ -103,7 +105,12 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                                     }
                                     setIsNextDisabled(false);
                                 })
-                                .catch((...args) => console.error('failed to move to the next question', ...args));
+                                .catch((e) => {
+                                    const err = `failed to move to the next question ${e}`;
+                                    console.error(err);
+                                    setQAError(err);
+                                    setIsNextDisabled(false);
+                                });
                         }}>
                             Next
                         </Button>
@@ -123,6 +130,11 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                     {isNextDisabled && (
                         <SplitItem>
                             <Spinner size="lg" />
+                        </SplitItem>
+                    )}
+                    {qaError && (
+                        <SplitItem>
+                            <Alert variant="danger" title={qaError} />
                         </SplitItem>
                     )}
                 </Split>

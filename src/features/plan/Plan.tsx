@@ -99,7 +99,7 @@ export const Plan: FunctionComponent<IPlanProps> = ({
                         </SplitItem>
                         {planProgressStatus && (
                             <SplitItem>
-                                <Alert variant="info" title={`Files processed: ${planProgressStatus.files} Transformers run: ${planProgressStatus.transformers}`} />
+                                <Alert variant="info" title={`${planProgressStatus.transformers} transformers started and ${planProgressStatus.files} folders analyzed`} />
                             </SplitItem>
                         )}
                     </>}

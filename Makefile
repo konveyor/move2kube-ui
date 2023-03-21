@@ -68,7 +68,7 @@ build: ## Build application
 
 .PHONY: start
 start: install build ## Start server
-	@pnpm run start
+	@pnpm run start-api
 
 # -- Container Runtime --
 

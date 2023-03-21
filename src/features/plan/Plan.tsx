@@ -23,6 +23,8 @@ import 'prismjs/components/prism-yaml';
 import 'prismjs/themes/prism.css';
 import { useReadPlanQuery, useStartPlanningMutation, useUpdatePlanMutation } from "./planApi";
 import { extractErrMsg } from "../common/utils";
+import { selectPlanProgressStatus } from "./planSlice";
+import { useAppSelector } from "../../app/hooks";
 
 export interface IPlanProps {
     isDisabled?: boolean;
@@ -56,6 +58,8 @@ export const Plan: FunctionComponent<IPlanProps> = ({
     const [startPlanning, { isLoading: isPlanStarting, error: startPlanError }] = useStartPlanningMutation();
     const [updatePlan, { isLoading: isUpdatingPlan, error: updatePlanError }] = useUpdatePlanMutation();
     const [currentPlan, setCurrentPlan] = useState(planObj?.plan || '');
+    const planProgressStatus = useAppSelector(selectPlanProgressStatus(workspaceId, projectId));
+
     useEffect(() => {
         setCurrentPlan(planObj?.plan ?? '');
         try {
@@ -70,7 +74,7 @@ export const Plan: FunctionComponent<IPlanProps> = ({
             <CardBody>
                 <Title headingLevel="h3">Plan</Title>
                 <br />
-                <Split hasGutter>
+                <Split hasGutter className="align-items-center">
                     <SplitItem>
                         <Button
                             isDisabled={isDisabled || isPlanStarting || isUpdatingPlan || isGettingPlan || isGettingPlanAgain}
@@ -89,11 +93,16 @@ export const Plan: FunctionComponent<IPlanProps> = ({
                             Save
                         </Button>
                     </SplitItem>
-                    {(isGettingPlan || isGettingPlanAgain) &&
+                    {(isGettingPlan || isGettingPlanAgain) && <>
                         <SplitItem>
-                            <Spinner size="lg" />
+                            <Spinner/>
                         </SplitItem>
-                    }
+                        {planProgressStatus && (
+                            <SplitItem>
+                                <Alert variant="info" title={`Files processed: ${planProgressStatus.files} Transformers run: ${planProgressStatus.transformers}`} />
+                            </SplitItem>
+                        )}
+                    </>}
                 </Split>
                 <br />
                 {startPlanError && <><Alert variant="danger" title={extractErrMsg(startPlanError)} /><br /></>}

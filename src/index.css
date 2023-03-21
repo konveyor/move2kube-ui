@@ -124,3 +124,7 @@ body {
   overflow-y: scroll;
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
+
+.align-items-center {
+  align-items: center;
+}

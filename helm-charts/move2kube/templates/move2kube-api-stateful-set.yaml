@@ -21,7 +21,7 @@ spec:
           image: quay.io/konveyor/busybox
           command: ["/bin/sh", "-c"]
           args:
-            - chown -R 12345:root /move2kube-api/data && chmod -R 770 /move2kube-api/data
+            - 'chown -R "$(id -u)":root /move2kube-api/data && chmod -R 770 /move2kube-api/data'
           volumeMounts:
             - name: common-volume
               mountPath: /move2kube-api/data

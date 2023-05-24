@@ -27,9 +27,10 @@ import { selectPlanProgressStatus } from "../plan/planSlice";
 import { useAppSelector } from "../../app/hooks";
 
 export const Project: FunctionComponent = () => {
-    const { workspaceId, projectId } = useParams();
+    const { workspaceId, projectId, outputId } = useParams();
     const currentWorkspaceId: string = workspaceId ?? '';
     const currentProjectId: string = projectId ?? '';
+    const currentOutputId: string = outputId ?? '';
     const { data: currentWorkspace } = useReadWorkspaceQuery(currentWorkspaceId);
     const { data: currentProject, isLoading, error, refetch: refetchProject } = useReadProjectQuery({ wid: currentWorkspaceId, pid: currentProjectId });
     const statuses = currentProject ? Object.entries(currentProject.status || {}).filter(([_k, v]) => (v)).map(([k, _v]) => k) : [];
@@ -78,6 +79,7 @@ export const Project: FunctionComponent = () => {
                         isDisabled={!projectHasInputs || !projectHasPlan || projectHasStalePlan || isPlanning}
                         workspaceId={currentWorkspaceId}
                         projectId={currentProjectId}
+                        outputId={currentOutputId}
                         outputs={currentProject.outputs}
                         refetch={refetchProject} />
                 </>

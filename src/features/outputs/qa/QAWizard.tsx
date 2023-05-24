@@ -27,6 +27,7 @@ import { MultiSelect } from "./MultiSelect";
 import { Password } from "./Password";
 import { Select } from "./Select";
 import { IQuestion, IQAStep } from "./types";
+import { useNavigate, useParams } from "react-router-dom";
 
 export interface IQAComponentProps {
     isDisabled?: boolean;
@@ -74,6 +75,8 @@ interface IQAWizardProps {
 export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
     const [isNextDisabled, setIsNextDisabled] = useState(false);
     const [qaError, setQAError] = useState('');
+    const navigate = useNavigate();
+    const { workspaceId, projectId } = useParams();
     const status: TransformationStatus = useAppSelector(selectCurrentStatus) || { workspaceId: '', projectId: '', outputId: '', steps: [] };
     const dispatch = useAppDispatch();
     const qaSteps: Array<IQAStep> = status?.steps || [];
@@ -118,6 +121,7 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
                     <SplitItem>
                         <Button variant="secondary" onClick={() => {
                             dispatch(setCurrentStatusId(''));
+                            navigate(`/workspaces/${workspaceId}/projects/${projectId}`);
                             try {
                                 if (props.refetch) props.refetch();
                             } catch (e) {
@@ -141,6 +145,7 @@ export const QAWizard: FunctionComponent<IQAWizardProps> = (props) => {
             )}
         </WizardContextConsumer>
     );
+
     return (
         <Wizard
             isOpen={outputId !== ''}

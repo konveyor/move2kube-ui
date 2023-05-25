@@ -16,7 +16,7 @@ limitations under the License.
 
 import { DataGrid, GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams } from "@mui/x-data-grid";
 import { Alert, Button, Card, CardBody, Modal, Spinner, Split, SplitItem, Title, Tooltip } from "@patternfly/react-core";
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useEffect, useState } from "react";
 import { useAppDispatch } from "../../app/hooks";
 import { API_BASE } from "../common/constants";
 import { IProjectOutput } from "../common/types";
@@ -27,11 +27,13 @@ import { QuestionIcon, TrashIcon } from "@patternfly/react-icons";
 import { extractErrMsg, normalizeFilename } from "../common/utils";
 import { Graph } from "./graph/Graph";
 import { createToast } from "../toasts/toastsSlice";
+import { Link } from "react-router-dom";
 
 export interface IOutputsProps {
     isDisabled?: boolean;
     workspaceId: string;
     projectId: string;
+    outputId: string;
     outputs?: { [id: string]: IProjectOutput };
     refetch?: () => void;
 }
@@ -52,15 +54,7 @@ export const Outputs: FunctionComponent<IOutputsProps> = (props) => {
             flex: 1,
             renderCell: (params: GridRenderCellParams<string>) => {
                 return params.row.status === 'transforming' ? (
-                    <Button variant="link" onClick={() => {
-                        dispatch(createStatus({
-                            workspaceId: props.workspaceId,
-                            projectId: props.projectId,
-                            outputId: params.value || '',
-                        }));
-                    }}>
-                        {params.value}
-                    </Button>
+                    <Link to={`/workspaces/${props.workspaceId}/projects/${props.projectId}/outputs/${params.value}`}>{params.value}</Link>
                 ) : (
                     <a
                         download={normalizeFilename(`output-${params.value}`) + '.zip'}
@@ -90,6 +84,21 @@ export const Outputs: FunctionComponent<IOutputsProps> = (props) => {
         },
     ];
 
+    const { workspaceId, projectId, outputId, outputs } = props;
+    const isValidOutputId = outputId in (outputs ?? {});
+    useEffect(() => {
+        console.log('the outputId in the url is', outputId);
+        if (outputId) {
+            if (!isValidOutputId) return console.error('the output id is invalid');
+            console.log(`creating a status for the output ${outputId} and opening the QA modal`);
+            dispatch(createStatus({
+                workspaceId: workspaceId,
+                projectId: projectId,
+                outputId: outputId,
+            }));
+        }
+    }, [isDisabled, workspaceId, projectId, outputId, dispatch, isValidOutputId]);
+
     return (
         <Card>
             <CardBody>
@@ -101,7 +110,11 @@ export const Outputs: FunctionComponent<IOutputsProps> = (props) => {
                             startTransforming({ wid: props.workspaceId, pid: props.projectId })
                                 .unwrap()
                                 .then(payload => {
-                                    dispatch(createStatus({ workspaceId: props.workspaceId, projectId: props.projectId, outputId: payload.id }));
+                                    dispatch(createStatus({
+                                        workspaceId: props.workspaceId,
+                                        projectId: props.projectId,
+                                        outputId: payload.id,
+                                    }));
                                 })
                                 .catch(e => console.error('failed to start transformation.', e));
                         }}>

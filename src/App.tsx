@@ -108,6 +108,7 @@ export const App: FunctionComponent = () => {
         <Route path="workspaces" element={<Workspaces />} />
         <Route path="workspaces/:workspaceId/projects" element={<Projects />} />
         <Route path="workspaces/:workspaceId/projects/:projectId" element={<Project />} />
+        <Route path="workspaces/:workspaceId/projects/:projectId/outputs/:outputId" element={<Project />} />
         <Route path="support" element={<Support />} />
         <Route path="login" element={<Login />} />
         <Route path="*" element={<NotFound />} />

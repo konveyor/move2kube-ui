@@ -16,6 +16,7 @@ spec:
       labels:
         move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"
     spec:
+      {{- if .Values.persistentVolumeClaim.enable }}
       initContainers:
         - name: change-perms
           image: quay.io/konveyor/busybox
@@ -26,6 +27,7 @@ spec:
             - name: common-volume
               mountPath: /move2kube-api/data
               subPath: move2kube-api/data
+      {{- end }}
       containers:
         - name: move2kubeapi
           image: "quay.io/konveyor/move2kube-ui:{{ .Values.deployment.api.imageTag | default .Chart.AppVersion }}"
@@ -62,7 +64,9 @@ spec:
             {{- end }}
             - name: common-volume
               mountPath: /move2kube-api/data
+              {{- if .Values.persistentVolumeClaim.enable }}
               subPath: move2kube-api/data
+              {{- end }}
             {{- if .Values.deployment.api.privilegedPods }}
             - mountPath: /var/lib/containers
               name: container-storage

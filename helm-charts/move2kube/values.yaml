@@ -5,6 +5,7 @@ deployment:
     imageTag: "" # if empty we will use AppVersion from the Chart.yaml as the tag
     memory: "1Gi"
     cpu: "300m"
+    initContainer: false
   authServer:
     enable: false
     replicas: 1
@@ -27,6 +28,7 @@ persistentVolumeClaim:
   name: "" # if createNew is false this MUST contain the name of an existing persistent volume claim
   storageClassName: ""
   storageSize: 1Gi
+  readWriteMany: true
 secret:
   api:
     enable: false

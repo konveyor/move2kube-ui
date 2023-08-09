@@ -74,7 +74,10 @@
                 },
                 "cpu": {
                     "type": "string"
-                }
+                },
+		"initContainer": {
+	            "type": "boolean"
+		}
             },
             "required": [
                 "cpu",
@@ -156,7 +159,10 @@
                 },
                 "storageSize": {
                     "type": "string"
-                }
+                },
+		"readWriteMany": {
+		    "type": "boolean"
+		}
             },
             "required": [
                 "createNew",

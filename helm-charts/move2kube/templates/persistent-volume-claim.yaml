@@ -8,7 +8,11 @@ metadata:
 spec:
   storageClassName: "{{ .Values.persistentVolumeClaim.storageClassName }}"
   accessModes:
+    {{- if or (gt (int .Values.deployment.api.replicas) 1) (.Values.deployment.database.enable) (.Values.persistentVolumeClaim.readWriteMany) }}
     - ReadWriteMany
+    {{- else }}
+    - ReadWriteOnce
+    {{- end }}
   volumeMode: Filesystem
   resources:
     requests:

@@ -16,7 +16,7 @@ spec:
       labels:
         move2kube.konveyor.io/service: "{{ .Release.Name }}-move2kubeapi"
     spec:
-      {{- if .Values.persistentVolumeClaim.enable }}
+      {{- if and (.Values.deployment.api.initContainer) (.Values.persistentVolumeClaim.enable) }}
       initContainers:
         - name: change-perms
           image: quay.io/konveyor/busybox

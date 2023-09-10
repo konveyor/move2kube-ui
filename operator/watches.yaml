@@ -1,0 +1,6 @@
+# Use the 'create api' subcommand to add watches to this file.
+- group: move2kube.konveyor.io
+  version: v1alpha1
+  kind: Move2Kube
+  chart: helm-charts/move2kube
+#+kubebuilder:scaffold:watch

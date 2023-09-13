@@ -1,0 +1,97 @@
+name: Raise PR to Operator Hub community and prod repos
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "current tag: The tag for this release"
+        required: true
+        default: v0.1.0-rc.2
+      commit_ref:
+        description: "commit ref: The branch or tag of the commit to use for the release."
+        required: false
+        default: main
+
+jobs:
+  build_bundle_and_raise_pr:
+    name: Build the latest bundle and raise 2 PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout-the-current-repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.commit_ref }}
+      - name: install-yq
+        run: |
+          echo "installing yq..."
+          curl -L https://github.com/mikefarah/yq/releases/download/v4.13.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          echo "yq installed"
+      - name: build the operator bundle and save to temp directory
+        run: |
+          cd operator/ || exit 1
+          VERSION='${{ github.event.inputs.tag }}' make bundle
+          echo 'copy-bundle-into-tmp'
+          cp -r bundle/ /tmp/bundle-operator-move2kube
+          cp bundle.Dockerfile /tmp/bundle.Dockerfile
+      - name: cleanup
+        run: rm -rf {*,.*} || true
+      - name: checkout-the-move2kube-fork-of-upstream-repo
+        shell: bash
+        run: |
+          git clone 'https://move2kube:${{ secrets.MOVE2KUBE_PATOKEN }}@github.com/move2kube/community-operators'
+          cd community-operators/ || exit 1
+          git checkout main
+          git config user.name move2kube
+          git config user.email move2kube@gmail.com
+          echo 'sync our fork with upstream'
+          git remote add upstream https://github.com/k8s-operatorhub/community-operators
+          git fetch --all
+          git rebase upstream/main
+          echo 'copy-bundle-into-fork-creating-new-version-dir'
+          cd operators/move2kube-operator/ || exit 1
+          VERSION='${{ github.event.inputs.tag }}'
+          VERSION_WITHOUT_V="${VERSION#v}"
+          cp -r /tmp/bundle-operator-move2kube "${VERSION_WITHOUT_V}" && cp /tmp/bundle.Dockerfile "${VERSION_WITHOUT_V}"/bundle.Dockerfile
+          echo 'make a commit and push to our fork'
+          git add -A
+          git commit -s -m 'operator move2kube-operator (${{ github.event.inputs.tag }})'
+          git push -u origin main
+      - name: create-pull-request-to-community-repo
+        run: |
+          curl -L \
+            -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'Authorization: Bearer ${{ secrets.MOVE2KUBE_PATOKEN }}' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            https://api.github.com/repos/k8s-operatorhub/community-operators/pulls \
+            -d '{"title":"operator move2kube-operator (${{ github.event.inputs.tag }})","body":"An automated PR to update move2kube-operator to ${{ github.event.inputs.tag }}","head":"move2kube:main","base":"main"}'
+      - name: checkout-the-move2kube-fork-of-the-prod-upstream-repo
+        shell: bash
+        run: |
+          git clone 'https://move2kube:${{ secrets.MOVE2KUBE_PATOKEN }}@github.com/move2kube/community-operators-prod'
+          cd community-operators-prod/ || exit 1
+          git checkout main
+          git config user.name move2kube
+          git config user.email move2kube@gmail.com
+          echo 'sync our fork with upstream'
+          git remote add upstream https://github.com/redhat-openshift-ecosystem/community-operators-prod
+          git fetch --all
+          git rebase upstream/main
+          echo 'copy-bundle-into-fork-of-prod-repo-creating-new-version-dir'
+          cd operators/move2kube-operator/ || exit 1
+          VERSION='${{ github.event.inputs.tag }}'
+          VERSION_WITHOUT_V="${VERSION#v}"
+          cp -r /tmp/bundle-operator-move2kube "${VERSION_WITHOUT_V}" && cp /tmp/bundle.Dockerfile "${VERSION_WITHOUT_V}"/bundle.Dockerfile
+          echo 'make a commit and push to our fork'
+          git add -A
+          git commit -s -m 'operator move2kube-operator (${{ github.event.inputs.tag }})'
+          git push -u origin main
+      - name: create-pull-request-to-prod-repo
+        run: |
+          curl -L \
+            -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'Authorization: Bearer ${{ secrets.MOVE2KUBE_PATOKEN }}' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            https://api.github.com/repos/redhat-openshift-ecosystem/community-operators-prod/pulls \
+            -d '{"title":"operator move2kube-operator (${{ github.event.inputs.tag }})","body":"An automated PR to update move2kube-operator to ${{ github.event.inputs.tag }}","head":"move2kube:main","base":"main"}'

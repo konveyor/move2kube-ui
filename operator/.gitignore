@@ -26,3 +26,4 @@ bin
 coverage.txt
 .cr-release-packages
 secrets/
+/helm-charts/

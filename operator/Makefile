@@ -39,7 +39,7 @@ IMAGE_TAG_BASE ?= quay.io/konveyor/move2kube
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
-BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION_WITHOUT_V)
+BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:$(VERSION)
 
 # BUNDLE_GEN_FLAGS are the flags passed to the operator-sdk generate bundle command
 BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(VERSION_WITHOUT_V) $(BUNDLE_METADATA_OPTS)
@@ -184,6 +184,7 @@ endif
 
 .PHONY: bundle
 bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
+	cp -r ../helm-charts .
 	@echo 'changing the image tag to '${VERSION}' in "containerImage" field in the CSV using yq'
 	@cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
 	yq eval --exit-status --inplace ".metadata.annotations.containerImage=\"quay.io/konveyor/move2kube-operator:${VERSION}\"" config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
@@ -193,6 +194,7 @@ bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then v
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
 	$(OPERATOR_SDK) bundle validate ./bundle
+	rm -rf helm-charts
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.

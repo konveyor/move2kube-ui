@@ -88,6 +88,7 @@ run: helm-operator ## Run against the configured Kubernetes cluster in ~/.kube/c
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
 	cp -r ../helm-charts .
+	yq eval --exit-status --inplace ".deployment.api.imageTag=\"${VERSION}\"" helm-charts/move2kube/values.yaml
 	docker build -t ${IMG} .
 	rm -rf helm-charts
 
@@ -188,6 +189,7 @@ bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then v
 	@echo 'changing the image tag to '${VERSION}' in "containerImage" field in the CSV using yq'
 	@cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
 	yq eval --exit-status --inplace ".metadata.annotations.containerImage=\"quay.io/konveyor/move2kube-operator:${VERSION}\"" config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	yq eval --exit-status --inplace ".deployment.api.imageTag=\"${VERSION}\"" helm-charts/move2kube/values.yaml
 	@echo 'after editting the CSV'
 	@cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
 	$(OPERATOR_SDK) generate kustomize manifests -q

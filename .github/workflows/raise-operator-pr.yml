@@ -46,7 +46,7 @@ jobs:
           echo 'sync our fork with upstream'
           git remote add upstream https://github.com/k8s-operatorhub/community-operators
           git fetch --all
-          git rebase upstream/main
+          git reset --hard upstream/main
           echo 'copy-bundle-into-fork-creating-new-version-dir'
           cd operators/move2kube-operator/ || exit 1
           VERSION='${{ github.event.inputs.tag }}'
@@ -76,7 +76,7 @@ jobs:
           echo 'sync our fork with upstream'
           git remote add upstream https://github.com/redhat-openshift-ecosystem/community-operators-prod
           git fetch --all
-          git rebase upstream/main
+          git reset --hard upstream/main
           echo 'copy-bundle-into-fork-of-prod-repo-creating-new-version-dir'
           cd operators/move2kube-operator/ || exit 1
           VERSION='${{ github.event.inputs.tag }}'

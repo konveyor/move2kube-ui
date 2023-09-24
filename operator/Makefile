@@ -186,17 +186,38 @@ endif
 .PHONY: bundle
 bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
 	cp -r ../helm-charts .
-	@echo 'changing the image tag to '${VERSION}' in "containerImage" field in the CSV using yq'
-	@cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
-	yq eval --exit-status --inplace ".metadata.annotations.containerImage=\"quay.io/konveyor/move2kube-operator:${VERSION}\"" config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
-	yq eval --exit-status --inplace ".deployment.api.imageTag=\"${VERSION}\"" helm-charts/move2kube/values.yaml
-	@echo 'after editting the CSV'
-	@cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
-	$(OPERATOR_SDK) generate kustomize manifests -q
+	echo 'look for helm-charts folder'
+	ls -al .
+	ls -al helm-charts
+	echo 'changing the image tag to '${VERSION}' in "containerImage" field in the CSV using yq'
+	cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	$(eval MYYQEXPR1 := '.metadata.annotations.containerImage="quay.io/konveyor/move2kube-operator:${VERSION}"')
+	echo ${MYYQEXPR1}
+	yq eval --exit-status ${MYYQEXPR1} config/manifests/bases/move2kube-operator.clusterserviceversion.yaml > foo.yaml
+	mv foo.yaml config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	cat helm-charts/move2kube/values.yaml
+	$(eval MYYQEXPR2 := '.deployment.api.imageTag="${VERSION}"')
+	echo ${MYYQEXPR2}
+	yq eval --exit-status ${MYYQEXPR2} helm-charts/move2kube/values.yaml > bar.yaml
+	mv bar.yaml helm-charts/move2kube/values.yaml
+	cat helm-charts/move2kube/values.yaml
+	echo 'after editting the CSV'
+	cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	ls -al .
+	ls -al config
+	ls -al config/manifests
+	$(OPERATOR_SDK) generate kustomize manifests
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 	rm -rf helm-charts
+	echo 'look at the generated bundle'
+	ls -al .
+	ls -al bundle/
+	ls -al bundle/manifests
+	ls -al bundle/metadata
+
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.

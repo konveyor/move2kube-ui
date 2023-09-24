@@ -53,9 +53,12 @@ jobs:
           VERSION_WITHOUT_V="${VERSION#v}"
           cp -r /tmp/bundle-operator-move2kube "${VERSION_WITHOUT_V}" && cp /tmp/bundle.Dockerfile "${VERSION_WITHOUT_V}"/bundle.Dockerfile
           echo 'make a commit and push to our fork'
+          # https://stackoverflow.com/questions/67789507/generate-unique-string-in-github-actions
+          BRANCH_NAME='feat-${{ github.event.inputs.tag }}-${{ github.run_id }}-${{ github.run_attempt }}'
+          git checkout -b "${BRANCH_NAME}"
           git add -A
           git commit -s -m 'operator move2kube-operator (${{ github.event.inputs.tag }})'
-          git push -u origin main
+          git push -u origin "${BRANCH_NAME}"
       - name: create-pull-request-to-community-repo
         run: |
           curl -L \
@@ -64,7 +67,7 @@ jobs:
             -H 'Authorization: Bearer ${{ secrets.MOVE2KUBE_PATOKEN }}' \
             -H 'X-GitHub-Api-Version: 2022-11-28' \
             https://api.github.com/repos/k8s-operatorhub/community-operators/pulls \
-            -d '{"title":"operator move2kube-operator (${{ github.event.inputs.tag }})","body":"An automated PR to update move2kube-operator to ${{ github.event.inputs.tag }}","head":"move2kube:main","base":"main"}'
+            -d '{"title":"operator move2kube-operator (${{ github.event.inputs.tag }})","body":"An automated PR to update move2kube-operator to ${{ github.event.inputs.tag }}","head":"move2kube:'"${BRANCH_NAME}"'","base":"main"}'
       - name: checkout-the-move2kube-fork-of-the-prod-upstream-repo
         shell: bash
         run: |
@@ -83,9 +86,12 @@ jobs:
           VERSION_WITHOUT_V="${VERSION#v}"
           cp -r /tmp/bundle-operator-move2kube "${VERSION_WITHOUT_V}" && cp /tmp/bundle.Dockerfile "${VERSION_WITHOUT_V}"/bundle.Dockerfile
           echo 'make a commit and push to our fork'
+          # https://stackoverflow.com/questions/67789507/generate-unique-string-in-github-actions
+          BRANCH_NAME='feat-${{ github.event.inputs.tag }}-${{ github.run_id }}-${{ github.run_attempt }}'
+          git checkout -b "${BRANCH_NAME}"
           git add -A
           git commit -s -m 'operator move2kube-operator (${{ github.event.inputs.tag }})'
-          git push -u origin main
+          git push -u origin "${BRANCH_NAME}"
       - name: create-pull-request-to-prod-repo
         run: |
           curl -L \
@@ -94,4 +100,4 @@ jobs:
             -H 'Authorization: Bearer ${{ secrets.MOVE2KUBE_PATOKEN }}' \
             -H 'X-GitHub-Api-Version: 2022-11-28' \
             https://api.github.com/repos/redhat-openshift-ecosystem/community-operators-prod/pulls \
-            -d '{"title":"operator move2kube-operator (${{ github.event.inputs.tag }})","body":"An automated PR to update move2kube-operator to ${{ github.event.inputs.tag }}","head":"move2kube:main","base":"main"}'
+            -d '{"title":"operator move2kube-operator (${{ github.event.inputs.tag }})","body":"An automated PR to update move2kube-operator to ${{ github.event.inputs.tag }}","head":"move2kube:'"${BRANCH_NAME}"'","base":"main"}'

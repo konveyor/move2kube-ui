@@ -1,0 +1,27 @@
+name: Close a PR raised by the Move2Kube bot account
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "The id of the pull request to close. Example: 3143 for https://github.com/k8s-operatorhub/community-operators/pull/3143"
+        required: true
+      repo_owner_and_name:
+        description: "The repo on which to close the pull request. Example: 'redhat-openshift-ecosystem/community-operators-prod'"
+        required: false
+        default: 'k8s-operatorhub/community-operators'
+
+jobs:
+  close_pr:
+    name: Close an existing PR created by the bot account
+    runs-on: ubuntu-latest
+    steps:
+      - name: close-a-pull-request
+        run: |
+          curl -L \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H 'Authorization: Bearer ${{ secrets.MOVE2KUBE_PATOKEN }}' \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.event.inputs.repo_owner_and_name }}/pulls/${{ github.event.inputs.pr_number }} \
+            -d '{"state":"closed"}'

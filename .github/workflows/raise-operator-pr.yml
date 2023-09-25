@@ -59,8 +59,7 @@ jobs:
           git add -A
           git commit -s -m 'operator move2kube-operator (${{ github.event.inputs.tag }})'
           git push -u origin "${BRANCH_NAME}"
-      - name: create-pull-request-to-community-repo
-        run: |
+          echo 'create-pull-request-to-community-repo'
           curl -L \
             -X POST \
             -H 'Accept: application/vnd.github+json' \
@@ -92,8 +91,7 @@ jobs:
           git add -A
           git commit -s -m 'operator move2kube-operator (${{ github.event.inputs.tag }})'
           git push -u origin "${BRANCH_NAME}"
-      - name: create-pull-request-to-prod-repo
-        run: |
+          echo 'create-pull-request-to-prod-repo'
           curl -L \
             -X POST \
             -H 'Accept: application/vnd.github+json' \

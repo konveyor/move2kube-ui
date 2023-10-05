@@ -26,10 +26,20 @@ jobs:
           echo "installing yq..."
           curl -L https://github.com/mikefarah/yq/releases/download/v4.13.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
           echo "yq installed"
+      - name: get_channel
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const version = '${{ github.event.inputs.tag }}';
+            if(/^v\d+\.\d+\.\d+-\w+/.test(version)) {
+              core.setOutput('channel', 'prerelease');
+            } else {
+              core.setOutput('channel', 'stable');
+            }
       - name: build the operator bundle and save to temp directory
         run: |
           cd operator/ || exit 1
-          VERSION='${{ github.event.inputs.tag }}' make bundle
+          VERSION='${{ github.event.inputs.tag }}' CHANNELS='${{ steps.get_channel.outputs.channel }}' DEFAULT_CHANNEL='stable' make bundle
           echo 'copy-bundle-into-tmp'
           cp -r bundle/ /tmp/bundle-operator-move2kube
           cp bundle.Dockerfile /tmp/bundle.Dockerfile

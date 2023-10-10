@@ -164,22 +164,19 @@ jobs:
           echo "installing yq..."
           curl -L https://github.com/mikefarah/yq/releases/download/v4.13.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
           echo "yq installed"
-      - name: get_channel
-        uses: actions/github-script@v3
+      - id: get_channel
+        uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             const version = '${{ github.event.inputs.tag }}';
-            if(/^v\d+\.\d+\.\d+-\w+/.test(version)) {
-              core.setOutput('channel', 'prerelease');
-            } else {
-              core.setOutput('channel', 'stable');
-            }
+            return /^v\d+\.\d+\.\d+-\w+/.test(version) ? 'prerelease' : 'stable';
       - name: build the operator bundle and container images and push the images to quay
         run: |
           cd operator/ || exit 1
           VERSION='${{ github.event.inputs.tag }}' make docker-build
           VERSION='${{ github.event.inputs.tag }}' make docker-push
-          VERSION='${{ github.event.inputs.tag }}' CHANNELS='${{ steps.get_channel.outputs.channel }}' DEFAULT_CHANNEL='stable' make bundle
+          VERSION='${{ github.event.inputs.tag }}' CHANNELS='${{ steps.get_channel.outputs.result }}' DEFAULT_CHANNEL='stable' make bundle
           VERSION='${{ github.event.inputs.tag }}' make bundle-build
           VERSION='${{ github.event.inputs.tag }}' make bundle-push
       # build the operator bundle and container images

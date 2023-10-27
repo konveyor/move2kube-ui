@@ -108,7 +108,7 @@ endif
 .PHONY: prepare-for-release
 prepare-for-release:
 	mv helm-charts/move2kube/Chart.yaml old
-	cat old | sed -E s/version:\ v0.1.0-unreleased/version:\ ${IMAGE_TAG}/ | sed -E s/appVersion:\ latest/appVersion:\ ${IMAGE_TAG}/ > helm-charts/move2kube/Chart.yaml
+	cat old | sed -E s/version:\ v0.1.0-unreleased/version:\ ${IMAGE_TAG}/ | sed -E s/appVersion:\ v0.1.0-unreleased/appVersion:\ ${IMAGE_TAG}/ > helm-charts/move2kube/Chart.yaml
 	rm old
 
 .PHONY: cmultibuildpush

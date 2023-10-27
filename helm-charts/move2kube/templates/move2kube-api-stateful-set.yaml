@@ -30,7 +30,7 @@ spec:
       {{- end }}
       containers:
         - name: move2kubeapi
-          image: "quay.io/konveyor/move2kube-ui:{{ .Values.deployment.api.imageTag | default .Chart.AppVersion }}"
+          image: "{{ .Values.deployment.api.imageName }}:{{ .Values.deployment.api.imageTag | default .Chart.AppVersion }}"
           command:
             - move2kube-api
           args:

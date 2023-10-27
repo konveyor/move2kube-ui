@@ -66,6 +66,9 @@
                 "privilegedPods": {
                     "type": "boolean"
                 },
+                "imageName": {
+                    "type": "string"
+                },
                 "imageTag": {
                     "type": "string"
                 },

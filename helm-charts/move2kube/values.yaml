@@ -2,8 +2,8 @@ deployment:
   api:
     replicas: 1
     privilegedPods: false # some optional features of Move2Kube require privileged pods
-    imageName: quay.io/konveyor/move2kube-ui
-    imageTag: "" # if empty we will use AppVersion from the Chart.yaml as the tag
+    imageName: "quay.io/konveyor/move2kube-ui"
+    imageTag: "latest"
     memory: "1Gi"
     cpu: "300m"
     initContainer: false
@@ -21,14 +21,14 @@ deployment:
 ingress:
   enable: true
   preferRoute: false # if true we will use an Openshift Route instead of an K8s Ingress
-  host: mydomain.com
+  host: "mydomain.com"
   tlsSecretName: "" # not necessary when using Openshift Route
 persistentVolumeClaim:
   enable: false # set this to true to get persistent storage
   createNew: true
   name: "" # if createNew is false this MUST contain the name of an existing persistent volume claim
   storageClassName: ""
-  storageSize: 1Gi
+  storageSize: "1Gi"
   readWriteMany: true
 secret:
   api:
@@ -39,10 +39,10 @@ secret:
   authServer: # required if deployment.authServer.enable is true
     createNew: true
     name: "" # if createNew is false this MUST contain the name of an existing secret
-    adminUsername: admin # TODO: Change this before deploying
-    adminPassword: password # TODO: Change this before deploying
-    databaseUsername: auth-server # TODO: Change this before deploying
-    databasePassword: password # TODO: Change this before deploying
+    adminUsername: "admin" # TODO: Change this before deploying
+    adminPassword: "password" # TODO: Change this before deploying
+    databaseUsername: "auth-server" # TODO: Change this before deploying
+    databasePassword: "password" # TODO: Change this before deploying
     realmJSON: ""
     standaloneHAXML: ""
 securityContextContraints:

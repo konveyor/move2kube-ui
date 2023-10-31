@@ -4,6 +4,6 @@ keywords:
 - move2kube
 name: move2kube
 version: v0.1.0-unreleased
-appVersion: latest
+appVersion: v0.1.0-unreleased
 type: application
 icon: https://raw.githubusercontent.com/konveyor/community/main/brand/logo/konveyor-logo-move2kube.svg

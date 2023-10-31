@@ -88,6 +88,8 @@ run: helm-operator ## Run against the configured Kubernetes cluster in ~/.kube/c
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
 	cp -r ../helm-charts .
+	yq eval --exit-status --inplace ".version=\"${VERSION}\"" helm-charts/move2kube/Chart.yaml
+	yq eval --exit-status --inplace ".appVersion=\"${VERSION}\"" helm-charts/move2kube/Chart.yaml
 	yq eval --exit-status --inplace ".deployment.api.imageTag=\"${VERSION}\"" helm-charts/move2kube/values.yaml
 	docker build -t ${IMG} .
 	rm -rf helm-charts
@@ -190,20 +192,33 @@ bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then v
 	ls -al .
 	ls -al helm-charts
 	echo 'changing the image tag to '${VERSION}' in "containerImage" field in the CSV using yq'
+	# -------------------
+	echo 'before editting the CSV'
 	cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
 	$(eval MYYQEXPR1 := '.metadata.annotations.containerImage="quay.io/konveyor/move2kube-operator:${VERSION}"')
 	echo ${MYYQEXPR1}
 	yq eval --exit-status ${MYYQEXPR1} config/manifests/bases/move2kube-operator.clusterserviceversion.yaml > foo.yaml
 	mv foo.yaml config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	echo 'after editting the CSV'
 	cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	# -------------------
+	echo 'before editting the values.yaml'
 	cat helm-charts/move2kube/values.yaml
 	$(eval MYYQEXPR2 := '.deployment.api.imageTag="${VERSION}"')
 	echo ${MYYQEXPR2}
 	yq eval --exit-status ${MYYQEXPR2} helm-charts/move2kube/values.yaml > bar.yaml
 	mv bar.yaml helm-charts/move2kube/values.yaml
+	echo 'after editting the values.yaml'
 	cat helm-charts/move2kube/values.yaml
-	echo 'after editting the CSV'
-	cat config/manifests/bases/move2kube-operator.clusterserviceversion.yaml
+	# -------------------
+	echo 'changing the version and appVersion to '${VERSION}' in the "Chart.yaml"'
+	echo 'before editting the Chart.yaml'
+	cat helm-charts/move2kube/Chart.yaml
+	yq eval --exit-status --inplace ".version=\"${VERSION}\"" helm-charts/move2kube/Chart.yaml
+	yq eval --exit-status --inplace ".appVersion=\"${VERSION}\"" helm-charts/move2kube/Chart.yaml
+	echo 'after editting the Chart.yaml'
+	cat helm-charts/move2kube/Chart.yaml
+	# -------------------
 	ls -al .
 	ls -al config
 	ls -al config/manifests

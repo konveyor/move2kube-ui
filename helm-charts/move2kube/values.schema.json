@@ -72,15 +72,21 @@
                 "imageTag": {
                     "type": "string"
                 },
+                "extraArgs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "memory": {
                     "type": "string"
                 },
                 "cpu": {
                     "type": "string"
                 },
-		"initContainer": {
-	            "type": "boolean"
-		}
+                "initContainer": {
+                    "type": "boolean"
+                }
             },
             "required": [
                 "cpu",
@@ -163,9 +169,9 @@
                 "storageSize": {
                     "type": "string"
                 },
-		"readWriteMany": {
-		    "type": "boolean"
-		}
+                "readWriteMany": {
+                    "type": "boolean"
+                }
             },
             "required": [
                 "createNew",

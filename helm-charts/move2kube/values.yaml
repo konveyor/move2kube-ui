@@ -4,6 +4,7 @@ deployment:
     privilegedPods: false # some optional features of Move2Kube require privileged pods
     imageName: "quay.io/konveyor/move2kube-ui"
     imageTag: "latest"
+    extraArgs: ["--log-level=trace", "--max-upload-size=104857600"]
     memory: "1Gi"
     cpu: "300m"
     initContainer: false

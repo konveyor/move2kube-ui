@@ -34,12 +34,14 @@ spec:
           command:
             - move2kube-api
           args:
-            - '--log-level=trace'
+            - '--host=$(MY_POD).$(MY_SERVICE)'
             - '--static-files-dir=build'
             {{- if .Values.secret.api.enable }}
             - '--config=config.yaml'
             {{- end }}
-            - '--host=$(MY_POD).$(MY_SERVICE)'
+            {{- range .Values.deployment.api.extraArgs }}
+            - '{{ . }}'
+            {{- end }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

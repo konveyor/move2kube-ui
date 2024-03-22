@@ -232,6 +232,17 @@ bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then v
 	ls -al bundle/
 	ls -al bundle/manifests
 	ls -al bundle/metadata
+	ls -al bundle/metadata/annotations.yaml
+	# -------------------
+	echo 'before adding the annotation required for red hat community prod repo'
+	cat bundle/metadata/annotations.yaml
+	$(eval MYYQEXPR2 := '.annotations."com.redhat.openshift.versions"="v4.1"')
+	echo ${MYYQEXPR2}
+	yq eval --exit-status ${MYYQEXPR2} bundle/metadata/annotations.yaml > foo.yaml
+	mv foo.yaml bundle/metadata/annotations.yaml
+	echo 'after adding the annotation required for red hat community prod repo'
+	cat bundle/metadata/annotations.yaml
+	# -------------------
 
 
 .PHONY: bundle-build

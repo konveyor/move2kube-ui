@@ -76,7 +76,7 @@ spec:
   - email: seshapad@in.ibm.com
     name: Padmanabha V Seshadri
   maturity: alpha
-  minKubeVersion: 1.22.0
+  minKubeVersion: 1.13.0
   provider:
     name: Konveyor
     url: https://konveyor.io
